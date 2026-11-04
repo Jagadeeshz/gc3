@@ -3,6 +3,13 @@
 Status of each delivered slice, with the evidence that backs it. Source of truth for requirements is
 `Development-Breif.md`; this file tracks what has actually been built and verified.
 
+| Slice | Scope | Commit | State |
+|---|---|---|---|
+| 0 | Monorepo foundation | `3b19258` | ✅ delivered |
+| 1 | Database & Identity | `e4d8ae7` | ✅ delivered |
+| 2 | Auth & RBAC | `26f8a93` | ✅ delivered |
+| 3 | Invite acceptance | — | in progress |
+
 ---
 
 ## Slice 0 — Monorepo foundation  ✅
@@ -82,6 +89,7 @@ Organization 1 ──< Membership >── 1 User
 
 ## Slice 2 — Auth & RBAC  ✅
 
+**Commit:** `26f8a93` — feat(auth): JWT sessions, requireAuth and role->permission RBAC
 **Brief refs:** §3 (roles & access), §12 (security), §8.3 (agent guardrails)
 
 ### What shipped
