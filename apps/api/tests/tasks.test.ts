@@ -260,6 +260,23 @@ describe('PATCH /tasks/:taskId — the task lifecycle', () => {
   });
 });
 
+describe('assignee roster', () => {
+  it('lets a specialist read the assignee roster the checklist needs', async () => {
+    const organization = await createOrganization();
+    const admin = await createStaff('PLATFORM_ADMIN');
+    const specialist = await createStaff('SPECIALIST');
+
+    // A specialist holds task:manage but not request:assign. The roster endpoint
+    // must answer for them, or the checklist cannot offer an assignee picker.
+    const roster = await authGet(`${API}/pods/staff`, specialist.token, organization.id).expect(200);
+    expect((roster.body.data as { userId: string }[]).some((entry) => entry.userId === admin.userId)).toBe(true);
+
+    // Still closed to clients.
+    const owner = await createMember({ organizationId: organization.id, roles: ['CLIENT_OWNER'] });
+    await authGet(`${API}/pods/staff`, owner.token, organization.id).expect(403);
+  });
+});
+
 describe('task load in the operations views', () => {
   it('counts open tasks per seated person and per pod', async () => {
     const organization = await createOrganization();
