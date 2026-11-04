@@ -14,9 +14,12 @@
     "dev:api": "pnpm --filter @gc3/api dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter @gc3/api test",
+    "db:generate": "pnpm --filter @gc3/api db:generate",
+    "db:migrate": "pnpm --filter @gc3/api db:migrate",
     "clean": "pnpm -r --if-present clean"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": ["esbuild", "@prisma/engines", "prisma", "@prisma/client"]
   }
 }

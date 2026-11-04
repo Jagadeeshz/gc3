@@ -10,7 +10,8 @@ const envSchema = z.object({
   API_HOST: z.string().min(1).default('0.0.0.0'),
   /** Browser origin allowed to call the API (comma-separated list). */
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
-  DATABASE_URL: z.url().optional(),
+  /** PostgreSQL connection string. Required from Phase 1 onward. */
+  DATABASE_URL: z.url(),
   REDIS_URL: z.url().optional(),
 });
 

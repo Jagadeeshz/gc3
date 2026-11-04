@@ -3,9 +3,9 @@
 Multi-tenant operating platform for **Global Cloud Capability & Consulting (GC³)** — client portal,
 delivery operations, pod workspaces, finance, and AI-augmented workflows.
 
-Built to the **GC3 Development Brief v1.0** (`Development-Breif.md` in this folder). This repository
-is at **Phase 0 — Foundation**: the environment, the package graph and the architectural guardrails
-are in place; no domain persistence exists yet.
+Built to the **GC3 Development Brief v1.0** (`Development-Breif.md` in this folder). The repository is
+at **Phase 1, slice 1**: identity and tenancy are persisted in PostgreSQL behind a repository layer,
+with integration tests that pin the API contract and the isolation rules.
 
 ---
 
@@ -16,6 +16,15 @@ GC3/
 ├── apps/
 │   ├── web/                  Next.js App Router + Tailwind CSS (port 3000)
 │   └── api/                  Express + TypeScript REST API, /api/v1 (port 3001)
+│       ├── prisma/           schema.prisma + migrations
+│       ├── prisma.config.ts  Prisma CLI config (datasource URL lives here in v7)
+│       ├── scripts/          prepare-test-db.mjs (creates + migrates the test DB)
+│       ├── src/
+│       │   ├── db/           Prisma client + adapter
+│       │   ├── repositories/ tenant-scoped data access
+│       │   ├── routes/v1/    versioned route modules
+│       │   └── middleware/   request id, tenant scope, error envelope
+│       └── tests/            Vitest + Supertest integration suites
 ├── packages/
 │   ├── ui/                   Shared React components (@gc3/ui)
 │   ├── types/                Domain interfaces and constants (@gc3/types)
@@ -41,12 +50,15 @@ folder is not architecture.
 | Frontend | Next.js (App Router) + React | 16.4.5 / 19.3.1 |
 | Styling | Tailwind CSS v4 (CSS-first `@theme`) | 4.3.4 |
 | API | Express | 5.3.0 |
+| ORM | Prisma (Rust-free client + `pg` driver adapter) | 7.10.1 |
+| Database | PostgreSQL | 16.15 |
 | Validation | Zod | 4.6.7 |
+| Testing | Vitest + Supertest | 5.1.0 / 7.3.1 |
 | Language | TypeScript (strict, no `any`) | 5.9.3 |
 | Runtime | Node.js | ≥ 22 |
 | Package manager | pnpm workspaces | 10.34.9 |
 
-PostgreSQL + Prisma, Redis and object storage arrive with the slices that need them (Phase 1+).
+Redis and object storage arrive with the slices that need them.
 
 ---
 
@@ -60,11 +72,14 @@ pnpm dev              # web + api together
 pnpm dev:web          # Next.js only  → http://localhost:3000
 pnpm dev:api          # API only      → http://localhost:3001/api/v1/health
 pnpm typecheck        # tsc --noEmit across every package (topological order)
+pnpm test             # creates/migrates the test DB, then runs Vitest + Supertest
 pnpm build            # build every package that defines a build script
+pnpm db:generate      # prisma generate (after a schema change)
+pnpm db:migrate       # prisma migrate dev (new migration)
 pnpm clean            # clear build output
 ```
 
-Copy `.env.example` to `.env` before the first run if you want to override defaults.
+Environment: the API reads `apps/api/.env` — copy `apps/api/.env.example` to `apps/api/.env`.
 
 ---
 
@@ -111,7 +126,10 @@ Base URL: `http://localhost:3001/api/v1`
 | GET | `/health` | implemented | Liveness + version, no tenant scope required |
 | GET | `/meta` | implemented | Implemented vs planned endpoint inventory |
 | GET | `/tenant-context` | implemented | Echoes the resolved tenant scope; proves the isolation chain |
-| GET | `/organizations/:organizationId` | 501 | Param + tenant validation wired; persistence lands in Phase 1 |
+| POST | `/organizations` | implemented | Creates a tenant (platform-level, **unauthenticated — do not expose**) |
+| GET | `/organizations/:organizationId` | implemented | Tenant scope required; 403 if the path id ≠ scope, 404 if absent |
+| GET | `/organizations/:organizationId/memberships` | implemented | Tenant-scoped membership list |
+| POST | `/organizations/:organizationId/memberships` | implemented | Invites a member (upserts the global user, creates the membership) |
 
 Response envelope (every response, success or failure):
 
@@ -122,6 +140,51 @@ Response envelope (every response, success or failure):
 
 Every response carries an `x-request-id` header; failures echo it as `error.requestId` so a client
 report can be traced to a single request.
+
+---
+
+## Database
+
+Local PostgreSQL runs in Podman (no host install required):
+
+```bash
+podman run -d --name gc3-postgres \
+  -e POSTGRES_USER=gc3 -e POSTGRES_PASSWORD=gc3 -e POSTGRES_DB=gc3_portal \
+  -p 5432:5432 -v gc3-pgdata:/var/lib/postgresql/data docker.io/library/postgres:16
+```
+
+| Database | URL | Used by |
+|---|---|---|
+| `gc3_portal` | `postgresql://gc3:gc3@localhost:5432/gc3_portal?schema=public` | development |
+| `gc3_portal_test` | `postgresql://gc3:gc3@localhost:5432/gc3_portal_test?schema=public` | `pnpm test` only |
+
+Migrations live in `apps/api/prisma/migrations`. Prisma 7 notes that shaped this setup:
+
+- the datasource URL is configured in `apps/api/prisma.config.ts`, not in `schema.prisma`;
+- the `prisma-client` generator writes the client to `apps/api/src/generated/prisma` (git-ignored —
+  run `pnpm db:generate` after cloning or changing the schema);
+- the client requires a driver adapter (`@prisma/adapter-pg`), and env vars are no longer auto-loaded,
+  so the API entrypoint imports `dotenv/config` before reading `process.env`.
+
+### Tenancy model
+
+```text
+Organization 1 ──< Membership >── 1 User
+                     │
+                     └── roles: CLIENT_OWNER | CLIENT_TEAM_MEMBER | CLIENT_APPROVER
+```
+
+`User` is a global identity; `Membership` is the tenant-owned record binding a user to one
+organization, and it is the only path to access. Isolation is enforced twice:
+
+1. **Route layer** — `requireTenantScope` parses `x-organization-id`; `requireMatchingTenant` rejects a
+   route param that differs from the scope (403).
+2. **Repository layer** — every method takes the scope as its first argument (`findByIdScoped`,
+   `listScoped`, `inviteScoped`). There is no unscoped read to call by accident, and a foreign id
+   returns `null`, so tenants cannot probe for each other's existence.
+
+`AuditEvent` records consequential writes (`organization.created`, `membership.invited`); it is
+append-only by convention and scoped to the tenant where applicable.
 
 ---
 
@@ -151,13 +214,29 @@ classes used by shared components.
 | Web app shell + brand tokens | done |
 | API app shell, versioning, error envelope, tenant middleware | done |
 | Shared types, validation, UI primitives | done |
-| Prisma schema + migrations | not started (Phase 1) |
-| Authentication & membership | not started (Phase 1) |
-| CI/CD, linting, test harness | not started (Phase 0 exit criteria) |
+| Prisma schema + migrations (organizations, users, memberships, audit) | done |
+| Tenant-scoped repository layer | done |
+| Integration test harness (Vitest + Supertest, 20 tests) | done |
+| Authentication & session handling | not started — next |
+| Role/permission enforcement beyond membership | not started |
+| CI/CD, linting | not started (Phase 0 exit criteria) |
+
+### Test coverage
+
+`apps/api/tests/foundation.test.ts` pins the seven Phase 0 API behaviours (health, missing scope,
+malformed scope, valid scope, in-scope read, cross-tenant 403, unknown route 404) plus correlation-id
+echo. `apps/api/tests/identity.test.ts` covers persistence, validation detail, duplicate-slug 409,
+audit writes, membership invite/list, and four isolation cases — including a repository-level assertion
+that a foreign tenant id returns `null`.
+
+The suite runs against a real PostgreSQL database (never a mock), with `TRUNCATE ... CASCADE` between
+tests.
 
 ### Immediate next steps
 
-1. Add Prisma + PostgreSQL and the identity/organization schema (Phase 1 slice 1).
-2. Introduce a test harness (Vitest for units, Supertest against `createApp()`).
-3. Add ESLint + Prettier and a CI workflow that runs `pnpm typecheck` and `pnpm build`.
-4. Replace the `501` organization stub with a real repository-backed handler.
+1. Authentication: session issuance, password/OAuth provider, `requireAuth` middleware.
+2. Permission enforcement: map `Role` → allowed actions; gate `POST /organizations` behind
+   `PLATFORM_ADMIN`.
+3. Expand the identity slice: membership status transitions (invite → active → revoked), soft deletes.
+4. ESLint + Prettier and a CI workflow running `typecheck`, `test` and `build`.
+5. Client portal foundation (Phase 2): first authenticated dashboard reading tenant-scoped data.

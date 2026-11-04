@@ -1,3 +1,5 @@
+// Load .env before any module reads process.env (config/env.ts validates at import).
+import 'dotenv/config';
 import { createApp } from './app';
 import { env, SERVICE_NAME, SERVICE_VERSION } from './config/env';
 

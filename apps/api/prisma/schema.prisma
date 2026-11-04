@@ -1,0 +1,129 @@
+// GC3 Portal — identity & tenancy schema (Development Brief §9, Phase 1 slice 1).
+//
+// Tenancy rule: every tenant-owned record carries an explicit organizationId.
+// Users are global identities; access to a tenant is granted only through a
+// Membership, which is the record that binds a user to one organization.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums — storage representation of the contracts in @gc3/types
+// ---------------------------------------------------------------------------
+
+enum OrganizationStatus {
+  PROSPECT
+  ONBOARDING
+  ACTIVE
+  SUSPENDED
+  CHURNED
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  REVOKED
+}
+
+enum ClientRole {
+  CLIENT_OWNER
+  CLIENT_TEAM_MEMBER
+  CLIENT_APPROVER
+}
+
+enum ActorType {
+  USER
+  AI_AGENT
+  SYSTEM
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+model Organization {
+  id        String             @id @default(uuid()) @db.Uuid
+  name      String             @db.VarChar(120)
+  slug      String             @unique @db.VarChar(60)
+  status    OrganizationStatus @default(PROSPECT)
+  timezone  String             @default("Asia/Kolkata") @db.VarChar(64)
+  region    String             @default("global") @db.VarChar(64)
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+  deletedAt DateTime?          @map("deleted_at")
+
+  memberships Membership[]
+  auditEvents AuditEvent[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("organizations")
+}
+
+model User {
+  id         String     @id @default(uuid()) @db.Uuid
+  email      String     @unique @db.VarChar(254)
+  fullName   String     @map("full_name") @db.VarChar(120)
+  status     UserStatus @default(INVITED)
+  lastSeenAt DateTime?  @map("last_seen_at")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+  deletedAt  DateTime?  @map("deleted_at")
+
+  memberships Membership[]
+
+  @@index([status])
+  @@map("users")
+}
+
+/// Binds a user to exactly one organization with one or more client roles.
+/// This is the tenant boundary: no membership, no access.
+model Membership {
+  id             String           @id @default(uuid()) @db.Uuid
+  organizationId String           @map("organization_id") @db.Uuid
+  userId         String           @map("user_id") @db.Uuid
+  roles          ClientRole[]
+  status         MembershipStatus @default(INVITED)
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("memberships")
+}
+
+/// Append-only record of consequential actions (Development Brief §12).
+/// organizationId is nullable for platform-level events that belong to no tenant.
+model AuditEvent {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String?   @map("organization_id") @db.Uuid
+  actorType      ActorType @map("actor_type")
+  actorId        String?   @map("actor_id") @db.Uuid
+  action         String    @db.VarChar(80)
+  targetType     String?   @map("target_type") @db.VarChar(60)
+  targetId       String?   @map("target_id") @db.VarChar(60)
+  metadata       Json?
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@index([action])
+  @@map("audit_events")
+}

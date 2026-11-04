@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import type { ApiSuccess, HealthReport } from '@gc3/types';
-import { formatIssues, organizationIdParamsSchema } from '@gc3/validation';
 import { SERVICE_NAME, SERVICE_VERSION, env } from '../../config/env';
-import { ApiError } from '../../lib/api-error';
-import { requireMatchingTenant, requireTenantScope } from '../../middleware/tenant-scope';
+import { requireTenantScope } from '../../middleware/tenant-scope';
+import { organizationsRouter } from './organizations';
 
 /**
  * `/api/v1` route table (Development Brief §11).
@@ -36,7 +35,7 @@ v1Router.get('/meta', (_request, response) => {
       service: SERVICE_NAME,
       apiVersion: 'v1',
       tenantHeader: 'x-organization-id',
-      implemented: ['/health', '/meta', '/tenant-context'],
+      implemented: ['/health', '/meta', '/tenant-context', '/organizations'],
       planned: [
         '/auth',
         '/users',
@@ -79,26 +78,7 @@ v1Router.get('/tenant-context', requireTenantScope, (request, response) => {
 });
 
 /**
- * Route stub that exercises param validation + tenant matching. Returns 501 on
- * purpose: persistence arrives with Prisma in Phase 1, and a fabricated 200
- * would misrepresent the platform's state.
+ * Tenant-scoped domain routers. Each router owns its own guard chain, so the
+ * version prefix and the isolation rules are applied in exactly one place.
  */
-v1Router.get<{ organizationId: string }>(
-  '/organizations/:organizationId',
-  requireTenantScope,
-  requireMatchingTenant,
-  (request, response, next) => {
-    const parsed = organizationIdParamsSchema.safeParse(request.params);
-
-    if (!parsed.success) {
-      next(ApiError.badRequest('Invalid organization id', formatIssues(parsed.error)));
-      return;
-    }
-
-    next(
-      ApiError.notImplemented(
-        `Organization ${parsed.data.organizationId} endpoint is not wired to persistence yet (Phase 1)`,
-      ),
-    );
-  },
-);
+v1Router.use('/organizations', organizationsRouter);

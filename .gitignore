@@ -36,3 +36,6 @@ test-results/
 # Uploads / local artefacts
 tmp/
 uploads/
+
+# Prisma generated client (regenerate with `pnpm db:generate`)
+apps/api/src/generated/
