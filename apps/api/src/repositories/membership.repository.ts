@@ -4,6 +4,10 @@ import { prisma } from '../db/client';
 import { ApiError } from '../lib/api-error';
 import { generateInviteToken, hashInviteToken } from '../auth/invite';
 
+/**
+ * Shape the mapper needs. Deliberately narrower than a full Prisma row: callers
+ * may or may not have joined `user`, and the mapper must not depend on it.
+ */
 type MembershipRow = {
   id: string;
   organizationId: string;
@@ -12,7 +16,6 @@ type MembershipRow = {
   status: MembershipStatus;
   createdAt: Date;
   updatedAt: Date;
-  user: { email: string; fullName: string };
 };
 
 function toEntity(row: MembershipRow): Membership {
@@ -34,8 +37,15 @@ export interface MembershipWithUser {
 
 /** Result of creating an invitation. `inviteToken` is the plaintext token, returned once. */
 export interface MembershipInvite extends MembershipWithUser {
+  readonly organizationName: string;
   readonly inviteToken: string;
   readonly inviteExpiresAt: string;
+}
+
+/** Result of rotating an invitation token. */
+export interface InviteRotation extends MembershipInvite {
+  /** True when a REVOKED invitation was re-opened rather than a pending one resent. */
+  readonly reopened: boolean;
 }
 
 /** The invitation as seen before authentication (no secrets). */
@@ -123,7 +133,10 @@ export const membershipRepository = {
           inviteTokenHash: invite.tokenHash,
           inviteTokenExpiresAt: invite.expiresAt,
         },
-        include: { user: { select: { email: true, fullName: true } } },
+        include: {
+          user: { select: { email: true, fullName: true } },
+          organization: { select: { name: true } },
+        },
       });
 
       await tx.auditEvent.create({
@@ -136,7 +149,11 @@ export const membershipRepository = {
         },
       });
 
-      return { membership: toEntity(membership), user: membership.user };
+      return {
+        membership: toEntity(membership),
+        user: membership.user,
+        organizationName: membership.organization.name,
+      };
     });
 
     return {
@@ -144,6 +161,131 @@ export const membershipRepository = {
       inviteToken: invite.token,
       inviteExpiresAt: invite.expiresAt.toISOString(),
     };
+  },
+
+  /**
+   * Rotates the invitation token for a pending (or previously revoked) member.
+   *
+   * Rotation invalidates whatever was mailed before — the old link stops working
+   * the moment this commits, because only the new hash is stored.
+   *
+   * A REVOKED membership is re-opened deliberately (an authorised caller is
+   * re-inviting a removed user); an ACTIVE one is refused, because "resend an
+   * invitation" must never be a way to reset a live account's credentials.
+   */
+  async rotateInviteScoped(
+    organizationId: string,
+    userId: string,
+  ): Promise<InviteRotation | null> {
+    const invite = generateInviteToken();
+
+    return prisma.$transaction(async (tx) => {
+      const existing = await tx.membership.findUnique({
+        where: { organizationId_userId: { organizationId, userId } },
+        include: {
+          user: { select: { email: true, fullName: true } },
+          organization: { select: { name: true } },
+        },
+      });
+
+      if (!existing) {
+        return null;
+      }
+
+      if (existing.status === 'ACTIVE') {
+        throw new ApiError(
+          409,
+          'CONFLICT',
+          'This member is already active; an invitation cannot be resent',
+        );
+      }
+
+      const updated = await tx.membership.update({
+        where: { id: existing.id },
+        data: {
+          status: 'INVITED',
+          inviteTokenHash: invite.tokenHash,
+          inviteTokenExpiresAt: invite.expiresAt,
+          inviteAcceptedAt: null,
+        },
+        include: {
+          user: { select: { email: true, fullName: true } },
+          organization: { select: { name: true } },
+        },
+      });
+
+      await tx.auditEvent.create({
+        data: {
+          organizationId,
+          actorType: 'SYSTEM',
+          action: 'membership.invite_resent',
+          targetType: 'membership',
+          targetId: updated.id,
+        },
+      });
+
+      return {
+        membership: toEntity(updated),
+        user: updated.user,
+        organizationName: updated.organization.name,
+        inviteToken: invite.token,
+        inviteExpiresAt: invite.expiresAt.toISOString(),
+        reopened: existing.status === 'REVOKED',
+      };
+    });
+  },
+
+  /**
+   * Revokes a pending invitation: the token is destroyed and the membership is
+   * marked REVOKED, so neither the preview nor the acceptance endpoint will
+   * honour it. Idempotent — revoking an already-revoked invitation succeeds
+   * without further changes.
+   *
+   * ACTIVE members are refused: that is an offboarding operation with its own
+   * semantics (sessions, data retention), not an invitation to cancel.
+   */
+  async revokeInviteScoped(
+    organizationId: string,
+    userId: string,
+  ): Promise<{ membership: Membership; alreadyRevoked: boolean } | null> {
+    return prisma.$transaction(async (tx) => {
+      const existing = await tx.membership.findUnique({
+        where: { organizationId_userId: { organizationId, userId } },
+      });
+
+      if (!existing) {
+        return null;
+      }
+
+      if (existing.status === 'ACTIVE') {
+        throw new ApiError(
+          409,
+          'CONFLICT',
+          'This member is active; cancel the invitation is not valid. Use the offboarding flow',
+        );
+      }
+
+      if (existing.status === 'REVOKED') {
+        return { membership: toEntity(existing), alreadyRevoked: true };
+      }
+
+      const updated = await tx.membership.update({
+        where: { id: existing.id },
+        data: { status: 'REVOKED', inviteTokenHash: null },
+      });
+
+      await tx.auditEvent.create({
+        data: {
+          organizationId,
+          actorType: 'SYSTEM',
+          action: 'membership.invite_revoked',
+          targetType: 'membership',
+          targetId: updated.id,
+        },
+      });
+
+      return { membership: toEntity(updated), alreadyRevoked: false };
+    });
   },
 
   /**

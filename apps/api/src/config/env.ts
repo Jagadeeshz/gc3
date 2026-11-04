@@ -23,6 +23,16 @@ const envSchema = z.object({
   /** How long an invitation remains acceptable. Default 7 days. */
   INVITE_TTL_HOURS: z.coerce.number().int().min(1).max(720).default(168),
 
+  /** Base URL used to build the invite accept link. */
+  WEB_APP_URL: z.url().default('http://localhost:3000'),
+
+  /**
+   * Delivery driver for invitations. `console` and `failing` are rejected in
+   * production by the notification factory; default is `console` outside
+   * production and `noop` inside it.
+   */
+  NOTIFICATION_DRIVER: z.enum(['console', 'memory', 'noop', 'failing']).optional(),
+
   REDIS_URL: z.url().optional(),
 });
 

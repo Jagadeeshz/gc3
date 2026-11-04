@@ -9,7 +9,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 1 | Database & Identity | `e4d8ae7` | ✅ delivered |
 | 2 | Auth & RBAC | `26f8a93` | ✅ delivered |
 | 3 | Invite acceptance | `1aba41a`, `74d0853` | ✅ delivered |
-| 4 | Invite lifecycle & email stub | — | in progress |
+| 4 | Invite lifecycle & email stub | — | ✅ delivered |
 
 ---
 
@@ -184,13 +184,54 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ---
 
+## Slice 4 — Invite lifecycle & email delivery stub  ✅
+
+**Brief refs:** §5.1 (client onboarding), §11.1 (integration adapters), §12 (security)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Resend / rotation | `POST /organizations/:id/memberships/:userId/invite/resend` — new token, old link dies in the same write, expiry extended, 409 if the member is ACTIVE |
+| Revocation | `DELETE /organizations/:id/memberships/:userId/invite` — token destroyed, membership REVOKED, **idempotent**, 409 if ACTIVE |
+| Re-open | Resending a REVOKED invitation re-opens it (`reopened: true`) instead of dead-ending the user |
+| Notification seam | `NotificationService` interface + driver factory: `console` \| `memory` \| `noop` \| `failing` |
+| Delivery receipt | Invite and resend responses carry `delivery: { status, driver, messageId? }` |
+| Security boundary | `console` and `failing` drivers are **refused at boot in production**; production default is `noop` |
+| Resilience | Delivery runs outside the transaction — a provider failure is reported, never rolls back the invitation |
+| Tests | 82 across 6 files (was 66) |
+
+### Evidence
+
+- `pnpm -r typecheck` 5/5 clean · `pnpm test` **82/82 passed** (6 files, ~29 s)
+- No migration required — rotation and revocation reuse the slice-3 columns
+- Live flow: invite → `delivery {status:"sent",driver:"console"}` · resend → `reopened:false`, 43-char
+  token, `rotated=yes` · old link 400 · new link 200 · revoke → `status:"REVOKED"` · link 400 ·
+  revoke again → `alreadyRevoked:true` · resend after revoke → `status:"INVITED", reopened:true`
+- Access control live: resend without a token 401 · revoke without tenant scope 400
+- Server log confirms the delivery path actually fired:
+  `[gc3-api][email:console] to=rahul@lifecycle.example kind=resent org=Lifecycle Co 2 … url=http://localhost:3000/invite/<token>`
+- Audit rows for the run: `membership.invited` ×2, `membership.invite_resent` ×2,
+  `membership.invite_revoked` ×1
+- **Mutation check:** stopping the rotation from storing the new hash, and stopping revoke from
+  clearing the hash, failed **exactly 3** tests — rotation (old link dies / new works), revoke
+  (token destroyed), and re-open-after-revoke — with the other 13 lifecycle tests green. Reverted → 82/82.
+
+### Notes / limits
+
+- `console` prints the full accept URL, which is fine for a developer terminal and unacceptable in
+  production logs — hence the boot-time refusal rather than a documentation note.
+- `noop` reports `skipped`, never `sent`; a green 201 must not imply an email left the building.
+- A real provider (SMTP/SES/Postmark) only needs to implement `NotificationService`.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Invite resend / revoke | Rotate the token, cancel a pending invite |
+| Real email provider | SMTP/SES adapter behind `NotificationService` + delivery audit rows |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |
-| Email delivery | Notification service so production can actually send invites |
+| Offboarding | Revoke an ACTIVE member: session invalidation, audit, data retention rules |
 | Phase 2 | Client portal foundation: authenticated dashboard reading tenant-scoped data |
 | Tooling | ESLint + Prettier, CI running typecheck/test/build |
-| Hardening | Audit login success/failure; password-change flow |

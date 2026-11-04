@@ -95,6 +95,14 @@ export const inviteTokenSchema = z
   .max(200, 'Invite token is too long')
   .regex(/^[A-Za-z0-9_-]+$/, 'Invite token has an invalid format');
 
+/** Route params for invite lifecycle operations: /organizations/:organizationId/memberships/:userId/invite. */
+export const inviteLifecycleParamsSchema = z.object({
+  organizationId: uuidSchema,
+  userId: uuidSchema,
+});
+
+export type InviteLifecycleParams = z.infer<typeof inviteLifecycleParamsSchema>;
+
 export const acceptInviteSchema = z.object({
   token: inviteTokenSchema,
   password: passwordPolicySchema,

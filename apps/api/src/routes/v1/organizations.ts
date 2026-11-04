@@ -3,6 +3,7 @@ import type { ApiSuccess, Membership, Organization, Paginated } from '@gc3/types
 import {
   createOrganizationSchema,
   formatIssues,
+  inviteLifecycleParamsSchema,
   inviteUserSchema,
   organizationIdParamsSchema,
 } from '@gc3/validation';
@@ -12,6 +13,8 @@ import { organizationRepository } from '../../repositories/organization.reposito
 import { membershipRepository } from '../../repositories/membership.repository';
 import { requireMatchingTenant, requireTenantScope } from '../../middleware/tenant-scope';
 import { requireAuth, requirePermission } from '../../middleware/auth';
+import { deliverInvite } from '../../notifications/dispatch';
+import type { DeliveryReceipt } from '../../notifications/types';
 import { env } from '../../config/env';
 
 export const organizationsRouter: Router = Router();
@@ -121,6 +124,18 @@ organizationsRouter.post(
         parsed.data,
       );
 
+      // Delivery is outside the transaction: the membership is already committed,
+      // and a provider outage must not roll an invitation back.
+      const delivery = await deliverInvite({
+        to: result.user.email,
+        fullName: result.user.fullName,
+        organizationName: result.organizationName,
+        roles: result.membership.roles,
+        token: result.inviteToken,
+        expiresAt: result.inviteExpiresAt,
+        kind: 'invitation',
+      });
+
       // The plaintext invite token is a bearer credential. Outside production it
       // is returned so the caller can complete the flow without an email
       // service; in production it must travel by the notification channel only.
@@ -131,6 +146,7 @@ organizationsRouter.post(
           user: { email: string; fullName: string };
           inviteToken?: string;
           inviteExpiresAt?: string;
+          delivery: DeliveryReceipt;
         }
       > = {
         success: true,
@@ -140,6 +156,7 @@ organizationsRouter.post(
           ...(exposeToken
             ? { inviteToken: result.inviteToken, inviteExpiresAt: result.inviteExpiresAt }
             : {}),
+          delivery,
         },
       };
       response.status(201).json(body);
@@ -149,5 +166,103 @@ organizationsRouter.post(
       }
       throw error;
     }
+  },
+);
+
+/**
+ * POST /organizations/:organizationId/memberships/:userId/invite/resend
+ *
+ * Rotates the invitation token and re-delivers it. Rotation is what makes this
+ * safe: the previously issued link is invalidated by the same write, so a leaked
+ * or mis-sent invite cannot be used after a resend.
+ *
+ * A REVOKED membership is re-opened (an authorised caller is re-inviting);
+ * an ACTIVE one is refused with 409.
+ */
+organizationsRouter.post(
+  '/:organizationId/memberships/:userId/invite/resend',
+  requireAuth,
+  requireTenantScope,
+  requirePermission('membership:invite'),
+  requireMatchingTenant,
+  async (request, response) => {
+    const params = inviteLifecycleParamsSchema.safeParse(request.params);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid route parameters', formatIssues(params.error));
+    }
+
+    const rotation = await membershipRepository.rotateInviteScoped(
+      request.organizationId as string,
+      params.data.userId,
+    );
+
+    if (!rotation) {
+      throw ApiError.notFound('No membership for that user in this organization');
+    }
+
+    const delivery = await deliverInvite({
+      to: rotation.user.email,
+      fullName: rotation.user.fullName,
+      organizationName: rotation.organizationName,
+      roles: rotation.membership.roles,
+      token: rotation.inviteToken,
+      expiresAt: rotation.inviteExpiresAt,
+      kind: 'resent',
+    });
+
+    const exposeToken = env.NODE_ENV !== 'production';
+
+    response.status(200).json({
+      success: true,
+      data: {
+        ...rotation.membership,
+        user: rotation.user,
+        reopened: rotation.reopened,
+        ...(exposeToken
+          ? { inviteToken: rotation.inviteToken, inviteExpiresAt: rotation.inviteExpiresAt }
+          : {}),
+        delivery,
+      },
+    });
+  },
+);
+
+/**
+ * DELETE /organizations/:organizationId/memberships/:userId/invite
+ *
+ * Cancels a pending invitation: the token is destroyed and the membership is
+ * marked REVOKED. Idempotent. Refuses ACTIVE members with 409 — removing a live
+ * member is offboarding, which needs its own semantics (sessions, retention).
+ */
+organizationsRouter.delete(
+  '/:organizationId/memberships/:userId/invite',
+  requireAuth,
+  requireTenantScope,
+  requirePermission('membership:revoke'),
+  requireMatchingTenant,
+  async (request, response) => {
+    const params = inviteLifecycleParamsSchema.safeParse(request.params);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid route parameters', formatIssues(params.error));
+    }
+
+    const result = await membershipRepository.revokeInviteScoped(
+      request.organizationId as string,
+      params.data.userId,
+    );
+
+    if (!result) {
+      throw ApiError.notFound('No membership for that user in this organization');
+    }
+
+    response.status(200).json({
+      success: true,
+      data: {
+        membership: result.membership,
+        alreadyRevoked: result.alreadyRevoked,
+      },
+    });
   },
 );

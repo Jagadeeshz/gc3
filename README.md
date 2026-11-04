@@ -4,10 +4,11 @@ Multi-tenant operating platform for **Global Cloud Capability & Consulting (GC³
 delivery operations, pod workspaces, finance, and AI-augmented workflows.
 
 Built to the **GC3 Development Brief v1.0** (`Development-Breif.md` in this folder). The repository is
-at **Phase 1, slices 1–3**: identity and tenancy are persisted in PostgreSQL, every tenant route is
-authenticated and authorized through a role → permission map, and client users join through a hashed,
-single-use invitation. Integration tests pin the API contract, the tenancy rules, the authorization
-matrix and the invite flow.
+at **Phase 1, slices 1–4**: identity and tenancy are persisted in PostgreSQL, every tenant route is
+authenticated and authorized through a role → permission map, client users join through a hashed,
+single-use invitation that can be rotated or revoked, and invitations are delivered through a
+pluggable notification seam. Integration tests pin the API contract, the tenancy rules, the
+authorization matrix and the full invite lifecycle.
 
 ---
 
@@ -139,6 +140,8 @@ Base URL: `http://localhost:3001/api/v1`
 | GET | `/organizations/:organizationId` | bearer + scope | `organization:read`; 403 if path ≠ scope, 404 if absent |
 | GET | `/organizations/:organizationId/memberships` | bearer + scope | `membership:read` (CLIENT_OWNER or staff) |
 | POST | `/organizations/:organizationId/memberships` | bearer + scope | `membership:invite` (CLIENT_OWNER or staff) |
+| POST | `/organizations/:organizationId/memberships/:userId/invite/resend` | bearer + scope | `membership:invite` — rotates the token, 409 if the member is ACTIVE |
+| DELETE | `/organizations/:organizationId/memberships/:userId/invite` | bearer + scope | `membership:revoke` — revokes a pending invite, idempotent, 409 if ACTIVE |
 
 `bearer + scope` means: `Authorization: Bearer <token>` **and** `x-organization-id: <uuid>`.
 
@@ -207,8 +210,41 @@ POST /auth/accept-invite              → { token, password } → session, user 
 - In production the plaintext token is **not** returned by the API — it must travel over the
   notification channel (not yet built).
 
-**Not yet implemented:** refresh tokens, revocation lists, login rate limiting/lockout, invite
-resend/rotate, and email delivery.
+**Invitation lifecycle.**
+
+```text
+POST   /organizations/:id/memberships/:userId/invite/resend   → rotate + re-deliver
+DELETE /organizations/:id/memberships/:userId/invite          → revoke (idempotent)
+```
+
+- **Resend rotates** the token: the previously mailed link stops working in the same write, so a
+  mis-sent or leaked invite cannot be replayed after a resend.
+- **Revoke** destroys the token and marks the membership `REVOKED`; repeating the call is a no-op
+  (`alreadyRevoked: true`).
+- Both refuse an **ACTIVE** member with 409 — resending must never become a credential reset, and
+  cancelling an active member is offboarding, not invitation management.
+- Resending a **REVOKED** invitation re-opens it (`reopened: true`) instead of dead-ending the user.
+
+### Notification delivery
+
+The API never talks to a mail provider directly. It builds a typed payload
+(`apps/api/src/notifications/types.ts`) and hands it to the driver chosen by `NOTIFICATION_DRIVER`:
+
+| Driver | Behaviour | Allowed |
+|---|---|---|
+| `console` | prints the accept URL to stdout | dev/test only |
+| `memory` | captures messages in an outbox for assertions | any |
+| `noop` | sends nothing; the receipt says `skipped` | any (production default) |
+| `failing` | always fails — error injection for tests | dev/test only |
+
+**Security boundary:** `console` (would put tokens in container logs) and `failing` are refused at
+boot in production — the process throws instead of starting. Every invite/resend response carries
+`delivery: { status: "sent" | "failed" | "skipped", driver, messageId? }`. Delivery happens *outside*
+the database transaction, so a provider outage is reported in the response rather than rolling back a
+committed invitation.
+
+**Not yet implemented:** refresh tokens, revocation lists, login rate limiting/lockout, and a real
+email provider — satisfying the `NotificationService` interface is the only change required.
 
 ---
 
@@ -288,8 +324,10 @@ classes used by shared components.
 | Auth: JWT issuance, `requireAuth`, scrypt credentials, bootstrap script | done |
 | RBAC: ClientRole/StaffRole → permission map, platform-admin gate | done |
 | Invite acceptance: hashed one-time token, password setup, activation | done |
-| Integration test harness (Vitest + Supertest, 66 tests) | done |
-| Invite resend / revoke, email delivery | not started |
+| Invite lifecycle: resend/rotation, revocation, re-open | done |
+| Notification seam with driver factory + production guards | done |
+| Integration test harness (Vitest + Supertest, 82 tests) | done |
+| Real email provider (SMTP/SES/Postmark) behind the interface | not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
 
@@ -302,6 +340,7 @@ classes used by shared components.
 | `auth.test.ts` | login success/failure, no account enumeration, invited-without-password, suspended account, `/auth/me`, tampered/expired tokens, `lastSeenAt` |
 | `rbac.test.ts` | route-level permission matrix, `PLATFORM_ADMIN` gate, INVITED/REVOKED membership denial, post-issuance suspension and revocation |
 | `invite.test.ts` | invite → preview → activate → login, single-use token, concurrent double-accept, expired/revoked/unknown tokens, password policy, no half-activated account |
+| `invite-lifecycle.test.ts` | resend rotation (old link dies, new one works), expiry extension, re-open after revoke, 409 on ACTIVE, RBAC denials, idempotent revoke, delivery dispatch, provider-failure resilience, noop honesty |
 
 All suites run against a real PostgreSQL database (never a mock) with `TRUNCATE ... CASCADE` between
 cases. The permission guard was verified load-bearing: disabling `requirePermission` failed exactly

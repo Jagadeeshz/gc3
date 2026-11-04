@@ -26,6 +26,9 @@ export default defineConfig({
       // Fixed test secret: tokens are minted and verified inside the suite only.
       AUTH_SECRET: 'test-secret-0123456789-0123456789-abcdef',
       AUTH_TOKEN_TTL_SECONDS: '900',
+      // Capture invitations in memory so dispatch can be asserted.
+      NOTIFICATION_DRIVER: 'memory',
+      WEB_APP_URL: 'http://localhost:3000',
     },
   },
 });
