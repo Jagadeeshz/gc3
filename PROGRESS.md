@@ -20,7 +20,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 4 | Invite lifecycle & email stub | `7348d0f`, `65c2aff` | ✅ delivered |
 | 5 | Real email provider & delivery audit | `7a9c745`, `ff82ac4` | ✅ delivered |
 | 6 | Phase 2 · Service request data layer | `8fa7acc`, `bdc98ca` | ✅ delivered |
-| 7 | Phase 2 · Service request API | — | ✅ delivered |
+| 7 | Phase 2 · Service request API | `eb3d433` | ✅ delivered |
 
 ---
 
@@ -331,6 +331,7 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ## Slice 7 — Phase 2 · Service request API  ✅
 
+**Commit:** `eb3d433` — feat(requests): service request API with RBAC and workflow guards
 **Brief refs:** §5.2 (request lifecycle), §5.4 (deliverable approval), §11 (API), §12 (tenancy), §8.3 (agent boundary)
 
 ### What shipped
