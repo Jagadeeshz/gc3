@@ -7,8 +7,8 @@ Built to the **GC3 Development Brief v1.0** (`Development-Breif.md` in this fold
 at **Phase 2** (Phase 1 complete): identity and tenancy persist in PostgreSQL, every tenant route is
 authenticated and authorized through a role → permission map, client users join through a hashed,
 single-use invitation that can be rotated or revoked, invitations are delivered over SMTP with a
-permanent delivery audit, and Phase 2 has landed its data layer — service categories, requests,
-comments and deliverables, all tenant-scoped with no unscoped read in existence.
+permanent delivery audit, and Phase 2 now spans both the data layer and the HTTP API for service
+requests, comments and deliverables — tenant-scoped end to end and permission-guarded per role.
 
 ---
 
@@ -143,6 +143,16 @@ Base URL: `http://localhost:3001/api/v1`
 | POST | `/organizations/:organizationId/memberships` | bearer + scope | `membership:invite` (CLIENT_OWNER or staff) |
 | POST | `/organizations/:organizationId/memberships/:userId/invite/resend` | bearer + scope | `membership:invite` — rotates the token, 409 if the member is ACTIVE |
 | DELETE | `/organizations/:organizationId/memberships/:userId/invite` | bearer + scope | `membership:revoke` — revokes a pending invite, idempotent, 409 if ACTIVE |
+| POST | `/service-requests` | bearer + scope | `request:create` — requester is the caller |
+| GET | `/service-requests` | bearer + scope | `request:read` — filters `status`, `priority`, `categoryId`, `requesterId`, `page`, `pageSize` |
+| GET | `/service-requests/:requestId` | bearer + scope | `request:read` — 404 for another tenant's id |
+| PATCH | `/service-requests/:requestId` | bearer + scope | `request:update` — title, description, category, assignee, priority, dueAt |
+| POST | `/service-requests/:requestId/status` | bearer + scope | `request:update` — workflow transition, 409 when illegal, idempotent when repeated |
+| GET | `/service-requests/:requestId/comments` | bearer + scope | `request:read` — internal notes returned to staff only |
+| POST | `/service-requests/:requestId/comments` | bearer + scope | `request:comment` — `isInternal` ignored for client actors |
+| GET | `/service-requests/:requestId/deliverables` | bearer + scope | `deliverable:read` |
+| POST | `/service-requests/:requestId/deliverables` | bearer + scope | `deliverable:create` |
+| PATCH | `/service-requests/:requestId/deliverables/:deliverableId/status` | bearer + scope | `deliverable:review` — release requires a prior human approval; AI actors blocked |
 
 `bearer + scope` means: `Authorization: Bearer <token>` **and** `x-organization-id: <uuid>`.
 
@@ -184,6 +194,18 @@ rather than at expiry. `requireAuth` re-reads the user row on every request for 
 
 A tenant-scoped request combines the caller's **ACTIVE** membership permissions with their staff
 permissions. `INVITED` and `REVOKED` memberships contribute nothing.
+
+**Phase 2 permissions** (service requests and deliverables):
+
+| Permission | Client owner | Team member | Approver | Platform admin | Ops mgr | Pod mgr | Specialist | Account mgr | Finance |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| `request:read` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `request:create` | ✅ | ✅ | — | ✅ | ✅ | ✅ | — | — | — |
+| `request:update` | ✅ | — | — | ✅ | ✅ | ✅ | — | — | — |
+| `request:comment` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
+| `deliverable:read` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `deliverable:create` | — | — | — | ✅ | ✅ | ✅ | ✅ | — | — |
+| `deliverable:review` | ✅ | — | ✅ | ✅ | ✅ | ✅ | — | — | — |
 
 **Bootstrapping.** There is no public registration. Provision staff out of band:
 
@@ -366,8 +388,9 @@ classes used by shared components.
 | SMTP driver (nodemailer) with HTML/text templates + escaping | done |
 | Delivery audit table (`notification_deliveries`) with SENT/FAILED/SKIPPED | done |
 | Phase 2 data layer: categories, requests, comments, deliverables (tenant-scoped) | done |
-| Phase 2 API: Zod contracts + `/service-requests` routes | not started — next |
-| Integration test harness (Vitest + Supertest, 110 tests) | done |
+| Phase 2 API: Zod contracts + `/service-requests` routes with RBAC guards | done |
+| Phase 2 UI: portal screens for requests and deliverables | not started — next |
+| Integration test harness (Vitest + Supertest, 138 tests) | done |
 | Delivery retry/backoff, bounce handling, delivery read API | not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
@@ -385,6 +408,7 @@ classes used by shared components.
 | `delivery-audit.test.ts` | audit rows for SENT/RESENT/FAILED/SKIPPED, `auditId` ↔ row identity, tenant scoping |
 | `email-smtp.test.ts` | real SMTP relay round-trip, API→relay→accept-link, HTML escaping, unreachable relay recorded as FAILED |
 | `service-requests.test.ts` | Phase 2 data layer: per-tenant categories, request CRUD + lifecycle timestamps, cross-tenant read/write refusal, internal-note filtering, deliverable approval/release rules |
+| `service-request-api.test.ts` | HTTP layer: auth/scope gates, permission boundaries per role, transition rules (409 + idempotency), comment visibility, deliverable approval/release, AI-actor block, cross-tenant 404s |
 
 All suites run against a real PostgreSQL database (never a mock) with `TRUNCATE ... CASCADE` between
 cases. The permission guard was verified load-bearing: disabling `requirePermission` failed exactly
@@ -392,8 +416,7 @@ the seven negative-authorization tests and nothing else.
 
 ### Immediate next steps
 
-1. Phase 2 step 2: Zod contracts and `/api/v1/service-requests` routes over this data layer, with
-   permission-based guards (`requests:create`, `requests:read`, `deliverables:release`).
+1. Phase 2 step 3: service **category** routes, then the portal UI that consumes these endpoints.
 2. Delivery retry/backoff for FAILED rows, plus a `GET /organizations/:id/notifications` read API.
 3. Token lifecycle: refresh tokens, revocation, login rate limiting.
 4. Offboarding an ACTIVE member (session invalidation, retention rules).

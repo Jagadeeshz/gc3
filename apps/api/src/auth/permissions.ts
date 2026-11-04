@@ -18,6 +18,13 @@ const ALL_PERMISSIONS: readonly Permission[] = [
   'membership:invite',
   'membership:revoke',
   'tenant:context',
+  'request:read',
+  'request:create',
+  'request:update',
+  'request:comment',
+  'deliverable:read',
+  'deliverable:create',
+  'deliverable:review',
 ];
 
 export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = {
@@ -31,12 +38,45 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'membership:read',
     'membership:invite',
     'tenant:context',
+    'request:read',
+    'request:create',
+    'request:update',
+    'request:comment',
+    'deliverable:read',
+    'deliverable:create',
+    'deliverable:review',
   ],
-  // Owns the client relationship; read-only over membership.
-  ACCOUNT_MANAGER: ['organization:read', 'membership:read', 'tenant:context'],
-  POD_MANAGER: ['organization:read', 'tenant:context'],
-  SPECIALIST: ['organization:read', 'tenant:context'],
-  FINANCE_MANAGER: ['organization:read', 'tenant:context'],
+  // Owns the client relationship; read-only over membership and delivery output.
+  ACCOUNT_MANAGER: [
+    'organization:read',
+    'membership:read',
+    'tenant:context',
+    'request:read',
+    'request:comment',
+    'deliverable:read',
+  ],
+  // Runs the pod: assigns and progresses work, produces deliverables.
+  POD_MANAGER: [
+    'organization:read',
+    'tenant:context',
+    'request:read',
+    'request:create',
+    'request:update',
+    'request:comment',
+    'deliverable:read',
+    'deliverable:create',
+    'deliverable:review',
+  ],
+  // Production team member: does the work, cannot move the workflow alone.
+  SPECIALIST: [
+    'organization:read',
+    'tenant:context',
+    'request:read',
+    'request:comment',
+    'deliverable:read',
+    'deliverable:create',
+  ],
+  FINANCE_MANAGER: ['organization:read', 'tenant:context', 'request:read', 'deliverable:read'],
 };
 
 export const CLIENT_ROLE_PERMISSIONS: Record<ClientRole, readonly Permission[]> = {
@@ -47,11 +87,31 @@ export const CLIENT_ROLE_PERMISSIONS: Record<ClientRole, readonly Permission[]> 
     'membership:invite',
     'membership:revoke',
     'tenant:context',
+    'request:read',
+    'request:create',
+    'request:update',
+    'request:comment',
+    'deliverable:read',
+    'deliverable:review',
   ],
-  // Day-to-day contributor: sees the tenant, cannot manage people.
-  CLIENT_TEAM_MEMBER: ['organization:read', 'tenant:context'],
+  // Day-to-day contributor: raises requests, cannot manage people or approve.
+  CLIENT_TEAM_MEMBER: [
+    'organization:read',
+    'tenant:context',
+    'request:read',
+    'request:create',
+    'request:comment',
+    'deliverable:read',
+  ],
   // Signs off on deliverables; deliberately cannot manage people.
-  CLIENT_APPROVER: ['organization:read', 'tenant:context'],
+  CLIENT_APPROVER: [
+    'organization:read',
+    'tenant:context',
+    'request:read',
+    'request:comment',
+    'deliverable:read',
+    'deliverable:review',
+  ],
 };
 
 /** Permissions a caller holds with no tenant in play. */

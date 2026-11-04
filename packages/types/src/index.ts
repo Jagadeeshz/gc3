@@ -187,7 +187,14 @@ export type Permission =
   | 'membership:read'
   | 'membership:invite'
   | 'membership:revoke'
-  | 'tenant:context';
+  | 'tenant:context'
+  | 'request:read'
+  | 'request:create'
+  | 'request:update'
+  | 'request:comment'
+  | 'deliverable:read'
+  | 'deliverable:create'
+  | 'deliverable:review';
 
 /** The authenticated caller, resolved from a verified access token. */
 export interface AuthActor {
@@ -257,6 +264,39 @@ export type DeliverableStatus =
 
 /** Statuses that close a request; the service stamps `closedAt` on entry. */
 export const TERMINAL_REQUEST_STATUSES: readonly ServiceRequestStatus[] = ['CLOSED', 'CANCELLED'];
+
+/**
+ * Legal status transitions (Development Brief §5.2).
+ *
+ * Enforced at the HTTP layer, not in the repository: the repository stays a
+ * permissive data primitive, and the API owns the workflow contract. A repeat of
+ * the current status is treated as an idempotent no-op rather than an error, so
+ * a retried request is safe.
+ */
+export const SERVICE_REQUEST_TRANSITIONS: Readonly<
+  Record<ServiceRequestStatus, readonly ServiceRequestStatus[]>
+> = {
+  DRAFT: ['SUBMITTED', 'CANCELLED'],
+  SUBMITTED: ['TRIAGE', 'IN_PROGRESS', 'CANCELLED'],
+  TRIAGE: ['IN_PROGRESS', 'BLOCKED', 'CANCELLED'],
+  IN_PROGRESS: ['BLOCKED', 'IN_REVIEW', 'CANCELLED'],
+  BLOCKED: ['IN_PROGRESS', 'CANCELLED'],
+  IN_REVIEW: ['IN_PROGRESS', 'DELIVERED', 'CANCELLED'],
+  DELIVERED: ['CLOSED', 'IN_PROGRESS'],
+  CLOSED: [],
+  CANCELLED: [],
+};
+
+export function isAllowedRequestTransition(
+  from: ServiceRequestStatus,
+  to: ServiceRequestStatus,
+): boolean {
+  if (from === to) {
+    return true;
+  }
+
+  return SERVICE_REQUEST_TRANSITIONS[from].includes(to);
+}
 
 /** A service a tenant can raise requests under. Tenant-owned, never global. */
 export interface ServiceCategory extends Timestamps, TenantScoped, SoftDeletable {

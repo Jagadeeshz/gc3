@@ -110,6 +110,99 @@ export const acceptInviteSchema = z.object({
 
 export type AcceptInviteInput = z.infer<typeof acceptInviteSchema>;
 
+// ---------------------------------------------------------------------------
+// Phase 2 — service requests (Development Brief §5.2)
+// ---------------------------------------------------------------------------
+
+export const serviceRequestStatusSchema = z.enum([
+  'DRAFT',
+  'SUBMITTED',
+  'TRIAGE',
+  'IN_PROGRESS',
+  'BLOCKED',
+  'IN_REVIEW',
+  'DELIVERED',
+  'CLOSED',
+  'CANCELLED',
+]);
+
+export const serviceRequestPrioritySchema = z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']);
+
+export const deliverableStatusSchema = z.enum([
+  'PENDING',
+  'IN_PROGRESS',
+  'IN_REVIEW',
+  'APPROVED',
+  'REJECTED',
+  'RELEASED',
+]);
+
+export const serviceRequestIdParamsSchema = z.object({ requestId: uuidSchema });
+
+export const deliverableParamsSchema = z.object({
+  requestId: uuidSchema,
+  deliverableId: uuidSchema,
+});
+
+export const createServiceRequestSchema = z.object({
+  title: z.string().trim().min(3, 'Give the request a title').max(200),
+  description: z.string().trim().min(10, 'Describe the work in a little more detail').max(20_000),
+  categoryId: uuidSchema.optional(),
+  assigneeId: uuidSchema.optional(),
+  priority: serviceRequestPrioritySchema.default('NORMAL'),
+  dueAt: z.coerce.date().optional(),
+  /** Clients may submit straight away; DRAFT is the default. */
+  status: z.enum(['DRAFT', 'SUBMITTED']).default('DRAFT'),
+});
+
+export type CreateServiceRequestInput = z.infer<typeof createServiceRequestSchema>;
+
+/** Partial update. `.refine` stops an empty body from being a silent no-op. */
+export const updateServiceRequestSchema = z
+  .object({
+    title: z.string().trim().min(3).max(200).optional(),
+    description: z.string().trim().min(10).max(20_000).optional(),
+    categoryId: uuidSchema.nullable().optional(),
+    assigneeId: uuidSchema.nullable().optional(),
+    priority: serviceRequestPrioritySchema.optional(),
+    dueAt: z.coerce.date().nullable().optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update',
+  });
+
+export type UpdateServiceRequestInput = z.infer<typeof updateServiceRequestSchema>;
+
+export const changeServiceRequestStatusSchema = z.object({
+  status: serviceRequestStatusSchema,
+  note: z.string().trim().max(1_000).optional(),
+});
+
+export const createRequestCommentSchema = z.object({
+  body: z.string().trim().min(1, 'Write a comment').max(5_000),
+  /** Staff-only note. Ignored for client actors by the route. */
+  isInternal: z.boolean().default(false),
+});
+
+export const listServiceRequestsQuerySchema = paginationSchema.extend({
+  status: serviceRequestStatusSchema.optional(),
+  priority: serviceRequestPrioritySchema.optional(),
+  categoryId: uuidSchema.optional(),
+  requesterId: uuidSchema.optional(),
+});
+
+export type ListServiceRequestsQuery = z.infer<typeof listServiceRequestsQuerySchema>;
+
+export const createDeliverableSchema = z.object({
+  title: z.string().trim().min(3).max(200),
+  description: z.string().trim().max(1_000).optional(),
+  fileUrl: z.url().max(500).optional(),
+});
+
+export const changeDeliverableStatusSchema = z.object({
+  status: deliverableStatusSchema,
+});
+
 export const createOrganizationSchema = z.object({
   name: z.string().trim().min(2).max(120),
   slug: organizationSlugSchema,

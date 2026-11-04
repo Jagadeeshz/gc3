@@ -140,6 +140,15 @@ export function authPost(path: string, token: string, body: unknown, organizatio
   return organizationId ? req.set(ORG_HEADER, organizationId) : req;
 }
 
+/** Bearer-authenticated PATCH, optionally tenant-scoped. */
+export function authPatch(path: string, token: string, body: unknown, organizationId?: string) {
+  const req = request(app)
+    .patch(path)
+    .set('authorization', `Bearer ${token}`)
+    .send(body as object);
+  return organizationId ? req.set(ORG_HEADER, organizationId) : req;
+}
+
 // ---------------------------------------------------------------------------
 // Tenants
 // ---------------------------------------------------------------------------

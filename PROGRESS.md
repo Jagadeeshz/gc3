@@ -20,6 +20,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 4 | Invite lifecycle & email stub | `7348d0f`, `65c2aff` | ✅ delivered |
 | 5 | Real email provider & delivery audit | `7a9c745`, `ff82ac4` | ✅ delivered |
 | 6 | Phase 2 · Service request data layer | `8fa7acc`, `bdc98ca` | ✅ delivered |
+| 7 | Phase 2 · Service request API | — | ✅ delivered |
 
 ---
 
@@ -328,11 +329,53 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ---
 
+## Slice 7 — Phase 2 · Service request API  ✅
+
+**Brief refs:** §5.2 (request lifecycle), §5.4 (deliverable approval), §11 (API), §12 (tenancy), §8.3 (agent boundary)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Zod contracts | create / update / status-change / comment / deliverable schemas, plus param and list-query schemas in `@gc3/validation` |
+| Routes | `POST · GET /service-requests`, `GET · PATCH /:id`, `POST /:id/status`, `GET · POST /:id/comments`, `GET · POST /:id/deliverables`, `PATCH /:id/deliverables/:deliverableId/status` |
+| Permissions | seven new: `request:read`, `request:create`, `request:update`, `request:comment`, `deliverable:read`, `deliverable:create`, `deliverable:review` — mapped across 3 client and 6 staff roles |
+| Workflow | transition table lives in `@gc3/types` and is enforced at the API (409 on illegal); repeating the current status is an idempotent no-op |
+| Governance | release requires a prior human approval (repository + route); an `AI_AGENT` actor is blocked before the permission check even runs |
+| Comments | a client can never author an internal note — the flag is downgraded, not rejected |
+| Tests | 138 across 10 files (was 110) |
+
+### Evidence
+
+- `pnpm -r typecheck` 5/5 clean · `pnpm test` **138/138 passed** (10 files, ~55 s)
+- 28 new HTTP tests: auth/scope gates, permission boundaries, transitions, comments, deliverables,
+  isolation, validation
+- Live run against the dev API:
+  create → `201` `REQ-7A77D2A5` · list+filter → `total: 1` · `SUBMITTED → IN_PROGRESS` → `200` ·
+  `IN_PROGRESS → CLOSED` → `409 CONFLICT` · comment → `201` · deliverable → `201 PENDING` ·
+  release before approval → `403` · approve → `200` (approvedById set) · release → `200 RELEASED` ·
+  own scope `200` / foreign scope `404` / no token `401` / no scope `400`
+- `psql`: request `IN_PROGRESS` with `submitted_at` stamped; deliverable `RELEASED` with
+  `approved_by_id` and `released_at` set; two internal comments
+- **Mutation check:** disabling `requirePermission` failed **exactly 4** tests — the three
+  permission-boundary denials and the deliverable-review denial — while all 24 others (isolation,
+  validation, transitions, AI guard) stayed green. Reverted → 138/138.
+
+### Notes / limits
+
+- `priority` is filtered in memory over the returned page rather than in SQL; correct but it means a
+  priority filter applies after pagination. Documented in the route.
+- Service **categories** still have no HTTP surface — requests accept a `categoryId`, but catalogue
+  management is the next step.
+- No pagination-link headers; clients get `page` / `pageSize` / `total` and must build links.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Phase 2 step 2 | Zod contracts + `/api/v1/service-requests` routes on top of this data layer |
+| Phase 2 step 3 | Service category routes + portal UI reading these endpoints |
 | Delivery retry & backoff | Retry FAILED deliveries; bounce/complaint suppression list |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |

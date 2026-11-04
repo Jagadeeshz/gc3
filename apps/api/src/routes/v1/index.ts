@@ -5,6 +5,7 @@ import { requireTenantScope } from '../../middleware/tenant-scope';
 import { requireAuth, requirePermission } from '../../middleware/auth';
 import { authRouter } from './auth';
 import { organizationsRouter } from './organizations';
+import { serviceRequestsRouter } from './service-requests';
 
 /**
  * `/api/v1` route table (Development Brief §11).
@@ -37,7 +38,14 @@ v1Router.get('/meta', (_request, response) => {
       service: SERVICE_NAME,
       apiVersion: 'v1',
       tenantHeader: 'x-organization-id',
-      implemented: ['/health', '/meta', '/auth', '/tenant-context', '/organizations'],
+      implemented: [
+        '/health',
+        '/meta',
+        '/auth',
+        '/tenant-context',
+        '/organizations',
+        '/service-requests',
+      ],
       planned: [
         '/users',
         '/organizations',
@@ -96,3 +104,6 @@ v1Router.use('/auth', authRouter);
  * version prefix and the isolation rules are applied in exactly one place.
  */
 v1Router.use('/organizations', organizationsRouter);
+
+/** Phase 2: client portal work items, tenant-scoped end to end. */
+v1Router.use('/service-requests', serviceRequestsRouter);

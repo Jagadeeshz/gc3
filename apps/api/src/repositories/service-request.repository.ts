@@ -116,6 +116,51 @@ export const serviceRequestRepository = {
     return toEntity(row);
   },
 
+  /**
+   * Field updates. The same tenant-scoped guard applies: a foreign id matches
+   * nothing and mutates nothing. Category reassignment re-validates that the
+   * category belongs to this tenant.
+   */
+  async updateScoped(
+    organizationId: string,
+    id: string,
+    patch: {
+      title?: string;
+      description?: string;
+      categoryId?: string | null;
+      assigneeId?: string | null;
+      priority?: ServiceRequestPriority;
+      dueAt?: Date | null;
+    },
+  ): Promise<ServiceRequest | null> {
+    const existing = await prisma.serviceRequest.findFirst({
+      where: { id, organizationId, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return null;
+    }
+
+    if (patch.categoryId) {
+      const category = await prisma.serviceCategory.findFirst({
+        where: { id: patch.categoryId, organizationId, deletedAt: null },
+        select: { id: true },
+      });
+
+      if (!category) {
+        throw ApiError.notFound('Service category not found in this organization');
+      }
+    }
+
+    await prisma.serviceRequest.updateMany({
+      where: { id, organizationId, deletedAt: null },
+      data: patch,
+    });
+
+    return this.findByIdScoped(organizationId, id);
+  },
+
   async findByIdScoped(organizationId: string, id: string): Promise<ServiceRequest | null> {
     const row = await prisma.serviceRequest.findFirst({
       where: { id, organizationId, deletedAt: null },
