@@ -10,7 +10,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 2 | Auth & RBAC | `26f8a93` | ✅ delivered |
 | 3 | Invite acceptance | `1aba41a`, `74d0853` | ✅ delivered |
 | 4 | Invite lifecycle & email stub | `7348d0f`, `65c2aff` | ✅ delivered |
-| 5 | Real email provider & delivery audit | — | ✅ delivered |
+| 5 | Real email provider & delivery audit | `7a9c745` | ✅ delivered |
 
 ---
 
@@ -231,6 +231,7 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ## Slice 5 — Real email provider & delivery audit  ✅
 
+**Commit:** `7a9c745` — feat(email): SMTP driver and a permanent delivery audit
 **Brief refs:** §11.1 (integration adapters), §12 (auditability), §14 (notifications)
 
 ### What shipped
