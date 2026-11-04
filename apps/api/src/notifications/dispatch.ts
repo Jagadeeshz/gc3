@@ -1,8 +1,14 @@
 import type { ClientRole } from '@gc3/types';
 import { buildInviteUrl, notifications } from './index';
 import type { DeliveryReceipt } from './types';
+import { notificationRepository } from '../repositories/notification.repository';
 
 export interface DeliverInviteInput {
+  /** Tenant context, required to attribute the delivery audit row. */
+  readonly organizationId: string;
+  readonly membershipId: string;
+  readonly userId: string;
+
   readonly to: string;
   readonly fullName: string;
   readonly organizationName: string;
@@ -12,20 +18,28 @@ export interface DeliverInviteInput {
   readonly kind: 'invitation' | 'resent';
 }
 
+/** Receipt plus the audit row that recorded it. */
+export type DeliveryOutcome = DeliveryReceipt & { readonly auditId: string | null };
+
 /**
- * Hands an invitation to the configured notification service.
+ * Hands an invitation to the configured notification service and records the
+ * attempt in `notification_deliveries`.
  *
- * Delivery is deliberately *not* part of the database transaction: an invite is
- * a real record the moment the membership commits, and a provider outage must
- * not roll it back. A failure is reported in the response as
- * `delivery.status = "failed"` (plus a server log) so the caller can resend,
- * rather than being silently swallowed.
+ * Two independent failure domains, handled differently on purpose:
+ *
+ *  - **Delivery** is outside any transaction. The membership is already
+ *    committed; a provider outage must not roll an invitation back. A failure is
+ *    returned as `status: "failed"` so the caller can resend.
+ *  - **Audit** must never break the request either. If the audit insert fails we
+ *    log loudly and return `auditId: null` — losing the audit row is bad, but
+ *    failing a committed invite because of it is worse.
  */
-export async function deliverInvite(input: DeliverInviteInput): Promise<DeliveryReceipt> {
+export async function deliverInvite(input: DeliverInviteInput): Promise<DeliveryOutcome> {
   const service = notifications.current;
+  let receipt: DeliveryReceipt;
 
   try {
-    return await service.sendInvite({
+    receipt = await service.sendInvite({
       to: input.to,
       fullName: input.fullName,
       organizationName: input.organizationName,
@@ -37,7 +51,27 @@ export async function deliverInvite(input: DeliverInviteInput): Promise<Delivery
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[gc3-api][notifications] delivery failed via ${service.driver}: ${message}`);
-
-    return { status: 'failed', driver: service.driver, error: message };
+    receipt = { status: 'failed', driver: service.driver, error: message };
   }
+
+  let auditId: string | null = null;
+
+  try {
+    auditId = await notificationRepository.record({
+      organizationId: input.organizationId,
+      membershipId: input.membershipId,
+      userId: input.userId,
+      kind: input.kind,
+      driver: receipt.driver,
+      status: receipt.status,
+      recipient: input.to,
+      ...(receipt.messageId ? { messageId: receipt.messageId } : {}),
+      ...(receipt.error ? { error: receipt.error } : {}),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[gc3-api][delivery-audit] could not record delivery: ${message}`);
+  }
+
+  return { ...receipt, auditId };
 }

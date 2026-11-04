@@ -4,11 +4,12 @@ Multi-tenant operating platform for **Global Cloud Capability & Consulting (GC³
 delivery operations, pod workspaces, finance, and AI-augmented workflows.
 
 Built to the **GC3 Development Brief v1.0** (`Development-Breif.md` in this folder). The repository is
-at **Phase 1, slices 1–4**: identity and tenancy are persisted in PostgreSQL, every tenant route is
+at **Phase 1, slices 1–5**: identity and tenancy are persisted in PostgreSQL, every tenant route is
 authenticated and authorized through a role → permission map, client users join through a hashed,
-single-use invitation that can be rotated or revoked, and invitations are delivered through a
-pluggable notification seam. Integration tests pin the API contract, the tenancy rules, the
-authorization matrix and the full invite lifecycle.
+single-use invitation that can be rotated or revoked, invitations are delivered over SMTP through a
+driver-swappable seam, and every dispatch attempt is recorded in a delivery audit table. Integration
+tests pin the API contract, the tenancy rules, the authorization matrix, the invite lifecycle and the
+mail path itself.
 
 ---
 
@@ -57,6 +58,7 @@ folder is not architecture.
 | Database | PostgreSQL | 16.15 |
 | Validation | Zod | 4.6.7 |
 | Auth | HS256 JWT (jose) + scrypt password digests | 6.2.15 |
+| Email | nodemailer (SMTP), driver-swappable notification seam | 10.3.1 |
 | Testing | Vitest + Supertest | 5.1.0 / 7.3.1 |
 | Language | TypeScript (strict, no `any`) | 5.9.3 |
 | Runtime | Node.js | ≥ 22 |
@@ -232,19 +234,36 @@ The API never talks to a mail provider directly. It builds a typed payload
 
 | Driver | Behaviour | Allowed |
 |---|---|---|
+| `smtp` | real delivery via nodemailer (TLS / STARTTLS / auth) | production — requires `SMTP_HOST` |
 | `console` | prints the accept URL to stdout | dev/test only |
 | `memory` | captures messages in an outbox for assertions | any |
-| `noop` | sends nothing; the receipt says `skipped` | any (production default) |
+| `noop` | sends nothing; the receipt says `skipped` | any (production default when unset) |
 | `failing` | always fails — error injection for tests | dev/test only |
 
 **Security boundary:** `console` (would put tokens in container logs) and `failing` are refused at
-boot in production — the process throws instead of starting. Every invite/resend response carries
-`delivery: { status: "sent" | "failed" | "skipped", driver, messageId? }`. Delivery happens *outside*
-the database transaction, so a provider outage is reported in the response rather than rolling back a
-committed invitation.
+boot in production, and `smtp` without `SMTP_HOST` throws rather than starting — the process fails
+loudly instead of accepting invitations nobody can receive. Every invite/resend response carries
+`delivery: { status: "sent" | "failed" | "skipped", driver, messageId?, auditId }`. Delivery happens
+*outside* the database transaction, so a provider outage is reported in the response rather than
+rolling back a committed invitation.
 
-**Not yet implemented:** refresh tokens, revocation lists, login rate limiting/lockout, and a real
-email provider — satisfying the `NotificationService` interface is the only change required.
+**Delivery audit.** Every attempt — sent, failed or skipped — is written to `notification_deliveries`
+with the driver, the provider's message id, the error text, and foreign keys to the organization,
+membership and user. The `auditId` in the response points at that row, so "did this client actually
+get the email?" is a query, not an archaeology exercise in rotated logs.
+
+Local relay for development and tests:
+
+```bash
+podman run -d --name gc3-mailpit -p 1025:1025 -p 8025:8025 docker.io/axllent/mailpit:latest
+# SMTP on 1025, web UI + HTTP API on http://localhost:8025
+```
+
+`email-smtp.test.ts` drives a real relay and asserts what the server received; if Mailpit is not
+running that block skips itself instead of failing.
+
+**Not yet implemented:** refresh tokens, revocation lists, login rate limiting/lockout, delivery
+retry/backoff, bounce handling, and a read API for the delivery log.
 
 ---
 
@@ -326,8 +345,10 @@ classes used by shared components.
 | Invite acceptance: hashed one-time token, password setup, activation | done |
 | Invite lifecycle: resend/rotation, revocation, re-open | done |
 | Notification seam with driver factory + production guards | done |
-| Integration test harness (Vitest + Supertest, 82 tests) | done |
-| Real email provider (SMTP/SES/Postmark) behind the interface | not started |
+| SMTP driver (nodemailer) with HTML/text templates + escaping | done |
+| Delivery audit table (`notification_deliveries`) with SENT/FAILED/SKIPPED | done |
+| Integration test harness (Vitest + Supertest, 91 tests) | done |
+| Delivery retry/backoff, bounce handling, delivery read API | not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
 
@@ -341,6 +362,8 @@ classes used by shared components.
 | `rbac.test.ts` | route-level permission matrix, `PLATFORM_ADMIN` gate, INVITED/REVOKED membership denial, post-issuance suspension and revocation |
 | `invite.test.ts` | invite → preview → activate → login, single-use token, concurrent double-accept, expired/revoked/unknown tokens, password policy, no half-activated account |
 | `invite-lifecycle.test.ts` | resend rotation (old link dies, new one works), expiry extension, re-open after revoke, 409 on ACTIVE, RBAC denials, idempotent revoke, delivery dispatch, provider-failure resilience, noop honesty |
+| `delivery-audit.test.ts` | audit rows for SENT/RESENT/FAILED/SKIPPED, `auditId` ↔ row identity, tenant scoping |
+| `email-smtp.test.ts` | real SMTP relay round-trip, API→relay→accept-link, HTML escaping, unreachable relay recorded as FAILED |
 
 All suites run against a real PostgreSQL database (never a mock) with `TRUNCATE ... CASCADE` between
 cases. The permission guard was verified load-bearing: disabling `requirePermission` failed exactly
@@ -348,8 +371,8 @@ the seven negative-authorization tests and nothing else.
 
 ### Immediate next steps
 
-1. Invite resend/revoke: rotate a pending token, cancel an invitation.
+1. Delivery retry/backoff for FAILED rows, plus a `GET /organizations/:id/notifications` read API.
 2. Token lifecycle: refresh tokens, revocation, login rate limiting.
-3. Email delivery so production can issue invitations without exposing the token in the API response.
+3. Offboarding an ACTIVE member (session invalidation, retention rules).
 4. Phase 2 — client portal foundation: first authenticated dashboard reading tenant-scoped data.
 5. ESLint + Prettier and a CI workflow running `typecheck`, `test` and `build`.

@@ -12,7 +12,7 @@ import { resetOutbox } from '../src/notifications';
  */
 async function resetDatabase(): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "memberships", "audit_events", "users", "organizations" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "notification_deliveries", "memberships", "audit_events", "users", "organizations" RESTART IDENTITY CASCADE',
   );
   resetOutbox();
 }

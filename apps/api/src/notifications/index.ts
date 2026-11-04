@@ -5,6 +5,7 @@ import {
   MemoryNotificationService,
   NoopNotificationService,
 } from './drivers';
+import { SmtpNotificationService } from './smtp.driver';
 import type { InviteEmailPayload, NotificationService } from './types';
 
 export type { InviteEmailPayload, DeliveryReceipt, NotificationService } from './types';
@@ -39,6 +40,23 @@ export function createNotificationService(): NotificationService {
       return new NoopNotificationService();
     case 'failing':
       return new FailingNotificationService();
+    case 'smtp': {
+      // Fail at boot, not on the first invitation: a half-configured relay is a
+      // silent outage otherwise.
+      if (!env.SMTP_HOST) {
+        throw new Error('NOTIFICATION_DRIVER="smtp" requires SMTP_HOST to be set');
+      }
+
+      return new SmtpNotificationService({
+        host: env.SMTP_HOST,
+        port: env.SMTP_PORT,
+        secure: env.SMTP_SECURE,
+        from: env.MAIL_FROM,
+        ...(env.SMTP_USER && env.SMTP_PASS
+          ? { user: env.SMTP_USER, pass: env.SMTP_PASS }
+          : {}),
+      });
+    }
     default: {
       // Exhaustiveness guard: a new env value without a driver must not fall through.
       const unreachable: never = driver;

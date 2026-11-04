@@ -31,7 +31,20 @@ const envSchema = z.object({
    * production by the notification factory; default is `console` outside
    * production and `noop` inside it.
    */
-  NOTIFICATION_DRIVER: z.enum(['console', 'memory', 'noop', 'failing']).optional(),
+  NOTIFICATION_DRIVER: z.enum(['console', 'memory', 'noop', 'failing', 'smtp']).optional(),
+
+  /** SMTP transport. Required when NOTIFICATION_DRIVER=smtp. */
+  SMTP_HOST: z.string().min(1).optional(),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65_535).default(1025),
+  /** Implicit TLS (465). Leave false for STARTTLS on 25/587/1025. */
+  SMTP_SECURE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  /** Envelope sender. */
+  MAIL_FROM: z.string().min(3).default('GC3 Portal <no-reply@gc3.local>'),
 
   REDIS_URL: z.url().optional(),
 });

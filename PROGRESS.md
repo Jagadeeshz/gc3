@@ -10,6 +10,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 2 | Auth & RBAC | `26f8a93` | ✅ delivered |
 | 3 | Invite acceptance | `1aba41a`, `74d0853` | ✅ delivered |
 | 4 | Invite lifecycle & email stub | `7348d0f`, `65c2aff` | ✅ delivered |
+| 5 | Real email provider & delivery audit | — | ✅ delivered |
 
 ---
 
@@ -228,12 +229,58 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ---
 
+## Slice 5 — Real email provider & delivery audit  ✅
+
+**Brief refs:** §11.1 (integration adapters), §12 (auditability), §14 (notifications)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| SMTP driver | `SmtpNotificationService` (nodemailer): implicit TLS or STARTTLS, optional auth, explicit connect/greeting/socket timeouts |
+| Templating | plain-text + brand-consistent HTML; every tenant-supplied string HTML-escaped |
+| Failure semantics | transport errors become `status: "failed"` receipts — never thrown, never swallowed |
+| Delivery audit | new `notification_deliveries` table: one row per attempt (SENT / FAILED / SKIPPED) with driver, provider message id, error, and FKs to organization, membership and user |
+| API surface | invite/resend responses now return `delivery: { status, driver, messageId?, auditId }` |
+| Boot guards | `NOTIFICATION_DRIVER=smtp` without `SMTP_HOST` throws at startup; `console`/`failing` still refused in production |
+| Tests | 91 across 8 files (was 82) |
+
+### Evidence
+
+- `pnpm -r typecheck` 5/5 clean · `pnpm test` **91/91 passed** (8 files, ~35 s)
+- `prisma migrate status` 5 migrations up to date · `migrate diff` empty · `\d notification_deliveries`
+  confirms enums, three FKs and the three indexes
+- `email-smtp.test.ts` — **4/4 executed, none skipped**, against a real Mailpit relay:
+  relay-level receipt, API→relay→accept-link end to end, HTML escaping of a `<script>` org name,
+  and an unreachable relay recorded as FAILED
+- Live (dev API on the `smtp` driver):
+  invite → `delivery {status:"sent", driver:"smtp", messageId:"<e2bc795f…@gc3.local>", auditId:"38e6a85b…"}`
+  · resend → second mail, `RESENT` row · Mailpit `total: 2` with subjects
+  "You have been invited to Smtp Verify Co…" and "Reminder: your invitation to Smtp Verify Co…"
+  · message body contains `http://localhost:3000/invite/<token>` and the expiry line; HTML CTA present
+  · `psql`: 2 rows, both `SENT`, driver `smtp`, provider message ids stored
+- **Mutation check:** forcing the audit status to `SENT` regardless of the receipt failed **exactly 3**
+  tests — provider-failure audit, skip audit, and unreachable-relay audit — with the other 88 green.
+  Reverted → 91/91.
+
+### Notes / limits
+
+- Local relay: `podman run -d --name gc3-mailpit -p 1025:1025 -p 8025:8025 axllent/mailpit`
+  (SMTP 1025, HTTP API/UI 8025). The suite skips the relay block if it is not running.
+- No retry/backoff on a failed dispatch, no bounce/complaint handling, and no read endpoint for the
+  delivery log yet — the rows exist and are queryable, but only via SQL/tests.
+- The audit row is intentionally outside the invite transaction: losing an audit row is bad, but
+  failing a committed invitation because of it is worse.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Real email provider | SMTP/SES adapter behind `NotificationService` + delivery audit rows |
+| Delivery retry & backoff | Retry FAILED deliveries; bounce/complaint suppression list |
+| Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |
-| Offboarding | Revoke an ACTIVE member: session invalidation, audit, data retention rules |
+| Offboarding | Revoke an ACTIVE member: session invalidation, audit, retention rules |
 | Phase 2 | Client portal foundation: authenticated dashboard reading tenant-scoped data |
 | Tooling | ESLint + Prettier, CI running typecheck/test/build |

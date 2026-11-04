@@ -345,7 +345,8 @@ describe('notification delivery', () => {
         organization.id,
       ).expect(201);
 
-      expect(response.body.data.delivery).toEqual({ status: 'skipped', driver: 'noop' });
+      expect(response.body.data.delivery).toMatchObject({ status: 'skipped', driver: 'noop' });
+      expect(response.body.data.delivery.auditId).toBeTruthy();
       expect(getOutbox()).toHaveLength(0);
     } finally {
       resetNotificationService();

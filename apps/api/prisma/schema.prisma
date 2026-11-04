@@ -61,6 +61,20 @@ enum ActorType {
   SYSTEM
 }
 
+/// What triggered a notification.
+enum NotificationKind {
+  INVITATION
+  RESENT
+}
+
+/// Outcome of a delivery attempt. SKIPPED is a real state: a noop driver has
+/// not sent anything, and recording it as SENT would falsify the audit trail.
+enum NotificationStatus {
+  SENT
+  FAILED
+  SKIPPED
+}
+
 // ---------------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------------
@@ -78,6 +92,7 @@ model Organization {
 
   memberships Membership[]
   auditEvents AuditEvent[]
+  notifications NotificationDelivery[]
 
   @@index([status])
   @@index([createdAt])
@@ -103,6 +118,7 @@ model User {
   deletedAt  DateTime?  @map("deleted_at") @db.Timestamptz(3)
 
   memberships Membership[]
+  notifications NotificationDelivery[]
 
   @@index([status])
   @@index([platformRole])
@@ -129,6 +145,8 @@ model Membership {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  notifications NotificationDelivery[]
+
   @@unique([organizationId, userId])
   @@index([organizationId])
   @@index([userId])
@@ -153,4 +171,36 @@ model AuditEvent {
   @@index([organizationId, createdAt])
   @@index([action])
   @@map("audit_events")
+}
+
+/// Permanent record of every notification delivery attempt (Development Brief
+/// §12 auditability, §14 notifications).
+///
+/// This is deliberately separate from AuditEvent: an audit event records a
+/// *business* action, while this records what happened when we tried to tell
+/// someone about it — including failures, which is the part that silently
+/// disappears in most systems.
+model NotificationDelivery {
+  id             String             @id @default(uuid()) @db.Uuid
+  organizationId String             @map("organization_id") @db.Uuid
+  membershipId   String             @map("membership_id") @db.Uuid
+  userId         String             @map("user_id") @db.Uuid
+  kind           NotificationKind
+  channel        String             @default("email") @db.VarChar(20)
+  driver         String             @db.VarChar(40)
+  status         NotificationStatus
+  recipient      String             @db.VarChar(254)
+  messageId      String?            @map("message_id") @db.VarChar(120)
+  /// Provider or transport error, truncated to keep the row compact.
+  error          String?            @db.VarChar(500)
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  membership   Membership   @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@index([membershipId])
+  @@index([status])
+  @@map("notification_deliveries")
 }

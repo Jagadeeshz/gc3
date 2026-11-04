@@ -127,6 +127,9 @@ organizationsRouter.post(
       // Delivery is outside the transaction: the membership is already committed,
       // and a provider outage must not roll an invitation back.
       const delivery = await deliverInvite({
+        organizationId: request.organizationId as string,
+        membershipId: result.membership.id,
+        userId: result.membership.userId,
         to: result.user.email,
         fullName: result.user.fullName,
         organizationName: result.organizationName,
@@ -202,6 +205,9 @@ organizationsRouter.post(
     }
 
     const delivery = await deliverInvite({
+      organizationId: request.organizationId as string,
+      membershipId: rotation.membership.id,
+      userId: rotation.membership.userId,
       to: rotation.user.email,
       fullName: rotation.user.fullName,
       organizationName: rotation.organizationName,
