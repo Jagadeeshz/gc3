@@ -30,7 +30,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 14 | Notifications · deliverable-released & status-updated events | `b368a91`, `f3f99d1` | ✅ delivered |
 | 15 | Phase 3 · Operations console, pods & request routing | `9474ff4` | ✅ delivered |
 | 16 | Phase 3 · Pod membership & staffing management | `e62198f` | ✅ delivered |
-| 17 | Phase 3 · Task breakdown & work allocation | `<pending>` | ✅ delivered |
+| 17 | Phase 3 · Task breakdown & work allocation | `ed56399` | ✅ delivered |
+| 18 | Phase 3 · Internal SLA monitoring & risk alerts | `<pending>` | ✅ delivered |
 
 ---
 
@@ -877,7 +878,7 @@ routes a request to a pod.
 
 ## Slice 17 — Phase 3 · Task breakdown and work allocation  ✅
 
-**Commit:** `<pending>`
+**Commit:** `ed56399` — feat(tasks): task breakdown and work allocation
 **Brief refs:** §5 (work queue, pod management), §12 (tenancy)
 
 ### What shipped
@@ -912,11 +913,73 @@ routes a request to a pod.
 
 ---
 
+## Slice 18 — Phase 3 · Internal SLA monitoring and risk alerts  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §5 (SLA monitor, operations dashboard), §7 (SLA risk detected), §12 (tenancy)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Commitment | `service_categories.sla_delivery_hours` (service-specific, per the brief) with a priority default when unset — URGENT 8h, HIGH 24h, NORMAL 72h, LOW 168h. `service_requests.sla_target_at` materialises it at creation (migration `20261104190000_sla`, existing rows backfilled from priority) |
+| Engine | `lib/sla.ts`: pure `computeSlaState()` returning `NONE / ON_TRACK / AT_RISK / BREACHED / MET / MISSED`. The warning window is the final quarter of the contract; a closed request is judged by when it actually closed |
+| Recompute | Changing priority or service recomputes the target **from creation** (an escalation cannot buy time) and re-arms the alert chain |
+| Dashboard | totals and per-tenant rows gain `slaAtRisk` / `slaBreached`; every queue item carries `slaState` and `slaTargetAt`. `/ops` shows both cards, two table columns and an SLA badge per queue row |
+| Alerts | `src/sla/monitor.ts`: one pass over open requests, one email per **state** per request (`sla_alerted_state` is the dedupe), escalation AT_RISK → BREACHED alerts again, recovery does not. Recipient is the assignee, then the pod lead, otherwise the request is reported `skipped` |
+| Triggers | `POST /api/v1/ops/sla/sweep` (`ops:read`) plus an interval worker (`SLA_SWEEP_INTERVAL_SECONDS`, default 300, 0 disables) |
+| Email | new `SLA_RISK` notification kind and template: subject names the state and reference, body carries the committed delivery time in IST and a deep link. Failed alerts join the existing retry queue and are rebuilt from the request on retry |
+| UI | **Run SLA sweep** button on `/ops` reporting `scanned · at risk · breached · alerted · skipped` |
+| Tests | 13 new: target from priority, service override, recompute on priority change, the pure state machine (NONE/ON_TRACK/AT_RISK/BREACHED/MET/MISSED), dashboard counts and queue states, alert once, escalation, pod-lead fallback + skip, `ops:read` gate, audit filter, and no alert to a client requester |
+
+### Evidence
+
+- `pnpm test` **278/278** across 23 files (was 264/22)
+- `pnpm -r typecheck` 5/5; `next build` compiles with `/ops` and the request detail
+- **Mutation check**: removing the `sla_alerted_state` dedupe made the "second sweep is silent"
+  assertion fail; restored → 13/13 again
+- Live, four roles in the browser:
+  - **PLATFORM_ADMIN** on `/ops`: 7 tenants · 3 open · 2 unrouted · **SLA at risk 1** · 0 breached.
+    *Run SLA sweep* → `SLA sweep: 3 scanned · 1 at risk · 0 breached · 1 alerted · 0 skipped`
+  - Mailpit received *"SLA at risk: REQ-EA763D6B is approaching its commitment"* to
+    `ops.specialist@gc3.local`, body naming the committed delivery time and the portal link
+  - **SPECIALIST**: request detail shows **Internal tasks** with the assignee roster; added
+    *"Draft the cluster sizing note"* assigned to themselves and moved it to `IN_PROGRESS`
+    (Postgres confirms `IN_PROGRESS`, assignee `Ops Specialist`)
+  - **CLIENT_OWNER**: same request shows no Internal tasks section and no task title; `/ops` shows the
+    restricted panel; API returns 403 for `GET …/tasks`, `POST …/tasks`, `GET /pods/staff`, `GET /pods`
+    and `GET /ops/dashboard`
+  - **OPERATIONS_MANAGER**: full console — Operations nav, all eight metrics, tenant table with SLA
+    columns, pod roster and queue
+
+### Bugs found and fixed
+
+1. **The specialist's request page was broken by a permission mismatch.** `GET /pods/staff` was gated on
+   `request:assign`, which a SPECIALIST does not hold — so the detail page's `Promise.all` rejected and
+   the whole page rendered "This action requires the request:assign permission". The roster is now gated
+   on `task:read` (what the checklist actually needs), the page tolerates a failure to load assignees,
+   and a regression test asserts a specialist can read the roster while a client cannot.
+2. My first SLA fixtures set only `sla_target_at`; because the warning window is a fraction of the
+   *contract*, shortening the target also shrank the window and the request read ON_TRACK. The fixtures
+   now move both ends — the engine was right, the test was wrong.
+
+### Notes / limits
+
+- The sweep is **in-process** on a timer, like the notification dispatcher: a restart loses nothing
+  because state is re-derived, but two API nodes would both sweep. The dedupe column makes that mostly
+  harmless (only one email wins the race) rather than correct.
+- `sla_alerted_state` is a plain string rather than an enum — cheap to extend, but nothing stops a typo
+  at the database level.
+- No pause/hold policy: the clock runs from creation through BLOCKED, so a request waiting on a client
+  still breaches. The brief flags pause policy as a commercial decision.
+- Compliance reporting (met vs missed percentages over time) is not built — only live states.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Phase 3 step 4 | Internal SLA monitoring and risk alerts |
 | Notification durability | BullMQ on the configured Redis so a restart cannot lose a queued event |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |

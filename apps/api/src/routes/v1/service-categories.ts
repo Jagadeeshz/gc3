@@ -81,6 +81,9 @@ serviceCategoriesRouter.post('/', requirePermission('category:manage'), async (r
       ...(typeof body.data.description === 'string'
         ? { description: body.data.description }
         : {}),
+      ...(body.data.slaDeliveryHours !== undefined
+        ? { slaDeliveryHours: body.data.slaDeliveryHours }
+        : {}),
     });
 
     const payload: ApiSuccess<ServiceCategory> = { success: true, data: created };

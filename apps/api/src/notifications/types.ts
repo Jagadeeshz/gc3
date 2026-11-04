@@ -29,7 +29,7 @@ export interface EventEmailPayload {
   readonly to: string;
   readonly recipientName: string;
   readonly organizationName: string;
-  readonly kind: 'deliverable_released' | 'request_status_updated';
+  readonly kind: 'deliverable_released' | 'request_status_updated' | 'sla_risk';
   readonly requestReference: string;
   readonly requestTitle: string;
   /** Deep link into the portal request page. */
@@ -38,6 +38,9 @@ export interface EventEmailPayload {
   readonly deliverableVersion?: number;
   readonly fromStatus?: string;
   readonly toStatus?: string;
+  /** SLA risk state for `sla_risk` emails. */
+  readonly slaState?: string;
+  readonly slaTargetAt?: string;
 }
 
 /**

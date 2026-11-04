@@ -98,6 +98,51 @@ export function renderInvite(payload: InviteEmailPayload): RenderedEmail {
 }
 
 export function renderEvent(payload: EventEmailPayload): RenderedEmail {
+  if (payload.kind === 'sla_risk') {
+    const breached = payload.slaState === 'BREACHED';
+    const stateLabel = breached ? 'past its delivery commitment' : 'at risk of breaching its SLA';
+    const target = payload.slaTargetAt
+      ? new Date(payload.slaTargetAt).toLocaleString('en-GB', { timeZone: 'Asia/Kolkata' })
+      : null;
+
+    const subject = breached
+      ? `SLA breached: ${payload.requestReference} needs attention`
+      : `SLA at risk: ${payload.requestReference} is approaching its commitment`;
+
+    const text = [
+      `Hello ${payload.recipientName},`,
+      '',
+      `Request ${payload.requestReference} — ${payload.requestTitle} — is ${stateLabel}.`,
+      target ? `Committed delivery: ${target} IST` : '',
+      '',
+      'You are the owner of this work. Re-plan it, or tell operations it will slip.',
+      '',
+      `Open it in the portal: ${payload.requestUrl}`,
+      '',
+      '— GC³ Portal',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    const html = shell({
+      heading: breached
+        ? `SLA breached: ${escapeHtml(payload.requestReference)}`
+        : `SLA at risk: ${escapeHtml(payload.requestReference)}`,
+      bodyHtml: [
+        `Hello ${escapeHtml(payload.recipientName)}, <strong style="color:#f4f0e8">${escapeHtml(payload.requestTitle)}</strong> is ${escapeHtml(stateLabel)}.`,
+        target ? `Committed delivery: <strong style="color:#f4f0e8">${escapeHtml(target)} IST</strong>.` : '',
+        '<div style="padding:16px 0 0">' +
+          button(payload.requestUrl, 'Review the request') +
+          '</div>',
+      ]
+        .filter(Boolean)
+        .join('<br>'),
+      footHtml: 'You are receiving this because you own or lead the pod for this request.',
+    });
+
+    return { subject, text, html };
+  }
+
   if (payload.kind === 'deliverable_released') {
     const title = payload.deliverableTitle ?? 'A deliverable';
     const version = payload.deliverableVersion ? `v${payload.deliverableVersion}` : '';

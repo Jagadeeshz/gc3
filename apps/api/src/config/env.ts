@@ -60,6 +60,12 @@ const envSchema = z.object({
    * is what tests do — they call the sweep endpoint instead of waiting on a timer.
    */
   NOTIFICATION_RETRY_INTERVAL_SECONDS: z.coerce.number().int().min(0).max(86_400).default(300),
+
+  /**
+   * How often the SLA risk sweep runs. 0 disables the timer, which is what tests
+   * do — they call the sweep endpoint instead of waiting on a clock.
+   */
+  SLA_SWEEP_INTERVAL_SECONDS: z.coerce.number().int().min(0).max(86_400).default(300),
 });
 
 export type Env = z.infer<typeof envSchema>;

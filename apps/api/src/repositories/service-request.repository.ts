@@ -3,6 +3,7 @@ import type { ServiceRequest, ServiceRequestPriority, ServiceRequestStatus } fro
 import { TERMINAL_REQUEST_STATUSES } from '@gc3/types';
 import { prisma } from '../db/client';
 import { ApiError } from '../lib/api-error';
+import { slaHoursFor, slaTargetFrom } from '../lib/sla';
 
 type RequestRow = {
   id: string;
@@ -19,6 +20,7 @@ type RequestRow = {
   dueAt: Date | null;
   submittedAt: Date | null;
   closedAt: Date | null;
+  slaTargetAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -40,6 +42,7 @@ function toEntity(row: RequestRow): ServiceRequest {
     dueAt: row.dueAt ? row.dueAt.toISOString() : null,
     submittedAt: row.submittedAt ? row.submittedAt.toISOString() : null,
     closedAt: row.closedAt ? row.closedAt.toISOString() : null,
+    slaTargetAt: row.slaTargetAt ? row.slaTargetAt.toISOString() : null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     deletedAt: row.deletedAt ? row.deletedAt.toISOString() : null,
@@ -98,6 +101,21 @@ export const serviceRequestRepository = {
 
     const id = randomUUID();
     const status = input.status ?? 'DRAFT';
+    const priority = input.priority ?? 'NORMAL';
+
+    // The commitment is materialised at creation from the service's hours when it
+    // has any, otherwise from the priority default.
+    const categoryHours = input.categoryId
+      ? (
+          await prisma.serviceCategory.findFirst({
+            where: { id: input.categoryId, organizationId },
+            select: { slaDeliveryHours: true },
+          })
+        )?.slaDeliveryHours ?? null
+      : null;
+
+    const createdAt = new Date();
+    const slaTargetAt = slaTargetFrom(createdAt, slaHoursFor(priority, categoryHours));
 
     const row = await prisma.serviceRequest.create({
       data: {
@@ -108,10 +126,11 @@ export const serviceRequestRepository = {
         title: input.title,
         description: input.description,
         status,
-        priority: input.priority ?? 'NORMAL',
+        priority,
         requesterId: input.requesterId,
         dueAt: input.dueAt ?? null,
-        submittedAt: status === 'DRAFT' ? null : new Date(),
+        submittedAt: status === 'DRAFT' ? null : createdAt,
+        slaTargetAt,
       },
     });
 
@@ -159,6 +178,38 @@ export const serviceRequestRepository = {
       where: { id, organizationId, deletedAt: null },
       data: patch,
     });
+
+    // Priority and service both carry the commitment, so changing either moves the
+    // target. It is measured from creation, not from the edit, so an escalation
+    // cannot quietly buy the request more time.
+    if (patch.priority !== undefined || patch.categoryId !== undefined) {
+      const current = await prisma.serviceRequest.findFirst({
+        where: { id, organizationId, deletedAt: null },
+        select: {
+          priority: true,
+          createdAt: true,
+          category: { select: { slaDeliveryHours: true } },
+        },
+      });
+
+      if (current) {
+        const hours = slaHoursFor(
+          current.priority as ServiceRequestPriority,
+          current.category?.slaDeliveryHours ?? null,
+        );
+
+        await prisma.serviceRequest.updateMany({
+          where: { id, organizationId, deletedAt: null },
+          data: {
+            slaTargetAt: slaTargetFrom(current.createdAt, hours),
+            // A policy change restarts the alert chain: the new target deserves its
+            // own warning rather than inheriting the old one's silence.
+            slaAlertedState: null,
+            slaAlertedAt: null,
+          },
+        });
+      }
+    }
 
     return this.findByIdScoped(organizationId, id);
   },

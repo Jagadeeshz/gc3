@@ -54,9 +54,13 @@ podsRouter.get('/', requirePermission('request:assign'), async (request, respons
 /**
  * GET /pods/staff — staff accounts that can be seated.
  *
+ * `task:read` rather than `request:assign`: the roster is also what the internal
+ * task checklist needs to populate an assignee picker, and a specialist holds
+ * task:manage without holding request:assign. Clients hold neither.
+ *
  * Declared before `/:podId/members` so the literal path wins the match.
  */
-podsRouter.get('/staff', requirePermission('request:assign'), async (request, response) => {
+podsRouter.get('/staff', requirePermission('task:read'), async (request, response) => {
   const staff = await podRepository.listStaffCandidates(scopeOf(request.organizationId));
 
   const payload: ApiSuccess<StaffCandidate[]> = { success: true, data: staff };

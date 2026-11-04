@@ -15,6 +15,7 @@ import type {
   OpsDashboard,
   PodSummary,
   StaffCandidate,
+  SlaSweepReport,
   TaskListItem,
   TaskStatus,
 } from '@gc3/types';
@@ -585,8 +586,7 @@ export async function removePodMember(
 // Internal tasks (Phase 3)
 // ---------------------------------------------------------------------------
 
-/** Staff-only: the internal checklist for one request. A client gets 403. */
-export async function listTasks(
+/** Staff-only: the internal checklist for one request. A client gets 403. */export async function listTasks(
   token: string,
   organizationId: string,
   requestId: string,
@@ -634,4 +634,16 @@ export async function updateTask(
     token,
     organizationId,
   });
+}
+
+/**
+ * Runs the SLA risk engine now. The same pass the interval worker runs — this is
+ * a platform action, so no tenant header, and the API gates it on `ops:read`.
+ */
+export async function runSlaSweep(
+  token: string,
+  organizationId?: string,
+): Promise<SlaSweepReport> {
+  const suffix = organizationId ? `?organizationId=${organizationId}` : '';
+  return request<SlaSweepReport>(`/ops/sla/sweep${suffix}`, { method: 'POST', token });
 }

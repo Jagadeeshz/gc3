@@ -159,6 +159,8 @@ export const createServiceCategorySchema = z.object({
   /** `null` is treated the same as omitted — an empty description. */
   description: z.string().trim().max(500).nullable().optional(),
   isActive: z.boolean().default(true),
+  /** Service-specific delivery commitment; null inherits the priority default. */
+  slaDeliveryHours: z.coerce.number().int().min(1).max(8_760).nullable().optional(),
 });
 
 export type CreateServiceCategoryInput = z.infer<typeof createServiceCategorySchema>;
@@ -169,6 +171,7 @@ export const updateServiceCategorySchema = z
     slug: categorySlugSchema.optional(),
     description: z.string().trim().max(500).nullable().optional(),
     isActive: z.boolean().optional(),
+    slaDeliveryHours: z.coerce.number().int().min(1).max(8_760).nullable().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'Provide at least one field to update',
@@ -242,7 +245,13 @@ export type ListServiceRequestsQuery = z.infer<typeof listServiceRequestsQuerySc
 export const notificationQuerySchema = paginationSchema.extend({
   status: z.enum(['SENT', 'FAILED', 'SKIPPED']).optional(),
   kind: z
-    .enum(['INVITATION', 'RESENT', 'DELIVERABLE_RELEASED', 'REQUEST_STATUS_UPDATED'])
+    .enum([
+      'INVITATION',
+      'RESENT',
+      'DELIVERABLE_RELEASED',
+      'REQUEST_STATUS_UPDATED',
+      'SLA_RISK',
+    ])
     .optional(),
   recipient: z.string().trim().min(1).max(254).optional(),
 });

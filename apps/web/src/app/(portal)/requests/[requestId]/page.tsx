@@ -128,13 +128,8 @@ export default function RequestDetailPage() {
       // Staff-only: the internal checklist and who it can be assigned to. A client
       // never calls these paths, and the API answers 403 if they try.
       if (isStaff) {
-        const [loadedTasks, loadedStaff] = await Promise.all([
-          listTasks(token, organizationId, requestId),
-          fetchStaffCandidates(token, organizationId),
-        ]);
-
+        const loadedTasks = await listTasks(token, organizationId, requestId);
         setTasks(loadedTasks);
-        setStaff(loadedStaff);
       }
     } catch (caught) {
       setError(
@@ -142,6 +137,16 @@ export default function RequestDetailPage() {
       );
     } finally {
       setLoading(false);
+    }
+
+    // The assignee roster is a convenience: if this caller cannot read it, the
+    // checklist still works with the assignees already recorded on each task.
+    if (isStaff && token && organizationId) {
+      try {
+        setStaff(await fetchStaffCandidates(token, organizationId));
+      } catch {
+        setStaff([]);
+      }
     }
   }, [token, organizationId, requestId, isStaff]);
 

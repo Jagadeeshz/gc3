@@ -1,5 +1,7 @@
 import { env } from '../config/env';
 import { prisma } from '../db/client';
+import type { ServiceRequestStatus } from '@gc3/types';
+import { computeSlaState } from '../lib/sla';
 import { notificationRepository } from '../repositories/notification.repository';
 import { notifications } from './index';
 import { nextAttemptAfter } from './schedule';
@@ -30,6 +32,12 @@ export type EventJob =
       readonly requestId: string;
       readonly fromStatus: string;
       readonly toStatus: string;
+    }
+  | {
+      readonly kind: 'sla_risk';
+      readonly organizationId: string;
+      readonly requestId: string;
+      readonly state: string;
     };
 
 interface Recipient {
@@ -140,6 +148,33 @@ async function statusRecipients(requestId: string): Promise<Recipient[]> {
   ];
 }
 
+/**
+ * Who hears about an SLA risk: the person who owns the work, falling back to the
+ * lead of the pod that owns it. Nobody is invented — if both are absent the sweep
+ * reports the request as skipped rather than mailing an unrelated administrator.
+ */
+async function slaRecipients(requestId: string): Promise<Recipient[]> {
+  const request = await prisma.serviceRequest.findFirst({
+    where: { id: requestId, deletedAt: null },
+    include: {
+      assignee: { select: { id: true, email: true, fullName: true, status: true, deletedAt: true } },
+      pod: { include: { lead: { select: { id: true, email: true, fullName: true, status: true, deletedAt: true } } } },
+    },
+  });
+
+  if (!request) {
+    return [];
+  }
+
+  const candidate = request.assignee ?? request.pod?.lead ?? null;
+
+  if (!candidate || candidate.status !== 'ACTIVE' || candidate.deletedAt) {
+    return [];
+  }
+
+  return [{ userId: candidate.id, email: candidate.email, fullName: candidate.fullName }];
+}
+
 interface EventSubject {
   readonly organizationName: string;
   readonly requestReference: string;
@@ -147,6 +182,9 @@ interface EventSubject {
   readonly requestUrl: string;
   /** The status as of *now* — what a retry should report, not what it was then. */
   readonly requestStatus: string;
+  /** SLA state as of *now*, for risk alerts. */
+  readonly slaState: string;
+  readonly slaTargetAt: string | null;
   readonly deliverableTitle?: string;
   readonly deliverableVersion?: number;
 }
@@ -181,6 +219,17 @@ export function buildEventPayload(
     };
   }
 
+  if (job.kind === 'sla_risk') {
+    // The state is read from the live row, not from the job: a retry hours later
+    // should say what is true now, which may already be BREACHED.
+    return {
+      ...base,
+      kind: 'sla_risk',
+      slaState: subject.slaState,
+      ...(subject.slaTargetAt ? { slaTargetAt: subject.slaTargetAt } : {}),
+    };
+  }
+
   return {
     ...base,
     kind: 'request_status_updated',
@@ -206,6 +255,16 @@ export async function loadEventSubject(job: EventJob): Promise<EventSubject | nu
     requestTitle: request.title,
     requestUrl: `${env.WEB_APP_URL}/requests/${request.id}`,
     requestStatus: request.status,
+    slaState: computeSlaState(
+      {
+        status: request.status as ServiceRequestStatus,
+        targetAt: request.slaTargetAt,
+        closedAt: request.closedAt,
+        startAt: request.createdAt,
+      },
+      new Date(),
+    ),
+    slaTargetAt: request.slaTargetAt ? request.slaTargetAt.toISOString() : null,
   };
 
   if (job.kind === 'deliverable_released') {
@@ -239,7 +298,9 @@ async function processJob(job: EventJob): Promise<void> {
   const recipients =
     job.kind === 'deliverable_released'
       ? await releaseRecipients(job.organizationId)
-      : await statusRecipients(job.requestId);
+      : job.kind === 'sla_risk'
+        ? await slaRecipients(job.requestId)
+        : await statusRecipients(job.requestId);
 
   for (const recipient of recipients) {
     const payload = buildEventPayload(job, subject, recipient);

@@ -24,7 +24,7 @@ async function retryEventDelivery(
     id: string;
     organizationId: string;
     userId: string;
-    kind: 'DELIVERABLE_RELEASED' | 'REQUEST_STATUS_UPDATED';
+    kind: 'DELIVERABLE_RELEASED' | 'REQUEST_STATUS_UPDATED' | 'SLA_RISK';
     subjectRequestId: string | null;
     subjectDeliverableId: string | null;
     attempt: number;
@@ -63,15 +63,24 @@ async function retryEventDelivery(
           requestId: row.subjectRequestId,
           deliverableId: row.subjectDeliverableId!,
         }
-      : {
-          kind: 'request_status_updated',
-          organizationId: row.organizationId,
-          requestId: row.subjectRequestId,
-          // The original from/to are not stored; a retry reports the status as it
-          // is now, which stays true even if the request moved on meanwhile.
-          fromStatus: '',
-          toStatus: '',
-        };
+      : row.kind === 'SLA_RISK'
+        ? {
+            kind: 'sla_risk',
+            organizationId: row.organizationId,
+            requestId: row.subjectRequestId,
+            // Recomputed from the live row: a retry that fires later should state
+            // what is true then, not what the sweep saw at the time.
+            state: '',
+          }
+        : {
+            kind: 'request_status_updated',
+            organizationId: row.organizationId,
+            requestId: row.subjectRequestId,
+            // The original from/to are not stored; a retry reports the status as it
+            // is now, which stays true even if the request moved on meanwhile.
+            fromStatus: '',
+            toStatus: '',
+          };
 
   const subject = await loadEventSubject(job);
 
@@ -174,7 +183,11 @@ export async function runRetrySweep(
 
     // Event notifications go to a user, not a membership, and are rebuilt from the
     // request/deliverable they point at. Handle them before touching membership.
-    if (row.kind === 'DELIVERABLE_RELEASED' || row.kind === 'REQUEST_STATUS_UPDATED') {
+    if (
+      row.kind === 'DELIVERABLE_RELEASED' ||
+      row.kind === 'REQUEST_STATUS_UPDATED' ||
+      row.kind === 'SLA_RISK'
+    ) {
       await retryEventDelivery(
         {
           id: row.id,

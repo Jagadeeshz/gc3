@@ -27,7 +27,7 @@ interface DeliveryRow {
   organizationId: string;
   membershipId: string | null;
   userId: string;
-  kind: 'INVITATION' | 'RESENT' | 'DELIVERABLE_RELEASED' | 'REQUEST_STATUS_UPDATED';
+  kind: 'INVITATION' | 'RESENT' | 'DELIVERABLE_RELEASED' | 'REQUEST_STATUS_UPDATED' | 'SLA_RISK';
   channel: string;
   driver: string;
   status: 'SENT' | 'FAILED' | 'SKIPPED';

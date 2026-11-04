@@ -77,6 +77,7 @@ enum NotificationKind {
   RESENT
   DELIVERABLE_RELEASED
   REQUEST_STATUS_UPDATED
+  SLA_RISK
 }
 
 /// Outcome of a delivery attempt. SKIPPED is a real state: a noop driver has
@@ -299,8 +300,11 @@ model ServiceCategory {
   organizationId String    @map("organization_id") @db.Uuid
   name           String    @db.VarChar(120)
   slug           String    @db.VarChar(60)
-  description    String?   @db.VarChar(500)
-  isActive       Boolean   @default(true) @map("is_active")
+  description    String?                 @db.VarChar(500)
+  isActive       Boolean                 @default(true) @map("is_active")
+  /// Service-specific delivery commitment in hours. Null falls back to the
+  /// priority default in lib/sla.ts.
+  slaDeliveryHours Int?                  @map("sla_delivery_hours")
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(3)
@@ -328,6 +332,11 @@ model ServiceRequest {
   assigneeId     String?                 @map("assignee_id") @db.Uuid
   podId          String?                 @map("pod_id") @db.Uuid
   dueAt          DateTime?               @map("due_at") @db.Timestamptz(3)
+  /// Materialised SLA commitment: createdAt + the service or priority hours.
+  slaTargetAt    DateTime?               @map("sla_target_at") @db.Timestamptz(3)
+  /// Last risk state an alert was sent for, so a sweep does not repeat itself.
+  slaAlertedState String?                @map("sla_alerted_state") @db.VarChar(20)
+  slaAlertedAt   DateTime?               @map("sla_alerted_at") @db.Timestamptz(3)
   submittedAt    DateTime?               @map("submitted_at") @db.Timestamptz(3)
   closedAt       DateTime?               @map("closed_at") @db.Timestamptz(3)
   createdAt      DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)

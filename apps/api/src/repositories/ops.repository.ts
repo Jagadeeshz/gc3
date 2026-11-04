@@ -7,6 +7,7 @@ import type {
 } from '@gc3/types';
 import { prisma } from '../db/client';
 import { OPEN_STATUSES } from '../lib/request-status';
+import { computeSlaState } from '../lib/sla';
 import { podRepository } from './pod.repository';
 
 /**
@@ -33,6 +34,7 @@ export const opsRepository = {
       releasedGroups,
       memberGroups,
       pods,
+      slaRows,
       queueRows,
     ] = await Promise.all([
       prisma.organization.findMany({
@@ -84,6 +86,23 @@ export const opsRepository = {
 
       podRepository.listForOps(),
 
+      // SLA states are computed per request, so the raw fields come back rather
+      // than a count: the same helper that drives the sweep must drive the totals.
+      prisma.serviceRequest.findMany({
+        where: {
+          deletedAt: null,
+          status: { in: [...OPEN_STATUSES] },
+          ...tenantFilter,
+        },
+        select: {
+          organizationId: true,
+          status: true,
+          slaTargetAt: true,
+          createdAt: true,
+          closedAt: true,
+        },
+      }),
+
       // The routing worklist: anything open that is unassigned, half-assigned, or
       // past its due date. Sorted oldest-due first so the top of the list is what
       // an operations manager should actually look at.
@@ -126,6 +145,30 @@ export const opsRepository = {
     const releasedByOrg = new Map(releasedGroups.map((g) => [g.organizationId, g._count._all]));
     const membersByOrg = new Map(memberGroups.map((g) => [g.organizationId, g._count._all]));
 
+    const slaAtRiskByOrg = new Map<string, number>();
+    const slaBreachedByOrg = new Map<string, number>();
+
+    for (const row of slaRows) {
+      const state = computeSlaState(
+        {
+          status: row.status as ServiceRequestStatus,
+          targetAt: row.slaTargetAt,
+          closedAt: row.closedAt,
+          startAt: row.createdAt,
+        },
+        now,
+      );
+
+      if (state === 'AT_RISK') {
+        slaAtRiskByOrg.set(row.organizationId, (slaAtRiskByOrg.get(row.organizationId) ?? 0) + 1);
+      } else if (state === 'BREACHED') {
+        slaBreachedByOrg.set(
+          row.organizationId,
+          (slaBreachedByOrg.get(row.organizationId) ?? 0) + 1,
+        );
+      }
+    }
+
     const podCountByOrg = new Map<string, number>();
     for (const pod of pods) {
       podCountByOrg.set(pod.organizationId, (podCountByOrg.get(pod.organizationId) ?? 0) + 1);
@@ -143,6 +186,8 @@ export const opsRepository = {
       podCount: podCountByOrg.get(organization.id) ?? 0,
       memberCount: membersByOrg.get(organization.id) ?? 0,
       releasedDeliverables: releasedByOrg.get(organization.id) ?? 0,
+      slaAtRisk: slaAtRiskByOrg.get(organization.id) ?? 0,
+      slaBreached: slaBreachedByOrg.get(organization.id) ?? 0,
     }));
 
     const queue: OpsQueueItem[] = queueRows.map((row) => ({
@@ -158,6 +203,16 @@ export const opsRepository = {
       podName: row.pod?.name ?? null,
       assigneeId: row.assigneeId,
       assigneeName: row.assignee?.fullName ?? null,
+      slaTargetAt: row.slaTargetAt ? row.slaTargetAt.toISOString() : null,
+      slaState: computeSlaState(
+        {
+          status: row.status as ServiceRequestStatus,
+          targetAt: row.slaTargetAt,
+          closedAt: row.closedAt,
+          startAt: row.createdAt,
+        },
+        now,
+      ),
     }));
 
     const sum = (pick: (row: OpsOrganizationSummary) => number): number =>
@@ -173,6 +228,8 @@ export const opsRepository = {
         unassignedRequests: sum((row) => row.unassignedRequests),
         pods: pods.length,
         releasedDeliverables: sum((row) => row.releasedDeliverables),
+        slaAtRisk: sum((row) => row.slaAtRisk),
+        slaBreached: sum((row) => row.slaBreached),
       },
       organizations: organizationRows,
       pods,

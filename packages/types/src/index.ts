@@ -323,9 +323,32 @@ export function isAllowedRequestTransition(
   return SERVICE_REQUEST_TRANSITIONS[from].includes(to);
 }
 
+/**
+ * Where a request stands against its delivery commitment.
+ *
+ * NONE      — no obligation is being judged (draft, cancelled, or no target)
+ * ON_TRACK  — comfortably inside the window
+ * AT_RISK   — inside the warning window, not yet late
+ * BREACHED  — past the target and still open
+ * MET       — closed at or before the target
+ * MISSED    — closed after the target
+ */
+export type SlaState = 'NONE' | 'ON_TRACK' | 'AT_RISK' | 'BREACHED' | 'MET' | 'MISSED';
+
+/** Outcome of one SLA sweep. */
+export interface SlaSweepReport {
+  /** Open requests with a target that the sweep looked at. */
+  readonly scanned: number;
+  readonly atRisk: number;
+  readonly breached: number;
+  /** Alerts actually dispatched this run (state changed since the last one). */
+  readonly alerted: number;
+  /** Risky requests with nobody to tell — assignee, pod lead both absent. */
+  readonly skipped: number;
+}
+
 /** Internal work item states. A task is open while TODO, IN_PROGRESS or BLOCKED. */
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'BLOCKED' | 'DONE' | 'CANCELLED';
-
 export const OPEN_TASK_STATUSES: readonly TaskStatus[] = ['TODO', 'IN_PROGRESS', 'BLOCKED'];
 
 /**
@@ -344,7 +367,6 @@ export interface Task extends Timestamps, TenantScoped, SoftDeletable {
   readonly status: TaskStatus;
   readonly dueAt: IsoDateTime | null;
 }
-
 /** A task as the API returns it, with the names the UI needs to render. */
 export interface TaskListItem extends Task {
   readonly assigneeName: string | null;
@@ -358,6 +380,8 @@ export interface ServiceCategory extends Timestamps, TenantScoped, SoftDeletable
   readonly slug: string;
   readonly description: string | null;
   readonly isActive: boolean;
+  /** Service-specific delivery commitment in hours; null uses the priority default. */
+  readonly slaDeliveryHours: number | null;
 }
 
 export interface ServiceRequest extends Timestamps, TenantScoped, SoftDeletable {
@@ -376,6 +400,8 @@ export interface ServiceRequest extends Timestamps, TenantScoped, SoftDeletable 
   readonly dueAt: IsoDateTime | null;
   readonly submittedAt: IsoDateTime | null;
   readonly closedAt: IsoDateTime | null;
+  /** Materialised delivery commitment; null means no obligation is tracked. */
+  readonly slaTargetAt: IsoDateTime | null;
 }
 
 /** A message on a request. `isInternal` notes are never shown to the client. */
@@ -474,7 +500,12 @@ export interface NotificationDeliveryRecord {
   readonly organizationId: Uuid;
   readonly membershipId: Uuid | null;
   readonly userId: Uuid;
-  readonly kind: 'INVITATION' | 'RESENT' | 'DELIVERABLE_RELEASED' | 'REQUEST_STATUS_UPDATED';
+  readonly kind:
+    | 'INVITATION'
+    | 'RESENT'
+    | 'DELIVERABLE_RELEASED'
+    | 'REQUEST_STATUS_UPDATED'
+    | 'SLA_RISK';
   readonly channel: string;
   readonly driver: string;
   readonly status: 'SENT' | 'FAILED' | 'SKIPPED';
@@ -577,6 +608,10 @@ export interface OpsOrganizationSummary {
   readonly podCount: number;
   readonly memberCount: number;
   readonly releasedDeliverables: number;
+  /** Open requests inside the SLA warning window. */
+  readonly slaAtRisk: number;
+  /** Open requests already past their delivery commitment. */
+  readonly slaBreached: number;
 }
 
 /** A request waiting on a routing decision. */
@@ -593,6 +628,9 @@ export interface OpsQueueItem {
   readonly podName: string | null;
   readonly assigneeId: Uuid | null;
   readonly assigneeName: string | null;
+  /** Where this request stands against its delivery commitment. */
+  readonly slaTargetAt: IsoDateTime | null;
+  readonly slaState: SlaState;
 }
 
 export interface OpsPodSummary extends PodSummary {
@@ -613,6 +651,8 @@ export interface OpsDashboard {
     readonly unassignedRequests: number;
     readonly pods: number;
     readonly releasedDeliverables: number;
+    readonly slaAtRisk: number;
+    readonly slaBreached: number;
   };
   readonly organizations: readonly OpsOrganizationSummary[];
   readonly pods: readonly OpsPodSummary[];

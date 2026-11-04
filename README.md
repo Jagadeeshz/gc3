@@ -173,6 +173,13 @@ Base URL: `http://localhost:3001/api/v1`
 | GET | `/pods` | bearer + scope | `request:assign` — live pods in the tenant with member and open-request counts |
 | POST | `/pods` | bearer + scope | `pod:manage` — slug derived from the name, 409 on duplicate, 400 for an unknown member id |
 | PATCH | `/service-requests/:requestId/assign` | bearer + scope | `request:assign` — `podId` and/or `assigneeId`; `null` clears; a pod from another tenant is 404 |
+| GET | `/pods/staff` | bearer + scope | `task:read` — staff accounts that can be seated or assigned, with their pod count |
+| POST | `/pods/:podId/members` | bearer + scope | `pod:manage` — seat a person, 201 with the refreshed roster, 409 if already seated |
+| DELETE | `/pods/:podId/members/:userId` | bearer + scope | `pod:manage` — 204, 404 when not seated |
+| GET | `/service-requests/:requestId/tasks` | bearer + scope | `task:read` — the internal checklist, oldest first. No client role holds it |
+| POST | `/service-requests/:requestId/tasks` | bearer + scope | `task:manage` — carve out a work item; inherits the request's pod |
+| PATCH | `/tasks/:taskId` | bearer + scope | `task:manage` — status, assignee, title, description, due date |
+| POST | `/ops/sla/sweep` | bearer only | `ops:read` — run the SLA risk engine now, returns scanned / at risk / breached / alerted / skipped |
 
 `bearer + scope` means: `Authorization: Bearer <token>` **and** `x-organization-id: <uuid>`.
 
@@ -233,6 +240,8 @@ permissions. `INVITED` and `REVOKED` memberships contribute nothing.
 | `notification:manage` | — | — | — | ✅ | ✅ | — | — | — | — |
 | `request:assign` | — | — | — | ✅ | ✅ | ✅ | — | — | — |
 | `pod:manage` | — | — | — | ✅ | ✅ | — | — | — | — |
+| `task:read` | — | — | — | ✅ | ✅ | ✅ | ✅ | ✅ | — |
+| `task:manage` | — | — | — | ✅ | ✅ | ✅ | ✅ | — | — |
 | `ops:read` | — | — | — | ✅ | ✅ | — | — | — | — |
 
 **Bootstrapping.** There is no public registration. Provision staff out of band:
@@ -292,6 +301,29 @@ replaying a stored string.
 
 The dispatcher is in-process (`enqueueEvent` / `drainEventQueue`). That suits a single-node deploy; a
 durable queue (BullMQ on the configured Redis) is the next step if jobs must survive a restart.
+
+### SLA commitments and risk alerts
+
+A request carries a materialised delivery commitment (`sla_target_at`), taken from the service
+category's `sla_delivery_hours` when it has one, otherwise from the priority default:
+
+| Priority | Default commitment |
+|---|---|
+| URGENT | 8 hours |
+| HIGH | 24 hours |
+| NORMAL | 72 hours |
+| LOW | 168 hours |
+
+`computeSlaState()` (pure, in `apps/api/src/lib/sla.ts`) reports `NONE`, `ON_TRACK`, `AT_RISK`,
+`BREACHED`, `MET` or `MISSED`. The warning window is the final quarter of the contract; a closed
+request is judged by when it actually closed. Changing priority or service recomputes the target
+**from creation**, so an escalation cannot buy more time.
+
+The risk sweep runs on an interval (`SLA_SWEEP_INTERVAL_SECONDS`, default 300; 0 disables) and on
+demand via `POST /ops/sla/sweep`. It emails the **state** once per request: AT_RISK, then again if it
+escalates to BREACHED. `sla_alerted_state` is the dedupe, so repeated sweeps are silent. The recipient
+is the request's assignee, then the pod lead — nobody is invented, and a request with no owner is
+reported as `skipped` rather than mailing an unrelated administrator.
 
 ### Notification retries
 
@@ -543,8 +575,11 @@ NOTIFICATION_RETRY_INTERVAL_SECONDS=300  # worker cadence; 0 disables the worker
 | Phase 2 files: stored uploads with SHA-256, download, integrity check | done |
 | Notifications: retry/backoff worker, manual sweep, delivery read API | done |
 | Notifications: deliverable-released and status-updated event emails | done |
-| Integration test harness (Vitest + Supertest, 241 tests) | done |
+| Integration test harness (Vitest + Supertest, 278 tests) | done |
 | Phase 3: operations console, pods, request routing | done |
+| Phase 3: pod membership and staffing | done |
+| Phase 3: task breakdown and work allocation | done |
+| Phase 3: internal SLA monitoring and risk alerts | done |
 | Delivery retry/backoff, bounce handling, delivery read API | retry + read API done; bounce handling not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |

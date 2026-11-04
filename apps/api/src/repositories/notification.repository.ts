@@ -5,7 +5,7 @@ export interface RecordDeliveryInput {
   /** Absent for event notifications, which target a user rather than a membership. */
   readonly membershipId?: string | null;
   readonly userId: string;
-  readonly kind: 'invitation' | 'resent' | 'deliverable_released' | 'request_status_updated';
+  readonly kind: 'invitation' | 'resent' | 'deliverable_released' | 'request_status_updated' | 'sla_risk';
   readonly driver: string;
   readonly status: 'sent' | 'failed' | 'skipped';
   readonly recipient: string;
@@ -29,6 +29,7 @@ const KIND_MAP = {
   resent: 'RESENT',
   deliverable_released: 'DELIVERABLE_RELEASED',
   request_status_updated: 'REQUEST_STATUS_UPDATED',
+  sla_risk: 'SLA_RISK',
 } as const;
 
 const STATUS_MAP = { sent: 'SENT', failed: 'FAILED', skipped: 'SKIPPED' } as const;
@@ -113,7 +114,7 @@ export const notificationRepository = {
     organizationId: string,
     filters: {
       status?: 'SENT' | 'FAILED' | 'SKIPPED';
-      kind?: 'INVITATION' | 'RESENT' | 'DELIVERABLE_RELEASED' | 'REQUEST_STATUS_UPDATED';
+      kind?: 'INVITATION' | 'RESENT' | 'DELIVERABLE_RELEASED' | 'REQUEST_STATUS_UPDATED' | 'SLA_RISK';
       recipient?: string;
       page: number;
       pageSize: number;

@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { createApp } from './app';
 import { env, SERVICE_NAME, SERVICE_VERSION } from './config/env';
 import { startRetryWorker } from './notifications/retry';
+import { startSlaWorker } from './sla/monitor';
 
 const app = createApp();
 const server = app.listen(env.API_PORT, env.API_HOST, () => {
@@ -21,11 +22,24 @@ if (retryWorker) {
   );
 }
 
+// SLA risk alerts ride the same idea: a cheap periodic pass, disabled in tests.
+const slaWorker = startSlaWorker();
+
+if (slaWorker) {
+  console.log(
+    `[${SERVICE_NAME}] SLA risk sweep every ${env.SLA_SWEEP_INTERVAL_SECONDS}s`,
+  );
+}
+
 /** Graceful shutdown so in-flight requests finish before the process exits. */
 function shutdown(signal: string): void {
   console.log(`[${SERVICE_NAME}] ${signal} received — draining connections`);
   if (retryWorker) {
     clearInterval(retryWorker);
+  }
+
+  if (slaWorker) {
+    clearInterval(slaWorker);
   }
 
   server.close(() => {

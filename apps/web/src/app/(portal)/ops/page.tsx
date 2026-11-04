@@ -10,6 +10,7 @@ import {
   fetchOpsDashboard,
   fetchStaffCandidates,
   removePodMember,
+  runSlaSweep,
 } from '@/lib/api-client';
 import { useSession } from '@/lib/session-context';
 import { formatDate } from '@/components/portal/status';
@@ -50,6 +51,7 @@ export default function OpsConsolePage() {
   const [staff, setStaff] = useState<StaffCandidate[]>([]);
   const [seatDraft, setSeatDraft] = useState<Record<string, string>>({});
   const [busyMember, setBusyMember] = useState<string | null>(null);
+  const [sweepBusy, setSweepBusy] = useState(false);
 
   const token = session?.accessToken ?? null;
   const platformRole = session?.actor.platformRole ?? null;
@@ -163,6 +165,29 @@ export default function OpsConsolePage() {
     }
   }
 
+  /** Runs the risk engine now and reports what it found. */
+  async function sweepSla() {
+    if (!token) {
+      return;
+    }
+
+    setSweepBusy(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      const report = await runSlaSweep(token);
+      setNotice(
+        `SLA sweep: ${report.scanned} scanned · ${report.atRisk} at risk · ${report.breached} breached · ${report.alerted} alerted · ${report.skipped} skipped`,
+      );
+      await load();
+    } catch (caught) {
+      setError(caught instanceof ApiClientError ? caught.message : 'Could not run the SLA sweep');
+    } finally {
+      setSweepBusy(false);
+    }
+  }
+
   async function submitPod(event: React.FormEvent) {
     event.preventDefault();
 
@@ -223,6 +248,14 @@ export default function OpsConsolePage() {
         >
           Refresh
         </button>
+        <button
+          type="button"
+          disabled={sweepBusy}
+          onClick={() => void sweepSla()}
+          className="rounded-lg border border-gold/40 bg-gold/15 px-3 py-2 text-xs font-semibold text-gold-light transition-colors hover:bg-gold/25 disabled:opacity-50"
+        >
+          {sweepBusy ? 'Sweeping…' : 'Run SLA sweep'}
+        </button>
       </div>
 
       {error ? (
@@ -253,6 +286,8 @@ export default function OpsConsolePage() {
               { label: 'Blocked', value: totals?.blockedRequests ?? 0 },
               { label: 'Overdue', value: totals?.overdueRequests ?? 0 },
               { label: 'Unrouted', value: totals?.unassignedRequests ?? 0 },
+              { label: 'SLA at risk', value: totals?.slaAtRisk ?? 0 },
+              { label: 'SLA breached', value: totals?.slaBreached ?? 0 },
               { label: 'Pods', value: totals?.pods ?? 0 },
             ].map((metric) => (
               <div key={metric.label} className="rounded-[12px] border border-white/10 bg-graphite/85 p-4">
@@ -274,6 +309,8 @@ export default function OpsConsolePage() {
                     <th className="px-4 py-2.5 font-medium">Blocked</th>
                     <th className="px-4 py-2.5 font-medium">Overdue</th>
                     <th className="px-4 py-2.5 font-medium">Unrouted</th>
+                    <th className="px-4 py-2.5 font-medium">SLA risk</th>
+                    <th className="px-4 py-2.5 font-medium">Breached</th>
                     <th className="px-4 py-2.5 font-medium">Pods</th>
                     <th className="px-4 py-2.5 font-medium">Members</th>
                     <th className="px-4 py-2.5 font-medium">Released</th>
@@ -290,6 +327,8 @@ export default function OpsConsolePage() {
                       <td className="px-4 py-2.5 text-red-300">{organization.blockedRequests}</td>
                       <td className="px-4 py-2.5 text-gold-light">{organization.overdueRequests}</td>
                       <td className="px-4 py-2.5 text-muted">{organization.unassignedRequests}</td>
+                      <td className="px-4 py-2.5 text-gold-light">{organization.slaAtRisk}</td>
+                      <td className="px-4 py-2.5 text-red-300">{organization.slaBreached}</td>
                       <td className="px-4 py-2.5 text-muted">{organization.podCount}</td>
                       <td className="px-4 py-2.5 text-muted">{organization.memberCount}</td>
                       <td className="px-4 py-2.5 text-emerald-300">
@@ -355,6 +394,21 @@ export default function OpsConsolePage() {
                           {item.podName ? ` · ${item.podName}` : ' · no pod'}
                           {item.assigneeName ? ` · ${item.assigneeName}` : ' · no owner'}
                         </p>
+                        {item.slaState !== 'NONE' ? (
+                          <p
+                            className={[
+                              'mt-1 inline-block rounded border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em]',
+                              item.slaState === 'BREACHED'
+                                ? 'border-red-400/35 bg-red-400/10 text-red-300'
+                                : item.slaState === 'AT_RISK'
+                                  ? 'border-gold/35 bg-gold/10 text-gold-light'
+                                  : 'border-white/15 text-muted',
+                            ].join(' ')}
+                          >
+                            {item.slaState.replace(/_/g, ' ')}
+                            {item.slaTargetAt ? ` · ${formatDate(item.slaTargetAt)}` : ''}
+                          </p>
+                        ) : null}
                       </div>
 
                       <div className="flex items-center gap-2">

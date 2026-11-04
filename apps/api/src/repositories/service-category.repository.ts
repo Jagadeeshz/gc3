@@ -8,6 +8,7 @@ type CategoryRow = {
   slug: string;
   description: string | null;
   isActive: boolean;
+  slaDeliveryHours: number | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -21,6 +22,7 @@ function toEntity(row: CategoryRow): ServiceCategory {
     slug: row.slug,
     description: row.description,
     isActive: row.isActive,
+    slaDeliveryHours: row.slaDeliveryHours,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     deletedAt: row.deletedAt ? row.deletedAt.toISOString() : null,
@@ -36,7 +38,7 @@ function toEntity(row: CategoryRow): ServiceCategory {
 export const serviceCategoryRepository = {
   async createScoped(
     organizationId: string,
-    input: { name: string; slug: string; description?: string },
+    input: { name: string; slug: string; description?: string; slaDeliveryHours?: number | null },
   ): Promise<ServiceCategory> {
     const row = await prisma.serviceCategory.create({
       data: {
@@ -44,6 +46,7 @@ export const serviceCategoryRepository = {
         name: input.name,
         slug: input.slug,
         description: input.description ?? null,
+        slaDeliveryHours: input.slaDeliveryHours ?? null,
       },
     });
 
@@ -96,6 +99,7 @@ export const serviceCategoryRepository = {
       slug?: string;
       description?: string | null;
       isActive?: boolean;
+      slaDeliveryHours?: number | null;
     },
   ): Promise<ServiceCategory | null> {
     const result = await prisma.serviceCategory.updateMany({
@@ -105,6 +109,9 @@ export const serviceCategoryRepository = {
         ...(input.slug !== undefined ? { slug: input.slug } : {}),
         ...(input.description !== undefined ? { description: input.description } : {}),
         ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
+        ...(input.slaDeliveryHours !== undefined
+          ? { slaDeliveryHours: input.slaDeliveryHours }
+          : {}),
       },
     });
 
