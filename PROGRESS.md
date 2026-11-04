@@ -27,7 +27,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 11 | Phase 2 · Deliverable versioning & delivery history | `351e1d4`, `be00a48` | ✅ delivered |
 | 12 | Phase 2 · Stored file uploads & checksums | `f02c970`, `040eb38` | ✅ delivered |
 | 13 | Notifications · retry/backoff & delivery read API | `bf229cd`, `7b8f5ad` | ✅ delivered |
-| 14 | Notifications · deliverable-released & status-updated events | `<pending>` | ✅ delivered |
+| 14 | Notifications · deliverable-released & status-updated events | `b368a91` | ✅ delivered |
 
 ---
 
@@ -710,6 +710,7 @@ it — the first version expected one row and got two.
 
 ## Slice 14 — Notifications · event dispatch (deliverable released, status updated)  ✅
 
+**Commit:** `b368a91` — feat(notifications): deliverable-released and status-updated event emails
 **Brief refs:** §7 (notifications), §5.4 (delivery), §12 (tenancy)
 
 ### What shipped
