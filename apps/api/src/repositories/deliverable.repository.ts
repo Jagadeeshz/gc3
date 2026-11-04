@@ -10,6 +10,7 @@ type DeliverableRow = {
   description: string | null;
   status: DeliverableStatus;
   fileUrl: string | null;
+  createdById: string | null;
   approvedById: string | null;
   approvedAt: Date | null;
   releasedAt: Date | null;
@@ -27,6 +28,7 @@ function toEntity(row: DeliverableRow): Deliverable {
     description: row.description,
     status: row.status,
     fileUrl: row.fileUrl,
+    createdById: row.createdById,
     approvedById: row.approvedById,
     approvedAt: row.approvedAt ? row.approvedAt.toISOString() : null,
     releasedAt: row.releasedAt ? row.releasedAt.toISOString() : null,
@@ -44,6 +46,8 @@ export const deliverableRepository = {
       requestId?: string;
       description?: string;
       fileUrl?: string;
+      /** The staff member producing it. Stamped by the route from the actor. */
+      createdById?: string;
     },
   ): Promise<Deliverable> {
     if (input.requestId) {
@@ -64,6 +68,7 @@ export const deliverableRepository = {
         title: input.title,
         description: input.description ?? null,
         fileUrl: input.fileUrl ?? null,
+        createdById: input.createdById ?? null,
       },
     });
 

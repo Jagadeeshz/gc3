@@ -153,9 +153,9 @@ Base URL: `http://localhost:3001/api/v1`
 | PATCH | `/service-requests/:requestId` | bearer + scope | `request:update` — title, description, category, assignee, priority, dueAt |
 | POST | `/service-requests/:requestId/status` | bearer + scope | `request:update` — workflow transition, 409 when illegal, idempotent when repeated |
 | GET | `/service-requests/:requestId/comments` | bearer + scope | `request:read` — internal notes returned to staff only |
-| POST | `/service-requests/:requestId/comments` | bearer + scope | `request:comment` — `isInternal` ignored for client actors |
+| POST | `/service-requests/:requestId/comments` | bearer + scope | `request:comment` — `isInternal` honoured for staff only; a client's flag is downgraded to `false` |
 | GET | `/service-requests/:requestId/deliverables` | bearer + scope | `deliverable:read` |
-| POST | `/service-requests/:requestId/deliverables` | bearer + scope | `deliverable:create` |
+| POST | `/service-requests/:requestId/deliverables` | bearer + scope | `deliverable:create` — optional `fileUrl`; `createdById` is stamped from the actor |
 | PATCH | `/service-requests/:requestId/deliverables/:deliverableId/status` | bearer + scope | `deliverable:review` — release requires a prior human approval; AI actors blocked |
 | GET | `/service-categories` | bearer + scope | `category:read` — active only, `?includeInactive=true` for the full catalogue |
 | POST | `/service-categories` | bearer + scope | `category:manage` — slug derived from the name when omitted, 409 on duplicate |
@@ -434,8 +434,10 @@ API_INTERNAL_BASE_URL=http://localhost:3001/api/v1      # server-side health pro
   clients see only their ACTIVE memberships.
 - Deliverable Approve/Release buttons are shown from the caller's roles/client, which is a UI
   affordance only — `deliverable:review` is enforced by the API and an attempt without it fails 403.
-- Comments posted from the UI are client-visible; the API supports `isInternal` but there is no
-  toggle for it in the form yet.
+- Staff can mark a comment as an internal note and it is filtered out of every client response; the
+  form shows the toggle only to staff, and the API downgrades the flag if a client sends it.
+- Deliverables carry `createdById` (stamped from the actor) alongside `approvedById`; the create form
+  is staff-only and offers an optional file URL.
 - Dashboard metrics are computed over the first 100 requests of the active tenant, not a SQL
   aggregate.
 - Request editing is refused once a request is `CLOSED` or `CANCELLED` — the record is history by
@@ -466,7 +468,8 @@ API_INTERNAL_BASE_URL=http://localhost:3001/api/v1      # server-side health pro
 | Phase 2 API: Zod contracts + `/service-requests` routes with RBAC guards | done |
 | Phase 2 UI: login, dashboard, request list/create/detail with live API | done |
 | Phase 2 catalogue: `/service-categories` CRUD + category picker, request edit form | done |
-| Integration test harness (Vitest + Supertest, 162 tests) | done |
+| Phase 2 delivery: staff deliverable form with file refs, internal-note toggle | done |
+| Integration test harness (Vitest + Supertest, 173 tests) | done |
 | Delivery retry/backoff, bounce handling, delivery read API | not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
@@ -492,7 +495,7 @@ the seven negative-authorization tests and nothing else.
 
 ### Immediate next steps
 
-1. Phase 2 step 5: deliverable creation UI for staff, and an internal-note toggle on comments.
+1. Phase 2 step 6: deliverable editing/replacement, and a client-facing delivery history view.
 2. Delivery retry/backoff for FAILED rows, plus a `GET /organizations/:id/notifications` read API.
 3. Token lifecycle: refresh tokens, revocation, login rate limiting.
 4. Offboarding an ACTIVE member (session invalidation, retention rules).

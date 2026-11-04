@@ -356,6 +356,8 @@ export interface Deliverable extends Timestamps, TenantScoped, SoftDeletable {
   readonly description: string | null;
   readonly status: DeliverableStatus;
   readonly fileUrl: string | null;
+  /** Staff member who produced this deliverable; null for legacy rows. */
+  readonly createdById: Uuid | null;
   readonly approvedById: Uuid | null;
   readonly approvedAt: IsoDateTime | null;
   readonly releasedAt: IsoDateTime | null;

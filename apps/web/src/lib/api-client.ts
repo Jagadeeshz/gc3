@@ -189,12 +189,35 @@ export async function addComment(
   organizationId: string,
   requestId: string,
   body: string,
+  isInternal = false,
 ): Promise<RequestComment> {
   return request<RequestComment>(`/service-requests/${requestId}/comments`, {
     method: 'POST',
     token,
     organizationId,
-    body: { body },
+    // The API downgrades isInternal for client actors; sending it is safe.
+    body: { body, isInternal },
+  });
+}
+
+export interface CreateDeliverableInput {
+  title: string;
+  description?: string;
+  fileUrl?: string;
+}
+
+/** Staff-only: the API requires `deliverable:create`. */
+export async function createDeliverable(
+  token: string,
+  organizationId: string,
+  requestId: string,
+  input: CreateDeliverableInput,
+): Promise<Deliverable> {
+  return request<Deliverable>(`/service-requests/${requestId}/deliverables`, {
+    method: 'POST',
+    token,
+    organizationId,
+    body: input,
   });
 }
 

@@ -17,6 +17,7 @@ import {
   addComment,
   ApiClientError,
   changeRequestStatus,
+  createDeliverable,
   getRequest,
   listCategories,
   listComments,
@@ -48,6 +49,13 @@ export default function RequestDetailPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [draftComment, setDraftComment] = useState('');
+  const [commentIsInternal, setCommentIsInternal] = useState(false);
+  const [deliverableForm, setDeliverableForm] = useState({
+    title: '',
+    description: '',
+    fileUrl: '',
+  });
+  const [showDeliverableForm, setShowDeliverableForm] = useState(false);
   const [categories, setCategories] = useState<readonly ServiceCategory[]>([]);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<{
@@ -108,6 +116,17 @@ export default function RequestDetailPage() {
     return roles.includes('CLIENT_OWNER') || roles.includes('CLIENT_APPROVER');
   }, [session]);
 
+  /** Staff who hold `deliverable:create`. Clients never produce deliverables. */
+  const canCreateDeliverable = useMemo(() => {
+    const role = session?.actor.platformRole ?? null;
+    return role !== null
+      ? ['PLATFORM_ADMIN', 'OPERATIONS_MANAGER', 'POD_MANAGER', 'SPECIALIST'].includes(role)
+      : false;
+  }, [session]);
+
+  /** Only staff may author internal notes; the API downgrades the flag for clients. */
+  const canWriteInternal = useMemo(() => Boolean(session?.actor.platformRole), [session]);
+
   const nextStatuses = request ? SERVICE_REQUEST_TRANSITIONS[request.status] : [];
 
   async function onTransition(status: ServiceRequestStatus) {
@@ -142,8 +161,15 @@ export default function RequestDetailPage() {
     setActionError(null);
 
     try {
-      await addComment(token, organizationId, request.id, draftComment.trim());
+      await addComment(
+        token,
+        organizationId,
+        request.id,
+        draftComment.trim(),
+        canWriteInternal && commentIsInternal,
+      );
       setDraftComment('');
+      setCommentIsInternal(false);
       const refreshed = await listComments(token, organizationId, request.id);
       setComments(refreshed);
     } catch (caught) {
@@ -215,6 +241,39 @@ export default function RequestDetailPage() {
     } catch (caught) {
       setActionError(
         caught instanceof ApiClientError ? caught.message : 'Could not save the changes',
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function onCreateDeliverable(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!token || !organizationId || !request) {
+      return;
+    }
+
+    setBusy('deliverable:create');
+    setActionError(null);
+
+    try {
+      await createDeliverable(token, organizationId, request.id, {
+        title: deliverableForm.title.trim(),
+        ...(deliverableForm.description.trim()
+          ? { description: deliverableForm.description.trim() }
+          : {}),
+        ...(deliverableForm.fileUrl.trim() ? { fileUrl: deliverableForm.fileUrl.trim() } : {}),
+      });
+
+      setDeliverableForm({ title: '', description: '', fileUrl: '' });
+      setShowDeliverableForm(false);
+
+      const refreshed = await listDeliverables(token, organizationId, request.id);
+      setDeliverables(refreshed);
+    } catch (caught) {
+      setActionError(
+        caught instanceof ApiClientError ? caught.message : 'Could not create the deliverable',
       );
     } finally {
       setBusy(null);
@@ -452,9 +511,24 @@ export default function RequestDetailPage() {
               rows={3}
               value={draftComment}
               onChange={(event) => setDraftComment(event.target.value)}
-              placeholder="Add a comment…"
+              placeholder={commentIsInternal ? 'Add an internal note…' : 'Add a comment…'}
               className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
             />
+            {canWriteInternal ? (
+              <label className="flex items-center gap-2 text-xs text-muted">
+                <input
+                  type="checkbox"
+                  checked={commentIsInternal}
+                  onChange={(event) => setCommentIsInternal(event.target.checked)}
+                  className="size-4 rounded border-white/20 bg-graphite-elevated accent-gold"
+                />
+                Internal note — hidden from the client
+              </label>
+            ) : (
+              <p className="text-[11px] text-muted">
+                Your comments are visible to the GC3 delivery team.
+              </p>
+            )}
             <button
               type="submit"
               disabled={busy !== null || draftComment.trim().length === 0}
@@ -466,7 +540,76 @@ export default function RequestDetailPage() {
         </section>
 
         <section className="rounded-[14px] border border-white/10 bg-graphite/85 p-5">
-          <h2 className="text-sm font-semibold text-warm">Deliverables</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-warm">Deliverables</h2>
+            {canCreateDeliverable && !showDeliverableForm ? (
+              <button
+                type="button"
+                onClick={() => setShowDeliverableForm(true)}
+                className="rounded-md border border-gold/40 bg-gold/12 px-2.5 py-1 text-[11px] text-gold-light hover:bg-gold/20"
+              >
+                + Add deliverable
+              </button>
+            ) : null}
+          </div>
+
+          {canCreateDeliverable && showDeliverableForm ? (
+            <form
+              className="mt-3 grid gap-2 rounded-[10px] border border-gold/30 bg-white/[0.02] p-3"
+              onSubmit={onCreateDeliverable}
+            >
+              <input
+                required
+                minLength={3}
+                maxLength={200}
+                value={deliverableForm.title}
+                onChange={(event) =>
+                  setDeliverableForm({ ...deliverableForm, title: event.target.value })
+                }
+                placeholder="Deliverable title"
+                className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none"
+              />
+              <input
+                maxLength={1000}
+                value={deliverableForm.description}
+                onChange={(event) =>
+                  setDeliverableForm({ ...deliverableForm, description: event.target.value })
+                }
+                placeholder="Short description (optional)"
+                className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none"
+              />
+              <input
+                type="url"
+                maxLength={500}
+                value={deliverableForm.fileUrl}
+                onChange={(event) =>
+                  setDeliverableForm({ ...deliverableForm, fileUrl: event.target.value })
+                }
+                placeholder="https://files.example.com/output.pdf (optional)"
+                className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2 font-mono text-xs text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={busy !== null}
+                  className="rounded-md border border-gold-deep/40 bg-[linear-gradient(180deg,#E2C777_0%,#D9B65D_100%)] px-3 py-1.5 text-[11px] font-medium text-ink disabled:opacity-50"
+                >
+                  {busy === 'deliverable:create' ? 'Adding…' : 'Add deliverable'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeliverableForm(false);
+                    setDeliverableForm({ title: '', description: '', fileUrl: '' });
+                  }}
+                  disabled={busy !== null}
+                  className="rounded-md border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-warm hover:bg-white/10 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : null}
 
           {deliverables.length === 0 ? (
             <p className="mt-3 text-sm text-muted">Nothing delivered against this request yet.</p>
@@ -490,6 +633,17 @@ export default function RequestDetailPage() {
                       {deliverableStatusLabel(deliverable.status)}
                     </Badge>
                   </div>
+
+                  {deliverable.fileUrl ? (
+                    <a
+                      href={deliverable.fileUrl}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="mt-2 inline-block text-[11px] text-gold-light hover:underline"
+                    >
+                      Open attached file ↗
+                    </a>
+                  ) : null}
 
                   {canReview ? (
                     <div className="mt-2.5 flex flex-wrap gap-1.5">

@@ -163,6 +163,7 @@ model User {
   requestsAssigned   ServiceRequest[]  @relation("ServiceRequestAssignee")
   requestComments    RequestComment[]  @relation("RequestCommentAuthor")
   deliverablesApproved Deliverable[]   @relation("DeliverableApprover")
+  deliverablesCreated  Deliverable[]   @relation("DeliverableCreator")
 
   @@index([status])
   @@index([platformRole])
@@ -342,6 +343,7 @@ model Deliverable {
   description    String?           @db.VarChar(1000)
   status         DeliverableStatus @default(PENDING)
   fileUrl        String?           @map("file_url") @db.VarChar(500)
+  createdById    String?           @map("created_by_id") @db.Uuid
   approvedById   String?           @map("approved_by_id") @db.Uuid
   approvedAt     DateTime?         @map("approved_at") @db.Timestamptz(3)
   releasedAt     DateTime?         @map("released_at") @db.Timestamptz(3)
@@ -351,10 +353,12 @@ model Deliverable {
 
   organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   request      ServiceRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  createdBy    User?           @relation("DeliverableCreator", fields: [createdById], references: [id], onDelete: SetNull)
   approvedBy   User?           @relation("DeliverableApprover", fields: [approvedById], references: [id], onDelete: SetNull)
 
   @@index([organizationId, status])
   @@index([organizationId, createdAt])
   @@index([requestId])
+  @@index([createdById])
   @@map("deliverables")
 }

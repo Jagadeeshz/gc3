@@ -367,9 +367,16 @@ serviceRequestsRouter.post(
       throw ApiError.badRequest('Invalid deliverable payload', formatIssues(body.error));
     }
 
+    const actor = request.actor;
+
+    if (!actor) {
+      throw ApiError.unauthenticated();
+    }
+
     const created = await deliverableRepository.createScoped(scopeOf(request.organizationId), {
       requestId: params.data.requestId,
       title: body.data.title,
+      createdById: actor.userId,
       ...(body.data.description ? { description: body.data.description } : {}),
       ...(body.data.fileUrl ? { fileUrl: body.data.fileUrl } : {}),
     });

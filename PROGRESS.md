@@ -22,7 +22,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 6 | Phase 2 · Service request data layer | `8fa7acc`, `bdc98ca` | ✅ delivered |
 | 7 | Phase 2 · Service request API | `eb3d433`, `41a1264` | ✅ delivered |
 | 8 | Phase 2 · Service request UI | `0bb6e7e` | ✅ delivered |
-| 9 | Phase 2 · Categories & request editing | `a119478` | ✅ delivered |
+| 9 | Phase 2 · Categories & request editing | `a119478`, `7a94ef8` | ✅ delivered |
+| 10 | Phase 2 · Staff deliverables & internal notes | `<pending>` | ✅ delivered |
 
 ---
 
@@ -429,7 +430,8 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ## Slice 9 — Phase 2 · Category management & request editing  ✅
 
-**Commit:** `a119478` — feat(catalogue): service category CRUD and request editing UI
+**Commits:** `a119478` — feat(catalogue): service category CRUD and request editing UI
+· `7a94ef8` — docs(progress): pin slice 9 to a119478
 **Brief refs:** §5.2 (request edits), §6.2 (service catalogue), §11 (API), §12 (tenancy, RBAC)
 
 Slice 8 was already recorded against `0bb6e7e` in the index above; no re-statement needed.
@@ -480,11 +482,64 @@ omitted), the form omits an empty description on create, and a test locks the be
 
 ---
 
+## Slice 10 — Phase 2 · Staff deliverables & internal notes  ✅
+
+**Brief refs:** §5.4 (deliverables), §8.3 (human sign-off), §11 (API), §12 (tenancy, RBAC)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Deliverable authorship | `deliverables.created_by_id` (nullable, FK → users, `ON DELETE SET NULL`, indexed) with migration `20261104120000_deliverable_created_by`; the route stamps it from the actor, so delivery history has an author as well as an approver |
+| Staff deliverable form | Collapsible panel on the request detail screen: title, description, optional file URL (validated as a URL); renders the file as an "Open attached file" link |
+| Internal-note toggle | Checkbox on the comment form, staff only, sending `isInternal: true`; the note is tagged `INTERNAL NOTE` in the thread |
+| Client-side hint | Without the toggle, clients are told their comments are visible to the GC3 delivery team |
+| Tests | 11 new: 7 for staff deliverable creation, 4 for internal-note privacy |
+
+### Evidence
+
+- `pnpm test` **173/173** across 14 files (was 162)
+- Migration applied and verified in Postgres:
+  `deliverables_created_by_id_fkey` + `deliverables_created_by_id_idx` present, `prisma migrate status`
+  reports "Database schema is up to date!"
+- Browser, two real sessions against the live API:
+  - **staff** (`portal.verify@gc3.local`): internal toggle present → posted "Margin on this account is
+    thin…" → thread shows `INTERNAL NOTE`; added *Staging access runbook* with
+    `https://files.example.com/staging-runbook.pdf` → row shows `Open attached file ↗`, status `PENDING`
+  - **client** (`client.owner@helios.test`, CLIENT_OWNER in the same tenant): the internal note's text
+    is **absent**, no `INTERNAL NOTE` tag, the client-visible comment is present, no "Add deliverable"
+    button, no internal checkbox, and the hint "Your comments are visible to the GC3 delivery team."
+    is shown instead
+  - API-level proof of the same: the client's comment payload contains no trace of the note text
+    (asserted against the whole serialised response, not just the list)
+
+### Notes / limits
+
+- Internal notes are filtered in the repository query (`includeInternal: isStaff`), not after the fact,
+  so they never enter a client response at all.
+- A client sending `isInternal: true` is accepted and stored as `false` rather than rejected — a 400
+  would confirm the existence of staff-only notes.
+- Deliverables remain staff-produced; `deliverable:create` is held by PLATFORM_ADMIN,
+  OPERATIONS_MANAGER, POD_MANAGER and SPECIALIST only. ACCOUNT_MANAGER can read and comment but not
+  produce.
+- The client still sees Move-this-request and Edit, which is correct per the matrix (CLIENT_OWNER
+  holds `request:update`); the closed/cancelled guard applies to them too.
+- No deliverable edit/replace or versioning yet — a deliverable is currently created once.
+
+### Test-fixture lesson
+
+Three tests failed initially because they seeded a request while authenticated as SPECIALIST or
+ACCOUNT_MANAGER, and neither holds `request:create`. The fixtures now seed with a PLATFORM_ADMIN and
+perform the action as the role under test — which is the correct shape anyway: the actor being tested
+is not necessarily the actor who raised the request.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Phase 2 step 5 | Deliverable creation UI for staff, internal-note toggle on comments |
+| Phase 2 step 6 | Deliverable edit/replace + versioning, client-facing delivery history |
 | Delivery retry & backoff | Retry FAILED deliveries; bounce/complaint suppression list |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |
