@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { API, app, authGet, createStaff, TEST_PASSWORD } from './helpers/api';
+import { API, app, authGet, createMember, createOrganization, createStaff, TEST_PASSWORD } from './helpers/api';
 import { prisma } from '../src/db/client';
 import { hashPassword } from '../src/auth/password';
 import { signAccessToken } from '../src/auth/tokens';
@@ -196,5 +196,50 @@ describe('GET /api/v1/auth/me', () => {
 
     const response = await authGet(`${API}/auth/me`, staff.token).expect(401);
     expect(response.body.error.code).toBe('UNAUTHENTICATED');
+  });
+});
+
+describe('GET /api/v1/auth/organizations', () => {
+  it('lists every tenant for staff, with no roles attached', async () => {
+    const staff = await createStaff('PLATFORM_ADMIN');
+    const first = await createOrganization({ slug: 'picker-a' });
+    const second = await createOrganization({ slug: 'picker-b' });
+
+    const response = await authGet(`${API}/auth/organizations`, staff.token).expect(200);
+
+    const ids = (response.body.data as { id: string }[]).map((org) => org.id);
+    expect(ids).toEqual(expect.arrayContaining([first.id, second.id]));
+    expect(response.body.data[0].roles).toEqual([]);
+  });
+
+  it('lists only ACTIVE memberships for a client user', async () => {
+    const mine = await createOrganization({ slug: 'picker-mine' });
+    const theirs = await createOrganization({ slug: 'picker-theirs' });
+    const member = await createMember({ organizationId: mine.id, roles: ['CLIENT_OWNER'] });
+
+    const response = await authGet(`${API}/auth/organizations`, member.token).expect(200);
+
+    expect(response.body.data).toHaveLength(1);
+    expect(response.body.data[0]).toMatchObject({
+      id: mine.id,
+      roles: ['CLIENT_OWNER'],
+    });
+    expect(response.body.data[0].id).not.toBe(theirs.id);
+  });
+
+  it('excludes an INVITED membership until it is accepted', async () => {
+    const organization = await createOrganization({ slug: 'picker-invited' });
+    const invited = await createMember({
+      organizationId: organization.id,
+      roles: ['CLIENT_TEAM_MEMBER'],
+      status: 'INVITED',
+    });
+
+    const response = await authGet(`${API}/auth/organizations`, invited.token).expect(200);
+    expect(response.body.data).toHaveLength(0);
+  });
+
+  it('requires authentication', async () => {
+    await request(app).get(`${API}/auth/organizations`).expect(401);
   });
 });

@@ -1,0 +1,129 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import type { ServiceRequestPriority } from '@gc3/types';
+import { ApiClientError, createRequest } from '@/lib/api-client';
+import { useSession } from '@/lib/session-context';
+
+const PRIORITIES: ServiceRequestPriority[] = ['LOW', 'NORMAL', 'HIGH', 'URGENT'];
+
+/** Request creation form — mirrors the prototype's `formbox` panel. */
+export default function NewRequestPage() {
+  const router = useRouter();
+  const { session } = useSession();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState<ServiceRequestPriority>('NORMAL');
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState<'DRAFT' | 'SUBMITTED' | null>(null);
+
+  async function submit(status: 'DRAFT' | 'SUBMITTED') {
+    if (!session?.accessToken || !session.activeOrganizationId) {
+      setError('No active organization — sign in again.');
+      return;
+    }
+
+    setSaving(status);
+    setError(null);
+
+    try {
+      const created = await createRequest(
+        session.accessToken,
+        session.activeOrganizationId,
+        { title: title.trim(), description: description.trim(), priority, status },
+      );
+
+      router.push(`/requests/${created.id}`);
+    } catch (caught) {
+      setError(caught instanceof ApiClientError ? caught.message : 'Could not create the request');
+      setSaving(null);
+    }
+  }
+
+  return (
+    <div className="max-w-[680px]">
+      <h1 className="font-display text-3xl tracking-[-0.01em] text-warm">New service request</h1>
+      <p className="mt-1 text-sm text-muted">
+        Describe the outcome you need. Drafts stay private until you submit them.
+      </p>
+
+      <form
+        className="mt-6 grid gap-4 rounded-[14px] border border-white/10 bg-graphite/85 p-6"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void submit('SUBMITTED');
+        }}
+      >
+        <label className="grid gap-1.5">
+          <span className="text-xs font-medium text-muted">Title</span>
+          <input
+            required
+            minLength={3}
+            maxLength={200}
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="e.g. Provision a staging cluster"
+            className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+          />
+        </label>
+
+        <label className="grid gap-1.5">
+          <span className="text-xs font-medium text-muted">Description</span>
+          <textarea
+            required
+            minLength={10}
+            rows={5}
+            maxLength={20_000}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            placeholder="What needs to happen, for whom, and by when?"
+            className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+          />
+        </label>
+
+        <label className="grid gap-1.5">
+          <span className="text-xs font-medium text-muted">Priority</span>
+          <select
+            value={priority}
+            onChange={(event) => setPriority(event.target.value as ServiceRequestPriority)}
+            className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm focus:border-gold/60 focus:outline-none"
+          >
+            {PRIORITIES.map((value) => (
+              <option key={value} value={value}>
+                {value.charAt(0) + value.slice(1).toLowerCase()}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {error ? (
+          <p
+            role="alert"
+            className="rounded-lg border border-red-400/35 bg-red-400/10 px-3 py-2 text-xs text-red-300"
+          >
+            {error}
+          </p>
+        ) : null}
+
+        <div className="mt-1 flex flex-wrap gap-2">
+          <button
+            type="submit"
+            disabled={saving !== null}
+            className="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-gold-deep/40 bg-[linear-gradient(180deg,#E2C777_0%,#D9B65D_100%)] px-4 py-3 text-sm font-medium text-ink transition-[filter] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {saving === 'SUBMITTED' ? 'Submitting…' : 'Submit request'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void submit('DRAFT')}
+            disabled={saving !== null}
+            className="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-white/15 bg-white/5 px-4 py-3 text-sm text-warm transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {saving === 'DRAFT' ? 'Saving…' : 'Save as draft'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}

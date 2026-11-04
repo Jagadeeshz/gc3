@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Mono, Plus_Jakarta_Sans, Source_Serif_4 } from 'next/font/google';
+import { SessionProvider } from '@/lib/session-context';
 import './globals.css';
 
 /**
@@ -40,7 +41,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { readonly children: React.ReactNode }) {
   return (
     <html lang="en" className={`${plusJakarta.variable} ${sourceSerif.variable} ${plexMono.variable}`}>
-      <body className="min-h-dvh bg-void font-sans text-warm antialiased">{children}</body>
+      <body className="min-h-dvh bg-void font-sans text-warm antialiased">
+        <SessionProvider>{children}</SessionProvider>
+      </body>
     </html>
   );
 }

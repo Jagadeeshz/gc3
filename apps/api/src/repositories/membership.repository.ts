@@ -1,4 +1,4 @@
-import type { ClientRole, Membership, MembershipStatus } from '@gc3/types';
+import type { AccessibleOrganization, ClientRole, Membership, MembershipStatus } from '@gc3/types';
 import type { InviteUserInput } from '@gc3/validation';
 import { prisma } from '../db/client';
 import { ApiError } from '../lib/api-error';
@@ -89,6 +89,29 @@ export const membershipRepository = {
     return rows.map((row) => ({
       membership: toEntity(row),
       user: row.user,
+    }));
+  },
+
+  /**
+   * The tenants a user may act in, derived from ACTIVE memberships. This is the
+   * one query that legitimately crosses tenant boundaries — it is scoped by
+   * user, not by organization, and returns only the caller's own relationships.
+   */
+  async listOrganizationsForUser(userId: string): Promise<AccessibleOrganization[]> {
+    const rows = await prisma.membership.findMany({
+      where: { userId, status: 'ACTIVE', organization: { deletedAt: null } },
+      include: {
+        organization: { select: { id: true, name: true, slug: true, status: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return rows.map((row) => ({
+      id: row.organization.id,
+      name: row.organization.name,
+      slug: row.organization.slug,
+      status: row.organization.status,
+      roles: [...row.roles] as readonly ClientRole[],
     }));
   },
 

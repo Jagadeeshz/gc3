@@ -56,6 +56,20 @@ export const organizationRepository = {
   },
 
   /**
+   * Every live tenant. Platform-scoped by nature: only staff call this, and only
+   * to populate an organization picker — it is not a tenant read.
+   */
+  async listAll(limit = 100): Promise<Organization[]> {
+    const rows = await prisma.organization.findMany({
+      where: { deletedAt: null },
+      orderBy: { name: 'asc' },
+      take: limit,
+    });
+
+    return rows.map(toEntity);
+  },
+
+  /**
    * Tenant-scoped read. When the requested id is not the caller's tenant scope
    * the repository returns null before touching the database, so a foreign id
    * is indistinguishable from a missing one — no existence leak across tenants.

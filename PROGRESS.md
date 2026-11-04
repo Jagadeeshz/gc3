@@ -21,6 +21,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 5 | Real email provider & delivery audit | `7a9c745`, `ff82ac4` | ✅ delivered |
 | 6 | Phase 2 · Service request data layer | `8fa7acc`, `bdc98ca` | ✅ delivered |
 | 7 | Phase 2 · Service request API | `eb3d433`, `41a1264` | ✅ delivered |
+| 8 | Phase 2 · Service request UI | `<pending>` | ✅ delivered |
 
 ---
 
@@ -373,11 +374,62 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ---
 
+## Slice 8 — Phase 2 · Service request UI  ✅
+
+**Brief refs:** §5.2, §5.4, §11, §12 · layout structure from
+`GC3_Portal_Interactive_UI_Prototype.html`
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Screens | `/login`, `/dashboard`, `/requests`, `/requests/new`, `/requests/[requestId]` |
+| Shell | Persistent sidebar (brand, org switcher, workspace nav, identity) + topbar, matching the prototype's structure |
+| API client | `src/lib/api-client.ts` — the only module that calls `fetch`; attaches `authorization` and `x-organization-id` on every tenant call and surfaces the API's error envelope |
+| Session | `src/lib/session.ts` + React context; localStorage, 15-minute expiry, expired session dropped on read and redirected |
+| New endpoint | `GET /api/v1/auth/organizations` — the tenants the caller may act in (needed to choose `x-organization-id`) |
+| Enforcement | transitions offered from `SERVICE_REQUEST_TRANSITIONS`, so illegal moves never render |
+| Build | `next build` clean, 6 routes, strict TypeScript |
+
+### Evidence
+
+- `pnpm test` **142/142** across 10 files (was 138; +4 for `/auth/organizations`: staff sees all
+  tenants, client sees only ACTIVE, INVITED excluded, 401 without a token)
+- `pnpm -r typecheck` 5/5 · `pnpm --filter @gc3/web build` clean
+- Browser, real server, real Postgres:
+  - login `portal.verify@gc3.local` → `/dashboard`, session stored, tenant resolved to
+    *Helios Cloud* from the picker
+  - create via form → `201`, redirected to `/requests/ea763d6b…` showing `REQ-EA763D6B`,
+    `SUBMITTED`, priority High
+  - `→ Triage` → status `TRIAGE`, and the offered moves became *In progress · Blocked · Cancelled*
+    (the transition table, not a hardcoded list)
+  - comment posted → rendered as CLIENT VISIBLE
+  - deliverable created → `PENDING` → **Approve** → `APPROVED` with approval date → **Release to
+    client** → `RELEASED`
+  - release attempted before approval → `403` "A deliverable cannot be released before a human has
+    approved it"
+  - tenant switch to *Invite Flow Co* → 0 requests; back to *Helios Cloud* → 1
+  - header proof from inside the page: no headers `401 UNAUTHENTICATED`, auth only
+    `400 TENANT_SCOPE_REQUIRED`, both `200`
+  - session allowed to expire (15 min TTL) → guard redirected to `/login`
+
+### Notes / limits
+
+- Buttons are affordances; every action is re-authorised server-side. Deliverable Approve/Release
+  is hidden below `CLIENT_OWNER`/`CLIENT_APPROVER`/staff, but a crafted request still gets 403.
+- Comments from the form are client-visible; there is no internal-note toggle yet.
+- Dashboard figures are counted over the first 100 requests, not a SQL aggregate.
+- No request-edit form yet, though `PATCH /service-requests/:id` is implemented and tested.
+- Brand palette (void/graphite/gold) applied to the prototype's *structure*; the prototype's own
+  light placeholder colours were not carried over.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Phase 2 step 3 | Service category routes + portal UI reading these endpoints |
+| Phase 2 step 4 | Service category management routes + UI, request edit form |
 | Delivery retry & backoff | Retry FAILED deliveries; bounce/complaint suppression list |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |

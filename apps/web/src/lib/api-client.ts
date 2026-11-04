@@ -1,0 +1,217 @@
+import type {
+  AccessibleOrganization,
+  ApiErrorBody,
+  AuthSession,
+  Deliverable,
+  Paginated,
+  RequestComment,
+  ServiceRequest,
+  ServiceRequestPriority,
+  ServiceRequestStatus,
+} from '@gc3/types';
+import { API_BASE_URL } from './config';
+
+/** Thrown for any non-2xx response, carrying the API's error envelope. */
+export class ApiClientError extends Error {
+  readonly status: number;
+  readonly code: ApiErrorBody['code'];
+
+  constructor(status: number, body: ApiErrorBody) {
+    super(body.message);
+    this.name = 'ApiClientError';
+    this.status = status;
+    this.code = body.code;
+  }
+}
+
+export interface RequestOptions {
+  readonly method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  readonly body?: unknown;
+  /** Bearer token; omit for public endpoints. */
+  readonly token?: string;
+  /** Tenant scope, sent as `x-organization-id` on tenant routes. */
+  readonly organizationId?: string | null;
+}
+
+/**
+ * The single place that talks to the API from the browser.
+ *
+ * Both headers live here on purpose: if a caller forgets the tenant header the
+ * API answers 400, and if the token is missing it answers 401 — but there is no
+ * code path where a component builds its own fetch and silently drops one.
+ */
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const headers: Record<string, string> = { accept: 'application/json' };
+
+  if (options.body !== undefined) {
+    headers['content-type'] = 'application/json';
+  }
+
+  if (options.token) {
+    headers.authorization = `Bearer ${options.token}`;
+  }
+
+  if (options.organizationId) {
+    headers['x-organization-id'] = options.organizationId;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: options.method ?? 'GET',
+    headers,
+    ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
+    cache: 'no-store',
+  });
+
+  const payload = (await response.json().catch(() => null)) as
+    | { success: true; data: T }
+    | { success: false; error: ApiErrorBody }
+    | null;
+
+  if (!response.ok || !payload || payload.success === false) {
+    const error: ApiErrorBody = payload && payload.success === false
+      ? payload.error
+      : {
+          code: 'INTERNAL_ERROR',
+          message: `Request failed with HTTP ${response.status}`,
+          requestId: 'unknown',
+        };
+
+    throw new ApiClientError(response.status, error);
+  }
+
+  return payload.data;
+}
+
+// ---------------------------------------------------------------------------
+// Auth
+// ---------------------------------------------------------------------------
+
+export async function login(email: string, password: string): Promise<AuthSession> {
+  return request<AuthSession>('/auth/login', { method: 'POST', body: { email, password } });
+}
+
+export async function fetchOrganizations(token: string): Promise<AccessibleOrganization[]> {
+  return request<AccessibleOrganization[]>('/auth/organizations', { token });
+}
+
+// ---------------------------------------------------------------------------
+// Service requests (all tenant-scoped)
+// ---------------------------------------------------------------------------
+
+export interface ListRequestsParams {
+  status?: ServiceRequestStatus;
+  priority?: ServiceRequestPriority;
+  page?: number;
+  pageSize?: number;
+}
+
+export async function listRequests(
+  token: string,
+  organizationId: string,
+  params: ListRequestsParams = {},
+): Promise<Paginated<ServiceRequest>> {
+  const search = new URLSearchParams();
+
+  if (params.status) search.set('status', params.status);
+  if (params.priority) search.set('priority', params.priority);
+  if (params.page) search.set('page', String(params.page));
+  if (params.pageSize) search.set('pageSize', String(params.pageSize));
+
+  const query = search.toString();
+  return request<Paginated<ServiceRequest>>(`/service-requests${query ? `?${query}` : ''}`, {
+    token,
+    organizationId,
+  });
+}
+
+export async function getRequest(
+  token: string,
+  organizationId: string,
+  requestId: string,
+): Promise<ServiceRequest> {
+  return request<ServiceRequest>(`/service-requests/${requestId}`, { token, organizationId });
+}
+
+export interface CreateRequestInput {
+  title: string;
+  description: string;
+  priority: ServiceRequestPriority;
+  status: 'DRAFT' | 'SUBMITTED';
+}
+
+export async function createRequest(
+  token: string,
+  organizationId: string,
+  input: CreateRequestInput,
+): Promise<ServiceRequest> {
+  return request<ServiceRequest>('/service-requests', {
+    method: 'POST',
+    token,
+    organizationId,
+    body: input,
+  });
+}
+
+export async function changeRequestStatus(
+  token: string,
+  organizationId: string,
+  requestId: string,
+  status: ServiceRequestStatus,
+  note?: string,
+): Promise<ServiceRequest> {
+  return request<ServiceRequest>(`/service-requests/${requestId}/status`, {
+    method: 'POST',
+    token,
+    organizationId,
+    body: note ? { status, note } : { status },
+  });
+}
+
+export async function listComments(
+  token: string,
+  organizationId: string,
+  requestId: string,
+): Promise<RequestComment[]> {
+  return request<RequestComment[]>(`/service-requests/${requestId}/comments`, {
+    token,
+    organizationId,
+  });
+}
+
+export async function addComment(
+  token: string,
+  organizationId: string,
+  requestId: string,
+  body: string,
+): Promise<RequestComment> {
+  return request<RequestComment>(`/service-requests/${requestId}/comments`, {
+    method: 'POST',
+    token,
+    organizationId,
+    body: { body },
+  });
+}
+
+export async function listDeliverables(
+  token: string,
+  organizationId: string,
+  requestId: string,
+): Promise<Deliverable[]> {
+  return request<Deliverable[]>(`/service-requests/${requestId}/deliverables`, {
+    token,
+    organizationId,
+  });
+}
+
+export async function updateDeliverableStatus(
+  token: string,
+  organizationId: string,
+  requestId: string,
+  deliverableId: string,
+  status: Deliverable['status'],
+): Promise<Deliverable> {
+  return request<Deliverable>(
+    `/service-requests/${requestId}/deliverables/${deliverableId}/status`,
+    { method: 'PATCH', token, organizationId, body: { status } },
+  );
+}

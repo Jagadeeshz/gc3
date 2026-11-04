@@ -221,6 +221,20 @@ export interface AuthProfile {
   readonly permissions: readonly Permission[];
 }
 
+/**
+ * A tenant the caller can act in, with the roles that grant that access.
+ * Powers the portal's organization switcher and the `x-organization-id` value
+ * the client must send on every tenant-scoped request.
+ */
+export interface AccessibleOrganization {
+  readonly id: Uuid;
+  readonly name: string;
+  readonly slug: string;
+  readonly status: OrganizationStatus;
+  /** Empty for staff, who act by platform role rather than membership. */
+  readonly roles: readonly ClientRole[];
+}
+
 /** Safe, pre-authentication view of an invitation (email is masked). */
 export interface InvitePreview {
   readonly email: string;

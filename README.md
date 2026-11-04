@@ -18,6 +18,10 @@ requests, comments and deliverables — tenant-scoped end to end and permission-
 GC3/
 ├── apps/
 │   ├── web/                  Next.js App Router + Tailwind CSS (port 3000)
+│   │   └── src/
+│   │       ├── app/          (portal) group: dashboard, requests; /login
+│   │       ├── components/   portal shell, status mapping
+│   │       └── lib/          api client, session store, session context
 │   └── api/                  Express + TypeScript REST API, /api/v1 (port 3001)
 │       ├── prisma/           schema.prisma + migrations
 │       ├── prisma.config.ts  Prisma CLI config (datasource URL lives here in v7)
@@ -370,6 +374,67 @@ classes used by shared components.
 
 ---
 
+## Web portal
+
+The Next.js app is connected to the live API. Every screen below is a client component that reads
+its data through `apps/web/src/lib/api-client.ts`.
+
+| Route | Screen | Talks to |
+|---|---|---|
+| `/login` | Sign-in | `POST /auth/login`, then `GET /auth/organizations` |
+| `/dashboard` | Metrics, recent requests, quick actions | `GET /service-requests?pageSize=100` |
+| `/requests` | Request list with status tabs | `GET /service-requests?status=…` |
+| `/requests/new` | Create form (draft or submit) | `POST /service-requests` |
+| `/requests/[requestId]` | Detail: metadata, transitions, comments, deliverables | `GET /service-requests/:id` + `/comments` + `/deliverables`, `POST /:id/status`, `POST /:id/comments`, `PATCH …/deliverables/:did/status` |
+
+### Session and headers
+
+`src/lib/session.ts` holds the browser session; `src/lib/api-client.ts` is the only module that
+calls `fetch`. It attaches both headers on every tenant-scoped call:
+
+```text
+authorization: Bearer <jwt>        — identity, 15-minute lifetime
+x-organization-id: <org uuid>      — tenant scope
+```
+
+Omitting them fails loudly at the API, which is the point:
+
+| Headers sent | Response |
+|---|---|
+| none | `401 UNAUTHENTICATED` |
+| `authorization` only | `400 TENANT_SCOPE_REQUIRED` |
+| both | `200` with that tenant's rows |
+
+The session lives in `localStorage` (`gc3.portal.session`), not a cookie: the API is a separate
+origin and expects a bearer token, so a cookie would buy nothing here. The cost is that
+`httpOnly` protection is unavailable — which is why the token is short-lived, why an expired
+session is dropped on read and the guard redirects to `/login`, and why every request is
+re-authorised server-side regardless of what the UI shows.
+
+### Environment
+
+```bash
+# apps/web/.env.local  (see .env.example)
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api/v1   # inlined into the client bundle
+API_INTERNAL_BASE_URL=http://localhost:3001/api/v1      # server-side health probe
+```
+
+`NEXT_PUBLIC_*` is baked in at build time — rebuild after changing it.
+
+### Known limits
+
+- The organization switcher lists what `GET /auth/organizations` returns; staff see all tenants,
+  clients see only their ACTIVE memberships.
+- Deliverable Approve/Release buttons are shown from the caller's roles/client, which is a UI
+  affordance only — `deliverable:review` is enforced by the API and an attempt without it fails 403.
+- Comments posted from the UI are client-visible; the API supports `isInternal` but there is no
+  toggle for it in the form yet.
+- Dashboard metrics are computed over the first 100 requests of the active tenant, not a SQL
+  aggregate.
+- No request editing form yet (`PATCH /service-requests/:id` exists and is tested).
+
+---
+
 ## Status
 
 | Area | State |
@@ -389,8 +454,8 @@ classes used by shared components.
 | Delivery audit table (`notification_deliveries`) with SENT/FAILED/SKIPPED | done |
 | Phase 2 data layer: categories, requests, comments, deliverables (tenant-scoped) | done |
 | Phase 2 API: Zod contracts + `/service-requests` routes with RBAC guards | done |
-| Phase 2 UI: portal screens for requests and deliverables | not started — next |
-| Integration test harness (Vitest + Supertest, 138 tests) | done |
+| Phase 2 UI: login, dashboard, request list/create/detail with live API | done |
+| Integration test harness (Vitest + Supertest, 142 tests) | done |
 | Delivery retry/backoff, bounce handling, delivery read API | not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
@@ -416,7 +481,7 @@ the seven negative-authorization tests and nothing else.
 
 ### Immediate next steps
 
-1. Phase 2 step 3: service **category** routes, then the portal UI that consumes these endpoints.
+1. Phase 2 step 4: service **category** management routes + UI, and a request edit form.
 2. Delivery retry/backoff for FAILED rows, plus a `GET /organizations/:id/notifications` read API.
 3. Token lifecycle: refresh tokens, revocation, login rate limiting.
 4. Offboarding an ACTIVE member (session invalidation, retention rules).

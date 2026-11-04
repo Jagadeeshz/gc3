@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type {
+  AccessibleOrganization,
   AuthProfile,
   AuthSession,
   InviteAcceptance,
@@ -14,6 +15,7 @@ import { signAccessToken } from '../../auth/tokens';
 import { staffPermissions } from '../../auth/permissions';
 import { requireAuth } from '../../middleware/auth';
 import { membershipRepository } from '../../repositories/membership.repository';
+import { organizationRepository } from '../../repositories/organization.repository';
 import { toActor, userRepository } from '../../repositories/user.repository';
 import { env } from '../../config/env';
 
@@ -96,6 +98,39 @@ authRouter.get('/me', requireAuth, (request, response) => {
       actor,
       permissions: [...staffPermissions(actor.platformRole)] as Permission[],
     },
+  };
+
+  response.status(200).json(body);
+});
+
+/**
+ * GET /api/v1/auth/organizations
+ *
+ * The tenants the caller may act in. The portal needs this to choose a value for
+ * `x-organization-id`, and it is the only endpoint here that is scoped by *user*
+ * rather than by tenant: a client sees exactly the organizations where their
+ * membership is ACTIVE, and staff see the tenants their role covers.
+ */
+authRouter.get('/organizations', requireAuth, async (request, response) => {
+  const actor = request.actor;
+
+  if (!actor) {
+    throw ApiError.unauthenticated();
+  }
+
+  const organizations: AccessibleOrganization[] = actor.platformRole
+    ? (await organizationRepository.listAll()).map((organization) => ({
+        id: organization.id,
+        name: organization.name,
+        slug: organization.slug,
+        status: organization.status,
+        roles: [],
+      }))
+    : await membershipRepository.listOrganizationsForUser(actor.userId);
+
+  const body: { success: true; data: AccessibleOrganization[] } = {
+    success: true,
+    data: organizations,
   };
 
   response.status(200).json(body);
