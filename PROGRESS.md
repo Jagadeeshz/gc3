@@ -23,7 +23,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 7 | Phase 2 · Service request API | `eb3d433`, `41a1264` | ✅ delivered |
 | 8 | Phase 2 · Service request UI | `0bb6e7e` | ✅ delivered |
 | 9 | Phase 2 · Categories & request editing | `a119478`, `7a94ef8` | ✅ delivered |
-| 10 | Phase 2 · Staff deliverables & internal notes | `<pending>` | ✅ delivered |
+| 10 | Phase 2 · Staff deliverables & internal notes | `68ac590` | ✅ delivered |
 
 ---
 
@@ -484,6 +484,7 @@ omitted), the form omits an empty description on create, and a test locks the be
 
 ## Slice 10 — Phase 2 · Staff deliverables & internal notes  ✅
 
+**Commit:** `68ac590` — feat(delivery): staff deliverable authoring and internal notes
 **Brief refs:** §5.4 (deliverables), §8.3 (human sign-off), §11 (API), §12 (tenancy, RBAC)
 
 ### What shipped
