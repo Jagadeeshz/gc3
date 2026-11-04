@@ -27,7 +27,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 11 | Phase 2 · Deliverable versioning & delivery history | `351e1d4`, `be00a48` | ✅ delivered |
 | 12 | Phase 2 · Stored file uploads & checksums | `f02c970`, `040eb38` | ✅ delivered |
 | 13 | Notifications · retry/backoff & delivery read API | `bf229cd`, `7b8f5ad` | ✅ delivered |
-| 14 | Notifications · deliverable-released & status-updated events | `b368a91` | ✅ delivered |
+| 14 | Notifications · deliverable-released & status-updated events | `b368a91`, `f3f99d1` | ✅ delivered |
 
 ---
 
@@ -710,7 +710,8 @@ it — the first version expected one row and got two.
 
 ## Slice 14 — Notifications · event dispatch (deliverable released, status updated)  ✅
 
-**Commit:** `b368a91` — feat(notifications): deliverable-released and status-updated event emails
+**Commits:** `b368a91` — feat(notifications): deliverable-released and status-updated event emails
+· `f3f99d1` — docs(progress): pin slice 14 to b368a91
 **Brief refs:** §7 (notifications), §5.4 (delivery), §12 (tenancy)
 
 ### What shipped
@@ -761,6 +762,17 @@ it — the first version expected one row and got two.
 - Release fan-out is bounded to owners and approvers; a tenant with fifty of them gets fifty emails. No
   digesting yet.
 - No per-user notification preferences and no unsubscribe — the client cannot opt out.
+
+---
+
+# Phase 3 — Staff Operations Console
+
+Phase 2 is closed: the client-facing portal (requests, catalogue, deliverables, files, history) and its
+delivery plumbing (invitations, retries, event emails) are built, tested and verified end to end.
+
+Phase 3 turns the platform inward. The first slice introduces the operations surface: a cross-tenant
+dashboard for platform admins and operations managers, pod structures, and the assignment handler that
+routes a request to a pod.
 
 ---
 
