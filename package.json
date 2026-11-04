@@ -1,0 +1,22 @@
+{
+  "name": "gc3-portal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GC3 Portal — multi-tenant operating platform for Global Cloud Capability & Consulting",
+  "packageManager": "pnpm@10.34.9",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:web": "pnpm --filter @gc3/web dev",
+    "dev:api": "pnpm --filter @gc3/api dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r --if-present clean"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}

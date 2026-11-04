@@ -1,0 +1,81 @@
+@import 'tailwindcss';
+
+/* Workspace packages live outside this app's source tree — Tailwind v4 only
+   scans the CSS file's directory tree by default, so register them explicitly. */
+@source '../../../../packages/ui/src';
+
+/*
+  GC3 design tokens (01-brand-and-design-system).
+  Tailwind v4 reads @theme and generates utilities: bg-void, text-gold, etc.
+*/
+@theme {
+  --color-void: #07080b;
+  --color-void-secondary: #0b0d12;
+  --color-graphite: #11141a;
+  --color-graphite-elevated: #171b22;
+
+  --color-mineral: #f2efe7;
+  --color-stone: #e8e3d8;
+  --color-editorial: #faf8f3;
+  --color-warm: #f4f0e8;
+
+  --color-ink: #111318;
+  --color-ink-secondary: #474b52;
+  --color-muted: #a7a9b0;
+
+  --color-gold: #d9b65d;
+  --color-gold-light: #e2c777;
+  --color-gold-deep: #a97818;
+
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-source-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --radius-card: 14px;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-void);
+    color: var(--color-warm);
+    font-family: var(--font-sans);
+  }
+
+  /* Restrained editorial selection — gold only as an edge, never a wash. */
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-gold) 30%, transparent);
+    color: var(--color-warm);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+}
+
+@utility glow-gold {
+  background-image: radial-gradient(
+    60% 55% at 50% 0%,
+    color-mix(in oklab, var(--color-gold) 12%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+@utility hairline {
+  border-top: 1px solid color-mix(in oklab, var(--color-warm) 12%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
