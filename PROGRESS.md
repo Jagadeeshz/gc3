@@ -21,7 +21,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 5 | Real email provider & delivery audit | `7a9c745`, `ff82ac4` | ✅ delivered |
 | 6 | Phase 2 · Service request data layer | `8fa7acc`, `bdc98ca` | ✅ delivered |
 | 7 | Phase 2 · Service request API | `eb3d433`, `41a1264` | ✅ delivered |
-| 8 | Phase 2 · Service request UI | `<pending>` | ✅ delivered |
+| 8 | Phase 2 · Service request UI | `0bb6e7e` | ✅ delivered |
 
 ---
 
@@ -376,6 +376,7 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ## Slice 8 — Phase 2 · Service request UI  ✅
 
+**Commit:** `0bb6e7e` — feat(portal): connect the Next.js UI to the live service request API
 **Brief refs:** §5.2, §5.4, §11, §12 · layout structure from
 `GC3_Portal_Interactive_UI_Prototype.html`
 
