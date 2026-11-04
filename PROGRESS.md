@@ -31,7 +31,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 15 | Phase 3 · Operations console, pods & request routing | `9474ff4` | ✅ delivered |
 | 16 | Phase 3 · Pod membership & staffing management | `e62198f` | ✅ delivered |
 | 17 | Phase 3 · Task breakdown & work allocation | `ed56399` | ✅ delivered |
-| 18 | Phase 3 · Internal SLA monitoring & risk alerts | `<pending>` | ✅ delivered |
+| 18 | Phase 3 · Internal SLA monitoring & risk alerts | `e4b5847` | ✅ delivered |
 
 ---
 
@@ -915,7 +915,7 @@ routes a request to a pod.
 
 ## Slice 18 — Phase 3 · Internal SLA monitoring and risk alerts  ✅
 
-**Commit:** `<pending>`
+**Commit:** `e4b5847` — feat(sla): internal SLA monitoring and risk alerts
 **Brief refs:** §5 (SLA monitor, operations dashboard), §7 (SLA risk detected), §12 (tenancy)
 
 ### What shipped
