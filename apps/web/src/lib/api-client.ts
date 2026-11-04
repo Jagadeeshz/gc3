@@ -15,6 +15,8 @@ import type {
   OpsDashboard,
   PodSummary,
   StaffCandidate,
+  TaskListItem,
+  TaskStatus,
 } from '@gc3/types';
 import { API_BASE_URL } from './config';
 
@@ -574,6 +576,61 @@ export async function removePodMember(
 ): Promise<void> {
   return request<void>(`/pods/${podId}/members/${userId}`, {
     method: 'DELETE',
+    token,
+    organizationId,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Internal tasks (Phase 3)
+// ---------------------------------------------------------------------------
+
+/** Staff-only: the internal checklist for one request. A client gets 403. */
+export async function listTasks(
+  token: string,
+  organizationId: string,
+  requestId: string,
+): Promise<TaskListItem[]> {
+  return request<TaskListItem[]>(`/service-requests/${requestId}/tasks`, { token, organizationId });
+}
+
+export interface CreateTaskInput {
+  readonly title: string;
+  readonly description?: string;
+  readonly assigneeId?: string;
+  readonly dueAt?: string;
+}
+
+export async function createTask(
+  token: string,
+  organizationId: string,
+  requestId: string,
+  input: CreateTaskInput,
+): Promise<TaskListItem> {
+  return request<TaskListItem>(`/service-requests/${requestId}/tasks`, {
+    method: 'POST',
+    body: input,
+    token,
+    organizationId,
+  });
+}
+
+export interface UpdateTaskInput {
+  readonly title?: string;
+  readonly status?: TaskStatus;
+  readonly assigneeId?: string | null;
+  readonly dueAt?: string | null;
+}
+
+export async function updateTask(
+  token: string,
+  organizationId: string,
+  taskId: string,
+  input: UpdateTaskInput,
+): Promise<TaskListItem> {
+  return request<TaskListItem>(`/tasks/${taskId}`, {
+    method: 'PATCH',
+    body: input,
     token,
     organizationId,
   });

@@ -29,7 +29,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 13 | Notifications · retry/backoff & delivery read API | `bf229cd`, `7b8f5ad` | ✅ delivered |
 | 14 | Notifications · deliverable-released & status-updated events | `b368a91`, `f3f99d1` | ✅ delivered |
 | 15 | Phase 3 · Operations console, pods & request routing | `9474ff4` | ✅ delivered |
-| 16 | Phase 3 · Pod membership & staffing management | `<pending>` | ✅ delivered |
+| 16 | Phase 3 · Pod membership & staffing management | `e62198f` | ✅ delivered |
+| 17 | Phase 3 · Task breakdown & work allocation | `<pending>` | ✅ delivered |
 
 ---
 
@@ -843,7 +844,7 @@ routes a request to a pod.
 
 ## Slice 16 — Phase 3 · Pod membership and staffing  ✅
 
-**Commit:** `<pending>`
+**Commit:** `e62198f` — feat(pods): pod membership and staffing management
 **Brief refs:** §5 (pod management, resource allocation), §12 (tenancy)
 
 ### What shipped
@@ -874,10 +875,48 @@ routes a request to a pod.
 
 ---
 
+## Slice 17 — Phase 3 · Task breakdown and work allocation  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §5 (work queue, pod management), §12 (tenancy)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Data | `Task` model (`tasks`) with `requestId`, `podId`, `assigneeId`, `createdById`, `title`, `description`, `status` (`TODO`/`IN_PROGRESS`/`BLOCKED`/`DONE`/`CANCELLED`), `dueAt`, soft delete — migration `20261104180000_tasks`. Cascades with the request; pod and assignee are `SET NULL` |
+| Create | `POST /api/v1/service-requests/:id/tasks` (`task:manage`) — 201 with `assigneeName` / `podName`; inherits the request's pod unless a pod is given; 404 for a foreign request or a foreign pod |
+| Read | `GET /api/v1/service-requests/:id/tasks` (`task:read`) — oldest first, 404 on a foreign request |
+| Update | `PATCH /api/v1/tasks/:id` (`task:manage`) — status, assignee, title, description, due date; empty body is a 400 rather than a silent no-op |
+| Permissions | `task:read` (ADMIN, OPS, POD_MANAGER, SPECIALIST, ACCOUNT_MANAGER) and `task:manage` (ADMIN, OPS, POD_MANAGER, SPECIALIST). **No client role holds either** |
+| Workload | Pod rosters and pods now report `openTasks` alongside `openRequests`, and each seated person carries both |
+| UI | Request detail gains a staff-only **Internal tasks** checklist: per-task assignee select, status select, and an add form. `/ops` shows open task counts per pod and per person |
+
+### Evidence
+
+- `pnpm test` **264/264** across 22 files (was 251/21)
+- `pnpm -r typecheck` 5/5
+- 13 new tests: creation with names, inherited pod, foreign pod 404, foreign request 404, payload
+  validation, client 403 on read *and* create, per-request isolation and ordering, TODO→IN_PROGRESS→DONE,
+  reassignment and re-dating, empty/unknown-status rejection, cross-tenant PATCH 404, the
+  read-only-account-manager split, and task counts in the pod roster
+
+### Notes / limits
+
+- Tasks are deliberately invisible to clients — the request detail payload has no `tasks` key, which the
+  test asserts, so a client cannot infer internal structure even from a 200.
+- `task:manage` is granted to SPECIALIST: the person doing the work can move their own item without
+  needing a pod manager. There is no per-task ownership check, so a specialist can also update a
+  colleague's task in the same tenant.
+- No ordering field: the checklist is `createdAt` ascending. Reordering is not supported.
+
+---
+
+## Next up (not started)
+
 | Step | Scope |
 |---|---|
-| Phase 3 step 2 | Pod membership management: seat/remove members, edit a pod, deactivate |
-| Phase 3 step 3 | Task/work items under a request, assigned inside the pod |
+| Phase 3 step 4 | Internal SLA monitoring and risk alerts |
 | Notification durability | BullMQ on the configured Redis so a restart cannot lose a queued event |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |

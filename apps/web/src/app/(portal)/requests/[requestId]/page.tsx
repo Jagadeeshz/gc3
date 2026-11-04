@@ -12,6 +12,9 @@ import type {
   ServiceRequest,
   ServiceRequestPriority,
   ServiceRequestStatus,
+  StaffCandidate,
+  TaskListItem,
+  TaskStatus,
 } from '@gc3/types';
 import { SERVICE_REQUEST_TRANSITIONS } from '@gc3/types';
 import { Badge } from '@gc3/ui';
@@ -20,16 +23,20 @@ import {
   ApiClientError,
   changeRequestStatus,
   createDeliverable,
+  createTask,
   downloadDeliverableFile,
   fetchFileIntegrity,
+  fetchStaffCandidates,
   getRequest,
   listCategories,
   listComments,
   listDeliverables,
   listDeliverableVersions,
+  listTasks,
   updateDeliverable,
   updateDeliverableStatus,
   updateRequest,
+  updateTask,
   uploadDeliverableFile,
 } from '@/lib/api-client';
 import { activeRoles } from '@/lib/session';
@@ -80,6 +87,10 @@ export default function RequestDetailPage() {
   const [integrity, setIntegrity] = useState<Record<string, FileIntegrityReport>>({});
   const [categories, setCategories] = useState<readonly ServiceCategory[]>([]);
   const [editing, setEditing] = useState(false);
+  const [tasks, setTasks] = useState<TaskListItem[]>([]);
+  const [staff, setStaff] = useState<StaffCandidate[]>([]);
+  const [taskDraft, setTaskDraft] = useState({ title: '', assigneeId: '' });
+  const [taskBusy, setTaskBusy] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{
     title: string;
     description: string;
@@ -89,6 +100,8 @@ export default function RequestDetailPage() {
 
   const token = session?.accessToken ?? null;
   const organizationId = session?.activeOrganizationId ?? null;
+  // Tasks are internal: staff have a platform role, clients never do.
+  const isStaff = Boolean(session?.actor.platformRole);
 
   const load = useCallback(async () => {
     if (!token || !organizationId || !requestId) {
@@ -111,6 +124,18 @@ export default function RequestDetailPage() {
       setComments(loadedComments);
       setDeliverables(loadedDeliverables);
       setCategories(loadedCategories);
+
+      // Staff-only: the internal checklist and who it can be assigned to. A client
+      // never calls these paths, and the API answers 403 if they try.
+      if (isStaff) {
+        const [loadedTasks, loadedStaff] = await Promise.all([
+          listTasks(token, organizationId, requestId),
+          fetchStaffCandidates(token, organizationId),
+        ]);
+
+        setTasks(loadedTasks);
+        setStaff(loadedStaff);
+      }
     } catch (caught) {
       setError(
         caught instanceof ApiClientError ? caught.message : 'Could not load this request',
@@ -118,11 +143,77 @@ export default function RequestDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, organizationId, requestId]);
+  }, [token, organizationId, requestId, isStaff]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  /** Staff-only: add a work item to this request. */
+  async function addTask(event: React.FormEvent) {
+    event.preventDefault();
+
+    if (!token || !organizationId || !requestId || taskDraft.title.trim().length < 3) {
+      return;
+    }
+
+    setTaskBusy('new');
+    setActionError(null);
+    setNotice(null);
+
+    try {
+      const created = await createTask(token, organizationId, requestId, {
+        title: taskDraft.title.trim(),
+        ...(taskDraft.assigneeId ? { assigneeId: taskDraft.assigneeId } : {}),
+      });
+
+      setTasks((current) => [...current, created]);
+      setTaskDraft({ title: '', assigneeId: '' });
+      setNotice('Task added.');
+    } catch (caught) {
+      setActionError(caught instanceof ApiClientError ? caught.message : 'Could not add the task');
+    } finally {
+      setTaskBusy(null);
+    }
+  }
+
+  async function setTaskStatus(taskId: string, status: TaskStatus) {
+    if (!token || !organizationId) {
+      return;
+    }
+
+    setTaskBusy(taskId);
+    setActionError(null);
+
+    try {
+      const updated = await updateTask(token, organizationId, taskId, { status });
+      setTasks((current) => current.map((task) => (task.id === taskId ? updated : task)));
+    } catch (caught) {
+      setActionError(
+        caught instanceof ApiClientError ? caught.message : 'Could not change the task status',
+      );
+    } finally {
+      setTaskBusy(null);
+    }
+  }
+
+  async function assignTask(taskId: string, assigneeId: string | null) {
+    if (!token || !organizationId) {
+      return;
+    }
+
+    setTaskBusy(taskId);
+    setActionError(null);
+
+    try {
+      const updated = await updateTask(token, organizationId, taskId, { assigneeId });
+      setTasks((current) => current.map((task) => (task.id === taskId ? updated : task)));
+    } catch (caught) {
+      setActionError(caught instanceof ApiClientError ? caught.message : 'Could not reassign the task');
+    } finally {
+      setTaskBusy(null);
+    }
+  }
 
   // UI affordance only — the API enforces deliverable:review regardless.
   const canReview = useMemo(() => {
@@ -773,6 +864,119 @@ export default function RequestDetailPage() {
             </button>
           </form>
         </section>
+
+        {/* Internal checklist — staff only. The API refuses this path to clients. */}
+        {isStaff ? (
+          <section className="rounded-[14px] border border-white/10 bg-graphite/85 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold text-warm">Internal tasks</h2>
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                {tasks.filter((task) => task.status !== 'DONE' && task.status !== 'CANCELLED').length}{' '}
+                open
+              </span>
+            </div>
+            <p className="mt-1 text-[11px] text-muted">
+              How the pod breaks this request down. Clients never see this list.
+            </p>
+
+            {tasks.length === 0 ? (
+              <p className="mt-3 text-[11px] text-muted">Nothing broken out yet.</p>
+            ) : (
+              <ul className="mt-3 grid gap-1.5">
+                {tasks.map((task) => {
+                  const busy = taskBusy === task.id;
+
+                  return (
+                    <li
+                      key={task.id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-void/40 px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-xs text-warm">{task.title}</p>
+                        <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+                          {task.assigneeName ?? 'unassigned'}
+                          {task.dueAt ? ` · due ${formatDate(task.dueAt)}` : ''}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <select
+                          aria-label={`Assignee for ${task.title}`}
+                          disabled={busy}
+                          value={task.assigneeId ?? ''}
+                          onChange={(event) =>
+                            void assignTask(task.id, event.target.value || null)
+                          }
+                          className="rounded border border-white/12 bg-void px-1.5 py-1 text-[10px] text-warm focus:border-gold/60 focus:outline-none disabled:opacity-50"
+                        >
+                          <option value="">Unassigned</option>
+                          {staff.map((candidate) => (
+                            <option key={candidate.userId} value={candidate.userId}>
+                              {candidate.fullName}
+                            </option>
+                          ))}
+                        </select>
+
+                        <select
+                          aria-label={`Status for ${task.title}`}
+                          disabled={busy}
+                          value={task.status}
+                          onChange={(event) =>
+                            void setTaskStatus(task.id, event.target.value as TaskStatus)
+                          }
+                          className="rounded border border-white/12 bg-void px-1.5 py-1 text-[10px] uppercase tracking-[0.06em] text-warm focus:border-gold/60 focus:outline-none disabled:opacity-50"
+                        >
+                          {(['TODO', 'IN_PROGRESS', 'BLOCKED', 'DONE', 'CANCELLED'] as TaskStatus[]).map(
+                            (status) => (
+                              <option key={status} value={status}>
+                                {status.replace(/_/g, ' ')}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+
+            <form onSubmit={addTask} className="mt-3 flex flex-wrap items-center gap-2">
+              <input
+                required
+                minLength={3}
+                value={taskDraft.title}
+                onChange={(event) =>
+                  setTaskDraft((draft) => ({ ...draft, title: event.target.value }))
+                }
+                placeholder="Break out a work item…"
+                className="min-w-0 flex-1 rounded-lg border border-white/12 bg-void px-3 py-2 text-xs text-warm focus:border-gold/60 focus:outline-none"
+              />
+              <select
+                aria-label="Assign the new task to"
+                value={taskDraft.assigneeId}
+                onChange={(event) =>
+                  setTaskDraft((draft) => ({ ...draft, assigneeId: event.target.value }))
+                }
+                className="rounded-lg border border-white/12 bg-void px-2 py-2 text-xs text-warm focus:border-gold/60 focus:outline-none"
+              >
+                <option value="">Unassigned</option>
+                {staff.map((candidate) => (
+                  <option key={candidate.userId} value={candidate.userId}>
+                    {candidate.fullName}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="submit"
+                disabled={taskBusy === 'new' || taskDraft.title.trim().length < 3}
+                className="rounded-lg border border-gold/40 bg-gold/15 px-3 py-2 text-xs font-semibold text-gold-light transition-colors hover:bg-gold/25 disabled:opacity-50"
+              >
+                {taskBusy === 'new' ? 'Adding…' : 'Add task'}
+              </button>
+            </form>
+          </section>
+        ) : null}
 
         <section className="rounded-[14px] border border-white/10 bg-graphite/85 p-5">
           <div className="flex items-center justify-between gap-3">

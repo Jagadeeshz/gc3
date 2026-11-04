@@ -32,6 +32,8 @@ const ALL_PERMISSIONS: readonly Permission[] = [
   'notification:manage',
   'request:assign',
   'pod:manage',
+  'task:read',
+  'task:manage',
   'ops:read',
 ];
 
@@ -65,6 +67,8 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'notification:manage',
     'request:assign',
     'pod:manage',
+    'task:read',
+    'task:manage',
     'ops:read',
   ],
   // Owns the client relationship; read-only over membership and delivery output.
@@ -77,6 +81,7 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'category:read',
     'deliverable:read',
     'notification:read',
+    'task:read',
   ],
   // Runs the pod: assigns and progresses work, produces deliverables.
   POD_MANAGER: [
@@ -92,6 +97,8 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'deliverable:create',
     'deliverable:update',
     'deliverable:review',
+    'task:read',
+    'task:manage',
   ],
   // Production team member: does the work, cannot move the workflow alone.
   SPECIALIST: [
@@ -103,6 +110,8 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'deliverable:read',
     'deliverable:create',
     'deliverable:update',
+    'task:read',
+    'task:manage',
   ],
   FINANCE_MANAGER: [
     'organization:read',

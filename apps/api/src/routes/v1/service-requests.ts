@@ -6,6 +6,7 @@ import type {
   Paginated,
   RequestComment,
   ServiceRequest,
+  TaskListItem,
 } from '@gc3/types';
 import { isAllowedRequestTransition } from '@gc3/types';
 import {
@@ -15,6 +16,7 @@ import {
   createDeliverableSchema,
   createRequestCommentSchema,
   createServiceRequestSchema,
+  createTaskSchema,
   deliverableParamsSchema,
   formatIssues,
   listServiceRequestsQuerySchema,
@@ -37,6 +39,7 @@ import { forbidAgentCommercialAction, requireTenantScope } from '../../middlewar
 import { deliverableRepository } from '../../repositories/deliverable.repository';
 import { requestCommentRepository } from '../../repositories/request-comment.repository';
 import { serviceRequestRepository } from '../../repositories/service-request.repository';
+import { taskRepository } from '../../repositories/task.repository';
 
 export const serviceRequestsRouter: Router = Router();
 
@@ -236,6 +239,79 @@ serviceRequestsRouter.patch(
 
     const payload: ApiSuccess<ServiceRequest> = { success: true, data: updated };
     response.status(200).json(payload);
+  },
+);
+
+/**
+ * GET /service-requests/:requestId/tasks — the internal checklist.
+ *
+ * Staff-only by permission (`task:read` is granted to no client role), so a
+ * client request for this path is a 403 rather than an empty list.
+ */
+serviceRequestsRouter.get(
+  '/:requestId/tasks',
+  requirePermission('task:read'),
+  async (request, response) => {
+    const params = serviceRequestIdParamsSchema.safeParse(request.params);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid request id', formatIssues(params.error));
+    }
+
+    const parent = await serviceRequestRepository.findByIdScoped(
+      scopeOf(request.organizationId),
+      params.data.requestId,
+    );
+
+    if (!parent) {
+      throw ApiError.notFound('Service request not found');
+    }
+
+    const tasks = await taskRepository.listForRequestScoped(
+      scopeOf(request.organizationId),
+      params.data.requestId,
+    );
+
+    const payload: ApiSuccess<TaskListItem[]> = { success: true, data: tasks };
+    response.status(200).json(payload);
+  },
+);
+
+/** POST /service-requests/:requestId/tasks — carve out a work item. */
+serviceRequestsRouter.post(
+  '/:requestId/tasks',
+  requirePermission('task:manage'),
+  async (request, response) => {
+    const params = serviceRequestIdParamsSchema.safeParse(request.params);
+    const body = createTaskSchema.safeParse(request.body);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid request id', formatIssues(params.error));
+    }
+
+    if (!body.success) {
+      throw ApiError.badRequest('Invalid task payload', formatIssues(body.error));
+    }
+
+    const created = await taskRepository.createScoped(
+      scopeOf(request.organizationId),
+      params.data.requestId,
+      {
+        title: body.data.title,
+        description: body.data.description ?? null,
+        assigneeId: body.data.assigneeId ?? null,
+        ...(body.data.podId !== undefined ? { podId: body.data.podId } : {}),
+        dueAt: body.data.dueAt ?? null,
+        createdById: request.actor?.userId ?? null,
+      },
+    );
+
+    if (!created) {
+      throw ApiError.notFound('Service request not found in this organization');
+    }
+
+    const payload: ApiSuccess<TaskListItem> = { success: true, data: created };
+    response.status(201).json(payload);
   },
 );
 

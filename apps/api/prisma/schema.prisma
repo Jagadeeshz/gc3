@@ -37,6 +37,16 @@ enum MembershipStatus {
   REVOKED
 }
 
+/// Internal work item: how a request is broken down inside the pod. Never shown
+/// to clients.
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  CANCELLED
+}
+
 /// Roles held inside a tenant. Client-side only.
 enum ClientRole {
   CLIENT_OWNER
@@ -137,6 +147,7 @@ model Organization {
   deliverableVersions DeliverableVersion[]
   pods Pod[]
   podMembers PodMember[]
+  tasks Task[]
 
   @@index([status])
   @@index([createdAt])
@@ -172,6 +183,8 @@ model User {
   deliverableVersions  DeliverableVersion[] @relation("DeliverableVersionAuthor")
   podsLed              Pod[]             @relation("PodLead")
   podMemberships       PodMember[]       @relation("PodMemberUser")
+  tasksAssigned        Task[]            @relation("TaskAssignee")
+  tasksCreated         Task[]            @relation("TaskCreator")
 
   @@index([status])
   @@index([platformRole])
@@ -329,6 +342,7 @@ model ServiceRequest {
   notifications NotificationDelivery[] @relation("NotificationSubjectRequest")
   comments     RequestComment[]
   deliverables Deliverable[]
+  tasks        Task[]
 
   @@unique([organizationId, reference])
   @@index([organizationId, status])
@@ -425,6 +439,34 @@ model DeliverableVersion {
   @@map("deliverable_versions")
 }
 
+/// Internal work item carved out of a request for a pod member.
+model Task {
+  id             String     @id @default(uuid()) @db.Uuid
+  organizationId String     @map("organization_id") @db.Uuid
+  requestId      String     @map("request_id") @db.Uuid
+  podId          String?    @map("pod_id") @db.Uuid
+  assigneeId     String?    @map("assignee_id") @db.Uuid
+  createdById    String?    @map("created_by_id") @db.Uuid
+  title          String     @db.VarChar(200)
+  description    String?    @db.VarChar(2000)
+  status         TaskStatus @default(TODO)
+  dueAt          DateTime?  @map("due_at") @db.Timestamptz(3)
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt      DateTime?  @map("deleted_at") @db.Timestamptz(3)
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  request      ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  pod          Pod?           @relation(fields: [podId], references: [id], onDelete: SetNull)
+  assignee     User?          @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  createdBy    User?          @relation("TaskCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, requestId])
+  @@index([organizationId, assigneeId])
+  @@index([podId])
+  @@map("tasks")
+}
+
 /// The standing delivery team inside one tenant. Pods never span organizations.
 model Pod {
   id             String    @id @default(uuid()) @db.Uuid
@@ -442,6 +484,7 @@ model Pod {
   lead         User?         @relation("PodLead", fields: [leadId], references: [id], onDelete: SetNull)
   members      PodMember[]
   requests     ServiceRequest[]
+  tasks        Task[]
 
   @@unique([organizationId, slug])
   @@index([organizationId, isActive])

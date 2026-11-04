@@ -11,6 +11,7 @@ import { organizationsRouter } from './organizations';
 import { podsRouter } from './pods';
 import { serviceCategoriesRouter } from './service-categories';
 import { serviceRequestsRouter } from './service-requests';
+import { tasksRouter } from './tasks';
 
 /**
  * `/api/v1` route table (Development Brief §11).
@@ -133,3 +134,6 @@ v1Router.use('/pods', podsRouter);
  * middleware by design — see the router for why.
  */
 v1Router.use('/ops', opsRouter);
+
+/** Phase 3: internal work items, by task id (listing lives on the request). */
+v1Router.use('/tasks', tasksRouter);

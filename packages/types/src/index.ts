@@ -203,6 +203,8 @@ export type Permission =
   | 'notification:manage'
   | 'request:assign'
   | 'pod:manage'
+  | 'task:read'
+  | 'task:manage'
   | 'ops:read';
 
 /** The authenticated caller, resolved from a verified access token. */
@@ -319,6 +321,34 @@ export function isAllowedRequestTransition(
   }
 
   return SERVICE_REQUEST_TRANSITIONS[from].includes(to);
+}
+
+/** Internal work item states. A task is open while TODO, IN_PROGRESS or BLOCKED. */
+export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'BLOCKED' | 'DONE' | 'CANCELLED';
+
+export const OPEN_TASK_STATUSES: readonly TaskStatus[] = ['TODO', 'IN_PROGRESS', 'BLOCKED'];
+
+/**
+ * A unit of internal work carved out of a request. Tasks are staff-only: they are
+ * the pod's own breakdown, never part of what the client sees.
+ */
+export interface Task extends Timestamps, TenantScoped, SoftDeletable {
+  readonly id: Uuid;
+  readonly requestId: Uuid;
+  /** Pod that owns the work item; usually inherited from the request. */
+  readonly podId: Uuid | null;
+  readonly assigneeId: Uuid | null;
+  readonly createdById: Uuid | null;
+  readonly title: string;
+  readonly description: string | null;
+  readonly status: TaskStatus;
+  readonly dueAt: IsoDateTime | null;
+}
+
+/** A task as the API returns it, with the names the UI needs to render. */
+export interface TaskListItem extends Task {
+  readonly assigneeName: string | null;
+  readonly podName: string | null;
 }
 
 /** A service a tenant can raise requests under. Tenant-owned, never global. */
@@ -506,6 +536,8 @@ export interface Pod extends Timestamps, TenantScoped, SoftDeletable {
 export interface PodSummary extends Pod {
   readonly memberCount: number;
   readonly openRequests: number;
+  /** Open internal tasks belonging to this pod. */
+  readonly openTasks: number;
   readonly members: readonly PodMemberSummary[];
 }
 
@@ -515,6 +547,8 @@ export interface PodMemberSummary {
   readonly fullName: string;
   readonly email: string;
   readonly platformRole: StaffRole | null;
+  /** Open work items (TODO, IN_PROGRESS, BLOCKED) assigned to this person. */
+  readonly openTasks: number;
   /** Open service requests this person owns. */
   readonly openRequests: number;
   readonly seatedAt: IsoDateTime;

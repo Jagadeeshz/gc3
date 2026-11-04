@@ -47,12 +47,17 @@ type MemberRow = {
   };
 };
 
-function toMemberSummary(row: MemberRow, requestsByUser: Map<string, number>): PodMemberSummary {
+function toMemberSummary(
+  row: MemberRow,
+  requestsByUser: Map<string, number>,
+  tasksByUser: Map<string, number>,
+): PodMemberSummary {
   return {
     userId: row.user.id,
     fullName: row.user.fullName,
     email: row.user.email,
     platformRole: row.user.platformRole,
+    openTasks: tasksByUser.get(row.user.id) ?? 0,
     openRequests: requestsByUser.get(row.user.id) ?? 0,
     seatedAt: row.createdAt.toISOString(),
   };
@@ -107,7 +112,8 @@ export const podRepository = {
       ...toEntity(row),
       memberCount: row.members.length,
       openRequests: 0,
-      members: row.members.map((member) => toMemberSummary(member, new Map())),
+      openTasks: 0,
+      members: row.members.map((member) => toMemberSummary(member, new Map(), new Map())),
     };
   },
 
@@ -121,7 +127,7 @@ export const podRepository = {
 
   /** Every live pod in one tenant, with roster, per-person load and open work. */
   async listScoped(organizationId: string): Promise<PodSummary[]> {
-    const [pods, load, requestsByUser] = await Promise.all([
+    const [pods, load, requestsByUser, tasksByUser, tasksByPod] = await Promise.all([
       prisma.pod.findMany({
         where: { organizationId, deletedAt: null },
         include: membersInclude,
@@ -138,6 +144,8 @@ export const podRepository = {
         _count: { _all: true },
       }),
       this.openRequestsByAssignee(organizationId),
+      this.openTasksByAssignee(organizationId),
+      this.openTasksByPod(organizationId),
     ]);
 
     const openByPod = new Map(load.map((entry) => [entry.podId ?? '', entry._count._all]));
@@ -146,13 +154,16 @@ export const podRepository = {
       ...toEntity(row),
       memberCount: row.members.length,
       openRequests: openByPod.get(row.id) ?? 0,
-      members: row.members.map((member) => toMemberSummary(member, requestsByUser)),
+      openTasks: tasksByPod.get(row.id) ?? 0,
+      members: row.members.map((member) =>
+        toMemberSummary(member, requestsByUser, tasksByUser),
+      ),
     }));
   },
 
   /** Every live pod across every tenant — operations console only. */
   async listForOps(): Promise<OpsPodSummary[]> {
-    const [pods, load, requestsByUser] = await Promise.all([
+    const [pods, load, requestsByUser, tasksByUser, tasksByPod] = await Promise.all([
       prisma.pod.findMany({
         where: { deletedAt: null },
         include: {
@@ -167,6 +178,8 @@ export const podRepository = {
         _count: { _all: true },
       }),
       this.openRequestsByAssignee(),
+      this.openTasksByAssignee(),
+      this.openTasksByPod(),
     ]);
 
     const openByPod = new Map(load.map((entry) => [entry.podId ?? '', entry._count._all]));
@@ -175,7 +188,10 @@ export const podRepository = {
       ...toEntity(row),
       memberCount: row.members.length,
       openRequests: openByPod.get(row.id) ?? 0,
-      members: row.members.map((member) => toMemberSummary(member, requestsByUser)),
+      openTasks: tasksByPod.get(row.id) ?? 0,
+      members: row.members.map((member) =>
+        toMemberSummary(member, requestsByUser, tasksByUser),
+      ),
       organizationName: row.organization.name,
     }));
   },
@@ -194,6 +210,38 @@ export const podRepository = {
     });
 
     return new Map(rows.map((row) => [row.assigneeId ?? '', row._count._all]));
+  },
+
+  /** Open task counts per person, scoped to a tenant when one is given. */
+  async openTasksByAssignee(organizationId?: string): Promise<Map<string, number>> {
+    const rows = await prisma.task.groupBy({
+      by: ['assigneeId'],
+      where: {
+        ...(organizationId ? { organizationId } : {}),
+        deletedAt: null,
+        assigneeId: { not: null },
+        status: { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] },
+      },
+      _count: { _all: true },
+    });
+
+    return new Map(rows.map((row) => [row.assigneeId ?? '', row._count._all]));
+  },
+
+  /** Open task counts per pod. */
+  async openTasksByPod(organizationId?: string): Promise<Map<string, number>> {
+    const rows = await prisma.task.groupBy({
+      by: ['podId'],
+      where: {
+        ...(organizationId ? { organizationId } : {}),
+        deletedAt: null,
+        podId: { not: null },
+        status: { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] },
+      },
+      _count: { _all: true },
+    });
+
+    return new Map(rows.map((row) => [row.podId ?? '', row._count._all]));
   },
 
   /**

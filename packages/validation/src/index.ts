@@ -272,6 +272,38 @@ export const addPodMemberSchema = z.object({ userId: uuidSchema });
 
 export const podMemberParamsSchema = z.object({ podId: uuidSchema, userId: uuidSchema });
 
+// ---------------------------------------------------------------------------
+// Internal tasks (Phase 3)
+// ---------------------------------------------------------------------------
+
+export const taskStatusSchema = z.enum(['TODO', 'IN_PROGRESS', 'BLOCKED', 'DONE', 'CANCELLED']);
+
+export const createTaskSchema = z.object({
+  title: z.string().trim().min(3, 'Give the task a title').max(200),
+  description: z.string().trim().max(2_000).nullable().optional(),
+  assigneeId: uuidSchema.nullable().optional(),
+  podId: uuidSchema.nullable().optional(),
+  dueAt: z.coerce.date().nullable().optional(),
+});
+
+export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+
+/** Partial update; `.refine` stops an empty body from being a silent no-op. */
+export const updateTaskSchema = z
+  .object({
+    title: z.string().trim().min(3).max(200).optional(),
+    description: z.string().trim().max(2_000).nullable().optional(),
+    status: taskStatusSchema.optional(),
+    assigneeId: uuidSchema.nullable().optional(),
+    podId: uuidSchema.nullable().optional(),
+    dueAt: z.coerce.date().nullable().optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field' });
+
+export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+
+export const taskIdParamsSchema = z.object({ taskId: uuidSchema });
+
 /**
  * Routing decision for a request. At least one field must be present; sending
  * `null` explicitly clears that assignment.

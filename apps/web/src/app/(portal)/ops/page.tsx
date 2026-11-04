@@ -414,7 +414,7 @@ export default function OpsConsolePage() {
                           <div className="text-right">
                             <p className="font-display text-lg text-warm">{pod.openRequests}</p>
                             <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-                              open
+                              open · {pod.openTasks} task{pod.openTasks === 1 ? '' : 's'}
                             </p>
                           </div>
                         </div>
@@ -433,6 +433,7 @@ export default function OpsConsolePage() {
                                     {member.fullName}
                                     <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
                                       {(member.platformRole ?? 'member').replace(/_/g, ' ')}
+                                      {member.openTasks > 0 ? ` · ${member.openTasks} tasks` : ''}
                                       {member.openRequests > 0
                                         ? ` · ${member.openRequests} open`
                                         : ' · idle'}
