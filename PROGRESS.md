@@ -19,7 +19,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 3 | Invite acceptance | `1aba41a`, `74d0853` | ✅ delivered |
 | 4 | Invite lifecycle & email stub | `7348d0f`, `65c2aff` | ✅ delivered |
 | 5 | Real email provider & delivery audit | `7a9c745`, `ff82ac4` | ✅ delivered |
-| 6 | Phase 2 · Service request data layer | `8fa7acc` | ✅ delivered |
+| 6 | Phase 2 · Service request data layer | `8fa7acc`, `bdc98ca` | ✅ delivered |
 
 ---
 
@@ -287,7 +287,8 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ## Slice 6 — Phase 2 · Service request data layer  ✅
 
-**Commit:** `8fa7acc` — feat(requests): tenant-scoped service request data layer
+**Commits:** `8fa7acc` — feat(requests): tenant-scoped service request data layer
+· `bdc98ca` — docs(progress): pin slice 6 to 8fa7acc
 **Brief refs:** §5.2 (request lifecycle), §6.2 (service catalogue), §9 (data model), §12 (tenancy)
 
 ### What shipped
