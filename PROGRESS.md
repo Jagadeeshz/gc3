@@ -26,7 +26,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 10 | Phase 2 · Staff deliverables & internal notes | `68ac590`, `1e5d813` | ✅ delivered |
 | 11 | Phase 2 · Deliverable versioning & delivery history | `351e1d4`, `be00a48` | ✅ delivered |
 | 12 | Phase 2 · Stored file uploads & checksums | `f02c970`, `040eb38` | ✅ delivered |
-| 13 | Notifications · retry/backoff & delivery read API | `<pending>` | ✅ delivered |
+| 13 | Notifications · retry/backoff & delivery read API | `bf229cd` | ✅ delivered |
 
 ---
 
@@ -651,6 +651,7 @@ cleared. Verified: `storage/test` holds 7 test uploads, the dev org holds the si
 
 ## Slice 13 — Notifications · retry/backoff & delivery read API  ✅
 
+**Commit:** `bf229cd` — feat(notifications): retry with backoff and a delivery read API
 **Brief refs:** §7 (notifications), §11 (API), §12 (tenancy, RBAC)
 
 ### What shipped
