@@ -22,7 +22,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 6 | Phase 2 · Service request data layer | `8fa7acc`, `bdc98ca` | ✅ delivered |
 | 7 | Phase 2 · Service request API | `eb3d433`, `41a1264` | ✅ delivered |
 | 8 | Phase 2 · Service request UI | `0bb6e7e` | ✅ delivered |
-| 9 | Phase 2 · Categories & request editing | `<pending>` | ✅ delivered |
+| 9 | Phase 2 · Categories & request editing | `a119478` | ✅ delivered |
 
 ---
 
@@ -429,6 +429,7 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ## Slice 9 — Phase 2 · Category management & request editing  ✅
 
+**Commit:** `a119478` — feat(catalogue): service category CRUD and request editing UI
 **Brief refs:** §5.2 (request edits), §6.2 (service catalogue), §11 (API), §12 (tenancy, RBAC)
 
 Slice 8 was already recorded against `0bb6e7e` in the index above; no re-statement needed.
