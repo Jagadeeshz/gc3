@@ -374,8 +374,14 @@ podman run -d --name gc3-mailpit -p 1025:1025 -p 8025:8025 docker.io/axllent/mai
 `email-smtp.test.ts` drives a real relay and asserts what the server received; if Mailpit is not
 running that block skips itself instead of failing.
 
-**Not yet implemented:** refresh tokens, revocation lists, login rate limiting/lockout, delivery
-retry/backoff, bounce handling, and a read API for the delivery log.
+**Background work.** In-process by default (`EVENT_QUEUE_DRIVER=memory`): the API queues a job and drains
+it immediately. With `EVENT_QUEUE_DRIVER=redis` the job is written to Redis before the response leaves,
+a BullMQ worker delivers it, and both sweeps run as repeatable jobs — so an API restart no longer drops
+pending alerts or retries. Delivery is **at-least-once**: a crash after sending but before acknowledging
+re-sends, which is the right trade against losing mail.
+
+**Not yet implemented:** refresh tokens, revocation lists, login rate limiting/lockout, bounce handling,
+queue-depth monitoring, and a read API for the delivery log.
 
 ---
 
@@ -525,6 +531,28 @@ NOTIFICATION_MAX_ATTEMPTS=5              # attempts per delivery before giving u
 NOTIFICATION_RETRY_INTERVAL_SECONDS=300  # worker cadence; 0 disables the worker
 ```
 
+Durable background work (same file) — event emails and both sweeps can live on Redis instead of in the
+API process:
+
+```bash
+REDIS_URL=redis://localhost:6379
+EVENT_QUEUE_DRIVER=memory   # memory | redis — redis makes jobs survive an API restart
+QUEUE_PREFIX=gc3            # namespace, so several environments can share one Redis
+```
+
+```bash
+podman run -d --name gc3-redis -p 6379:6379 docker.io/library/redis:7-alpine
+```
+
+With `EVENT_QUEUE_DRIVER=redis` the API enqueues a job before the request returns and a worker delivers
+it; `retry-sweep` and `sla-sweep` become repeatable jobs whose next run is stored in Redis rather than
+in a `setInterval` countdown. The default is `memory`, which is what the test suite runs on — the
+durability suite flips the driver per test against a throwaway prefix.
+
+`REPO_ROOT/apps/api/scripts/` has the probes used to prove it: `queue-probe.ts` (queue in one process,
+drain in another), `enqueue-live-event.ts` (queue an event while the API is stopped) and
+`enqueue-job.ts` (fire a sweep by name).
+
 ### Known limits
 
 - The organization switcher lists what `GET /auth/organizations` returns; staff see all tenants,
@@ -575,11 +603,12 @@ NOTIFICATION_RETRY_INTERVAL_SECONDS=300  # worker cadence; 0 disables the worker
 | Phase 2 files: stored uploads with SHA-256, download, integrity check | done |
 | Notifications: retry/backoff worker, manual sweep, delivery read API | done |
 | Notifications: deliverable-released and status-updated event emails | done |
-| Integration test harness (Vitest + Supertest, 278 tests) | done |
+| Integration test harness (Vitest + Supertest, 283 tests) | done |
 | Phase 3: operations console, pods, request routing | done |
 | Phase 3: pod membership and staffing | done |
 | Phase 3: task breakdown and work allocation | done |
 | Phase 3: internal SLA monitoring and risk alerts | done |
+| Phase 3 polish: durable dispatch on Redis (events, retries, SLA) | done |
 | Delivery retry/backoff, bounce handling, delivery read API | retry + read API done; bounce handling not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |

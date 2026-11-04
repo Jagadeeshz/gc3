@@ -66,6 +66,18 @@ const envSchema = z.object({
    * do — they call the sweep endpoint instead of waiting on a clock.
    */
   SLA_SWEEP_INTERVAL_SECONDS: z.coerce.number().int().min(0).max(86_400).default(300),
+
+  /**
+   * Where background work lives.
+   *
+   * `memory` is the in-process queue: correct for a single node and for tests, but
+   * a restart drops whatever was in flight. `redis` moves event dispatch and both
+   * sweeps onto a durable queue, so a job survives the process that queued it.
+   */
+  EVENT_QUEUE_DRIVER: z.enum(['memory', 'redis']).default('memory'),
+
+  /** Namespacing prefix so several environments can share one Redis instance. */
+  QUEUE_PREFIX: z.string().trim().min(1).max(40).default('gc3'),
 });
 
 export type Env = z.infer<typeof envSchema>;

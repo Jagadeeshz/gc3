@@ -2,6 +2,7 @@ import { env } from '../config/env';
 import { prisma } from '../db/client';
 import type { ServiceRequestStatus } from '@gc3/types';
 import { computeSlaState } from '../lib/sla';
+import { durableDispatchEnabled, getDurableQueue } from '../queue/client';
 import { notificationRepository } from '../repositories/notification.repository';
 import { notifications } from './index';
 import { nextAttemptAfter } from './schedule';
@@ -49,23 +50,45 @@ interface Recipient {
 const queue: EventJob[] = [];
 let pending: Promise<void> | null = null;
 
-/** Adds a job and starts draining without waiting for it. */
+/**
+ * Adds a job.
+ *
+ * With the redis driver the job is written to Redis before this returns, so a
+ * process that dies here leaves the work queued rather than losing it — that is
+ * the whole point of the durable path. With the memory driver it is queued in
+ * process and drained immediately, which is what the test suite runs on.
+ */
 export function enqueueEvent(job: EventJob): void {
+  if (durableDispatchEnabled()) {
+    void getDurableQueue()
+      .add('event', job)
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`[gc3-api][notifications] could not enqueue ${job.kind}: ${message}`);
+      });
+
+    return;
+  }
+
   queue.push(job);
   schedule();
 }
 
 /**
- * Processes everything queued, and anything queued while it runs. Exported so
- * tests can await dispatch deterministically instead of sleeping.
+ * Processes everything queued in memory, and anything queued while it runs. In
+ * durable mode there is nothing to drain here: a worker owns delivery.
  */
 export async function drainEventQueue(): Promise<void> {
+  if (durableDispatchEnabled()) {
+    return;
+  }
+
   schedule();
   await pending;
 }
 
 export function pendingEventJobs(): number {
-  return queue.length;
+  return durableDispatchEnabled() ? 0 : queue.length;
 }
 
 function schedule(): void {
@@ -87,7 +110,7 @@ async function run(): Promise<void> {
     }
 
     try {
-      await processJob(job);
+      await processEventJob(job);
     } catch (error) {
       // The API response has already gone out; log loudly and keep the queue moving.
       const message = error instanceof Error ? error.message : String(error);
@@ -287,7 +310,7 @@ export async function loadEventSubject(job: EventJob): Promise<EventSubject | nu
   return subject;
 }
 
-async function processJob(job: EventJob): Promise<void> {
+export async function processEventJob(job: EventJob): Promise<void> {
   const subject = await loadEventSubject(job);
 
   if (!subject) {

@@ -32,6 +32,14 @@ export default defineConfig({
       // Uploads must not land in the directory the dev server writes to, or a test
       // run would overwrite real deliverable files (and vice versa).
       UPLOAD_DIR: 'storage/test',
+      // The durability suite talks to the real Redis the API uses, under a
+      // throwaway prefix. Like Postgres, it must be running — a durability test
+      // against a stub would prove nothing.
+      REDIS_URL: process.env.REDIS_URL ?? 'redis://localhost:6379',
+      // The suite exercises the durable path explicitly, test by test; everything
+      // else stays on the deterministic in-process driver.
+      EVENT_QUEUE_DRIVER: 'memory',
+      QUEUE_PREFIX: 'gc3-test',
     },
   },
 });

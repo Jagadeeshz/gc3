@@ -32,6 +32,9 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 16 | Phase 3 · Pod membership & staffing management | `e62198f` | ✅ delivered |
 | 17 | Phase 3 · Task breakdown & work allocation | `ed56399` | ✅ delivered |
 | 18 | Phase 3 · Internal SLA monitoring & risk alerts | `e4b5847` | ✅ delivered |
+| 19 | Phase 3 polish · Durable dispatch on Redis (events, retries, SLA) | `<pending>` | ✅ delivered |
+
+**Phase 3 — Delivery Operations, Pod Workspaces & SLA Tracking — is complete** (slices 15–19).
 
 ---
 
@@ -976,11 +979,95 @@ routes a request to a pod.
 
 ---
 
+## Slice 19 — Phase 3 polish · Durable dispatch on Redis  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §5 (SLA monitor, operations), §7 (notifications), §10.2 (Redis in the stack)
+
+### Why
+
+Slices 14–18 dispatched email and ran both sweeps from the API process. That is honest for one node but
+it loses work in exactly the situation it matters: a restart between "the state change committed" and
+"the email left". The cost of that gap is a client who is never told a deliverable was released, or a
+pod that never hears its SLA is about to breach.
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Dependency | `bullmq` 6.6 + `ioredis` 6, against the Postgres-adjacent Redis container (`redis:7-alpine`, port 6379) already implied by §10.2 |
+| Primitive | `src/queue/durable-queue.ts` — a thin wrapper (`add`, `startWorker`, `scheduleEvery`, `counts`, `close`, `obliterate`) so nothing outside it imports BullMQ |
+| Config | `EVENT_QUEUE_DRIVER` (`memory` \| `redis`, default `memory`), `QUEUE_PREFIX` (default `gc3`), reusing the existing `REDIS_URL` |
+| Event dispatch | `enqueueEvent` writes to Redis and returns; a worker calls the same `processEventJob` the in-process path used, so delivery logic did not fork |
+| Sweeps | `retry-sweep` and `sla-sweep` are **repeatable jobs** registered with `upsertJobScheduler`, so a restart refreshes the schedule instead of stacking a second copy, and the next run is stored in Redis rather than in a `setInterval` countdown |
+| Worker | `src/queue/workers.ts` — one worker, three job names, unknown names logged and skipped (deploy skew is not a crash) |
+| Lifecycle | `index.ts` starts durable workers or the old timers (never both); shutdown closes the worker so the job in hand finishes, then the queue — everything else stays queued |
+| Tests | 5 new, against real Redis under a throwaway prefix |
+
+### Evidence
+
+- `pnpm test` **283/283** across 24 files (was 278/23)
+- `pnpm -r typecheck` 5/5
+- Durability suite (skips only if Redis is genuinely unreachable):
+  - a job added with **no worker running** stays in `wait`, `completed` 0
+  - producer closes, a **new queue instance** finds and processes the job
+  - **two real processes**: one queues two jobs and exits, `waiting` is 2 with nothing attached; a
+    second process starts a worker and drains both
+  - `upsertJobScheduler` called three times leaves one scheduler
+  - with `EVENT_QUEUE_DRIVER=redis`, the API's `enqueueEvent` puts the job in Redis, **no email is sent
+    with no worker alive**, and starting the worker delivers it to the original requester
+- Live, against Redis and Mailpit:
+  - API **stopped**, job enqueued with `scripts/enqueue-live-event.ts` → `waiting: 1`, Mailpit 0
+  - API started → boot log `durable dispatch on redis://localhost:6379 (prefix "gc3") — retry sweep
+    every 300s, SLA sweep every 300s`; Mailpit *"Request REQ-EA763D6B is now TRIAGE"*
+  - **delayed job** (10s) enqueued, API killed before it was due, waited past the delay with the API
+    down (`delayed: 3`, Mailpit 0), API restarted → *"Request REQ-EA763D6B is now DELIVERED"*
+  - `sla-sweep` job enqueued by hand → worker ran it → `REQ-4746CD7A` flipped to `sla_alerted_state =
+    AT_RISK` and Mailpit received *"SLA at risk: REQ-4746CD7A is approaching its commitment"*
+  - a second `sla-sweep` in the same state sent **nothing** (dedupe holds through the queue)
+  - `retry-sweep` job ran clean: 0 failed jobs in Redis
+  - schedule keys present: `gc3:gc3-work:repeat:retry-sweep`, `...:repeat:sla-sweep`
+
+### Notes / limits
+
+- **At-least-once, not exactly-once.** A crash after the email is sent but before the job is
+  acknowledged re-sends it. The alternative — acknowledging first — loses mail, which is worse. The
+  audit row is written per attempt, so a duplicate is visible rather than invisible.
+- The event job carries only identifiers, as the retry sweep already did: the body is rebuilt from the
+  database when the job runs, so a job that fires late reports current truth.
+- BullMQ's stall recovery (`stalledInterval` / `lockDuration`) is configured but not asserted: the
+  simulated-stall test was replaced by the real two-process test, because the stall path depends on
+  lock expiry timings and asserting it made the suite slow and flaky. What is proven is the property
+  that matters — a job outlives the process that queued it.
+- A dead worker still leaves jobs in Redis; nothing alerts on queue depth yet. `queue.counts()` is the
+  hook for that.
+- `memory` remains the default so a fresh clone can run the suite without Redis; `.env.example`
+  documents switching it on.
+
+---
+
+# Phase 3 — complete
+
+| Slice | Delivered |
+|---|---|
+| 15 | Operations console, pods, request routing |
+| 16 | Pod membership and staffing |
+| 17 | Task breakdown and work allocation |
+| 18 | Internal SLA monitoring and risk alerts |
+| 19 | Durable dispatch on Redis |
+
+Nine endpoints, three new tables (`pods`, `pod_members`, `tasks`), SLA columns and two notification
+kinds added; the client portal was untouched by any of it except where it deliberately stays blind
+(internal notes, tasks, the ops console). 283 integration tests, all against real Postgres, real Redis
+and a real browser.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Notification durability | BullMQ on the configured Redis so a restart cannot lose a queued event |
+| Queue observability | Alert on queue depth / failed jobs; surface both on `/ops` |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |
 | Offboarding | Revoke an ACTIVE member: session invalidation, audit, retention rules |
