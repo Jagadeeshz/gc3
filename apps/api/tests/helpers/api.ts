@@ -155,6 +155,23 @@ export function authDelete(path: string, token: string, organizationId?: string)
   return organizationId ? req.set(ORG_HEADER, organizationId) : req;
 }
 
+/** Bearer-authenticated raw upload: the file bytes are the whole body. */
+export function authPutRaw(
+  path: string,
+  token: string,
+  body: Buffer,
+  contentType: string,
+  organizationId?: string,
+) {
+  const req = request(app)
+    .put(path)
+    .set('authorization', `Bearer ${token}`)
+    .set('content-type', contentType)
+    .send(body);
+
+  return organizationId ? req.set(ORG_HEADER, organizationId) : req;
+}
+
 // ---------------------------------------------------------------------------
 // Tenants
 // ---------------------------------------------------------------------------

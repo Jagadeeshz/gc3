@@ -11,6 +11,7 @@ import type {
   ServiceCategory,
   DeliverableVersion,
   DeliveryHistory,
+  FileIntegrityReport,
 } from '@gc3/types';
 import { API_BASE_URL } from './config';
 
@@ -372,6 +373,107 @@ export async function deleteCategory(
 ): Promise<void> {
   await request<void>(`/service-categories/${categoryId}`, {
     method: 'DELETE',
+    token,
+    organizationId,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Stored deliverable files
+//
+// These three bypass the shared `request()` helper on purpose: the payload is
+// bytes rather than JSON, so the body and the content-type are set by hand.
+// ---------------------------------------------------------------------------
+
+export interface UploadReceipt {
+  deliverable: Deliverable;
+  approvalReset: boolean;
+  integrity: { sha256: string; sizeBytes: number; mimeType: string; fileKey: string };
+}
+
+/** Uploads the file's bytes as the request body (no multipart layer). */
+export async function uploadDeliverableFile(
+  token: string,
+  organizationId: string,
+  requestId: string,
+  deliverableId: string,
+  file: File,
+  note?: string,
+): Promise<UploadReceipt> {
+  const query = note ? `?note=${encodeURIComponent(note)}` : '';
+
+  const response = await fetch(
+    `${API_BASE_URL}/service-requests/${requestId}/deliverables/${deliverableId}/file${query}`,
+    {
+      method: 'PUT',
+      headers: {
+        authorization: `Bearer ${token}`,
+        'x-organization-id': organizationId,
+        'content-type': file.type || 'application/octet-stream',
+      },
+      body: file,
+    },
+  );
+
+  const payload = (await response.json().catch(() => null)) as
+    | { success: true; data: UploadReceipt }
+    | { success: false; error: ApiErrorBody }
+    | null;
+
+  if (!response.ok || !payload || payload.success === false) {
+    throw new ApiClientError(
+      response.status,
+      payload && payload.success === false
+        ? payload.error
+        : {
+            code: 'INTERNAL_ERROR',
+            message: `Upload failed with HTTP ${response.status}`,
+            requestId: 'unknown',
+          },
+    );
+  }
+
+  return payload.data;
+}
+
+/** Fetches the stored bytes as a Blob, ready to save from the browser. */
+export async function downloadDeliverableFile(
+  token: string,
+  organizationId: string,
+  deliverableId: string,
+): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}/deliverables/${deliverableId}/file`, {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-organization-id': organizationId,
+    },
+  });
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as
+      | { success: false; error: ApiErrorBody }
+      | null;
+
+    throw new ApiClientError(
+      response.status,
+      payload?.error ?? {
+        code: 'INTERNAL_ERROR',
+        message: `Download failed with HTTP ${response.status}`,
+        requestId: 'unknown',
+      },
+    );
+  }
+
+  return response.blob();
+}
+
+/** Re-reads the stored file and compares its digest with the recorded one. */
+export async function fetchFileIntegrity(
+  token: string,
+  organizationId: string,
+  deliverableId: string,
+): Promise<FileIntegrityReport> {
+  return request<FileIntegrityReport>(`/deliverables/${deliverableId}/file/integrity`, {
     token,
     organizationId,
   });

@@ -178,6 +178,9 @@ export type UpdateServiceCategoryInput = z.infer<typeof updateServiceCategorySch
 
 export const serviceCategoryIdParamsSchema = z.object({ categoryId: uuidSchema });
 
+/** `GET /deliverables/:deliverableId/...` — workspace-level deliverable routes. */
+export const deliverableIdParamsSchema = z.object({ deliverableId: uuidSchema });
+
 export const listServiceCategoriesQuerySchema = z.object({
   /** `?includeInactive=true` also returns retired categories. */
   includeInactive: z

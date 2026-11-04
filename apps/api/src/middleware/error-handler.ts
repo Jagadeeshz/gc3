@@ -29,6 +29,26 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, _nex
   }
 
   const message = error instanceof Error ? error.message : String(error);
+
+  // body-parser rejects an oversized upload before any handler runs; surface it as
+  // a real 413 rather than letting it fall through as an opaque 500.
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { type?: unknown }).type === 'entity.too.large'
+  ) {
+    const body: ApiFailure = {
+      success: false,
+      error: {
+        code: 'PAYLOAD_TOO_LARGE',
+        message: 'The uploaded file exceeds the size limit',
+        requestId,
+      },
+    };
+    response.status(413).json(body);
+    return;
+  }
+
   console.error(`[gc3-api] unhandled error requestId=${requestId}: ${message}`, error);
 
   const body: ApiFailure = {

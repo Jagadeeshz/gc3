@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
   Deliverable,
   DeliverableVersion,
+  FileIntegrityReport,
   RequestComment,
   ServiceCategory,
   ServiceRequest,
@@ -19,6 +20,8 @@ import {
   ApiClientError,
   changeRequestStatus,
   createDeliverable,
+  downloadDeliverableFile,
+  fetchFileIntegrity,
   getRequest,
   listCategories,
   listComments,
@@ -27,16 +30,19 @@ import {
   updateDeliverable,
   updateDeliverableStatus,
   updateRequest,
+  uploadDeliverableFile,
 } from '@/lib/api-client';
 import { activeRoles } from '@/lib/session';
 import { useSession } from '@/lib/session-context';
 import {
   deliverableStatusLabel,
   deliverableStatusTone,
+  formatBytes,
   formatDate,
   priorityLabel,
   requestStatusLabel,
   requestStatusTone,
+  shortDigest,
 } from '@/components/portal/status';
 
 export default function RequestDetailPage() {
@@ -68,6 +74,10 @@ export default function RequestDetailPage() {
   });
   const [versions, setVersions] = useState<Record<string, DeliverableVersion[]>>({});
   const [notice, setNotice] = useState<string | null>(null);
+  const [attachTarget, setAttachTarget] = useState<string | null>(null);
+  const [attachFile, setAttachFile] = useState<File | null>(null);
+  const [attachNote, setAttachNote] = useState('');
+  const [integrity, setIntegrity] = useState<Record<string, FileIntegrityReport>>({});
   const [categories, setCategories] = useState<readonly ServiceCategory[]>([]);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<{
@@ -392,6 +402,107 @@ export default function RequestDetailPage() {
     } catch (caught) {
       setActionError(
         caught instanceof ApiClientError ? caught.message : 'Could not load version history',
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function onUploadFile(
+    event: React.FormEvent<HTMLFormElement>,
+    deliverable: Deliverable,
+  ) {
+    event.preventDefault();
+
+    if (!token || !organizationId || !request || !attachFile) {
+      return;
+    }
+
+    setBusy(`file:${deliverable.id}`);
+    setActionError(null);
+    setNotice(null);
+
+    try {
+      const receipt = await uploadDeliverableFile(
+        token,
+        organizationId,
+        request.id,
+        deliverable.id,
+        attachFile,
+        attachNote.trim() || undefined,
+      );
+
+      setDeliverables((current) =>
+        current.map((item) => (item.id === deliverable.id ? receipt.deliverable : item)),
+      );
+      setVersions((current) => {
+        const next = { ...current };
+        delete next[deliverable.id];
+        return next;
+      });
+      setIntegrity((current) => {
+        const next = { ...current };
+        delete next[deliverable.id];
+        return next;
+      });
+
+      setAttachTarget(null);
+      setAttachFile(null);
+      setAttachNote('');
+
+      setNotice(
+        receipt.approvalReset
+          ? `Uploaded ${formatBytes(receipt.integrity.sizeBytes)} as version ${receipt.deliverable.version}. The previous approval was cleared — it is back to Pending and needs signing off again.`
+          : `Uploaded ${formatBytes(receipt.integrity.sizeBytes)} as version ${receipt.deliverable.version}. SHA-256 ${shortDigest(receipt.integrity.sha256)}…`,
+      );
+    } catch (caught) {
+      setActionError(caught instanceof ApiClientError ? caught.message : 'Could not upload the file');
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function onVerifyFile(deliverable: Deliverable) {
+    if (!token || !organizationId) {
+      return;
+    }
+
+    setBusy(`verify:${deliverable.id}`);
+    setActionError(null);
+
+    try {
+      const report = await fetchFileIntegrity(token, organizationId, deliverable.id);
+      setIntegrity((current) => ({ ...current, [deliverable.id]: report }));
+    } catch (caught) {
+      setActionError(
+        caught instanceof ApiClientError ? caught.message : 'Could not verify the stored file',
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function onDownloadFile(deliverable: Deliverable) {
+    if (!token || !organizationId) {
+      return;
+    }
+
+    setBusy(`download:${deliverable.id}`);
+    setActionError(null);
+
+    try {
+      const blob = await downloadDeliverableFile(token, organizationId, deliverable.id);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = deliverable.title.replace(/[^\w.-]+/g, '-') || 'deliverable';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    } catch (caught) {
+      setActionError(
+        caught instanceof ApiClientError ? caught.message : 'Could not download the file',
       );
     } finally {
       setBusy(null);
@@ -757,6 +868,12 @@ export default function RequestDetailPage() {
                           ? `Approved ${formatDate(deliverable.approvedAt)}`
                           : 'Awaiting approval'}
                       </p>
+                      {deliverable.fileKey ? (
+                        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
+                          {deliverable.fileMimeType} · {formatBytes(deliverable.fileSize)} · sha256{' '}
+                          {shortDigest(deliverable.fileSha256)}
+                        </p>
+                      ) : null}
                     </div>
                     <Badge tone={deliverableStatusTone(deliverable.status)}>
                       {deliverableStatusLabel(deliverable.status)}
@@ -795,7 +912,102 @@ export default function RequestDetailPage() {
                         ? 'Hide history'
                         : `History (v${deliverable.version})`}
                     </button>
+
+                    {deliverable.fileKey ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => void onDownloadFile(deliverable)}
+                          disabled={busy !== null}
+                          className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-warm hover:bg-white/10 disabled:opacity-50"
+                        >
+                          {busy === `download:${deliverable.id}` ? 'Downloading…' : 'Download'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void onVerifyFile(deliverable)}
+                          disabled={busy !== null}
+                          className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-warm hover:bg-white/10 disabled:opacity-50"
+                        >
+                          {busy === `verify:${deliverable.id}` ? 'Checking…' : 'Verify checksum'}
+                        </button>
+                      </>
+                    ) : null}
+
+                    {canCreateDeliverable && attachTarget !== deliverable.id ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAttachTarget(deliverable.id);
+                          setAttachFile(null);
+                          setAttachNote('');
+                        }}
+                        disabled={busy !== null}
+                        className="rounded-md border border-gold/40 bg-gold/12 px-2.5 py-1 text-[11px] text-gold-light hover:bg-gold/20 disabled:opacity-50"
+                      >
+                        {deliverable.fileKey ? 'Replace file' : 'Attach file'}
+                      </button>
+                    ) : null}
+
+                    {integrity[deliverable.id] ? (
+                      <span
+                        className={
+                          integrity[deliverable.id]!.ok
+                            ? 'self-center text-[11px] text-emerald-300'
+                            : 'self-center text-[11px] text-red-300'
+                        }
+                      >
+                        {integrity[deliverable.id]!.ok
+                          ? 'Checksum OK — stored bytes match the record'
+                          : `Checksum MISMATCH — expected ${shortDigest(integrity[deliverable.id]!.expectedSha256)}…, found ${shortDigest(integrity[deliverable.id]!.actualSha256)}…`}
+                      </span>
+                    ) : null}
                   </div>
+
+                  {attachTarget === deliverable.id ? (
+                    <form
+                      className="mt-2.5 grid gap-2 rounded-lg border border-gold/30 bg-black/20 p-3"
+                      onSubmit={(event) => void onUploadFile(event, deliverable)}
+                    >
+                      <input
+                        type="file"
+                        onChange={(event) => setAttachFile(event.target.files?.[0] ?? null)}
+                        className="text-[11px] text-muted file:mr-2 file:rounded file:border file:border-white/15 file:bg-white/5 file:px-2 file:py-1 file:text-[11px] file:text-warm"
+                      />
+                      <input
+                        maxLength={500}
+                        value={attachNote}
+                        onChange={(event) => setAttachNote(event.target.value)}
+                        placeholder="Why this file (optional, recorded on the version)"
+                        className="rounded-md border border-white/12 bg-graphite-elevated px-2.5 py-1.5 text-xs text-warm focus:border-gold/60 focus:outline-none"
+                      />
+                      <p className="text-[11px] text-muted">
+                        The bytes are stored and hashed on arrival. If this deliverable has already
+                        been approved or released, uploading clears that approval.
+                      </p>
+                      <div className="flex gap-1.5">
+                        <button
+                          type="submit"
+                          disabled={busy !== null || attachFile === null}
+                          className="rounded-md border border-gold-deep/40 bg-[linear-gradient(180deg,#E2C777_0%,#D9B65D_100%)] px-3 py-1.5 text-[11px] font-medium text-ink disabled:opacity-50"
+                        >
+                          {busy === `file:${deliverable.id}` ? 'Uploading…' : 'Upload'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAttachTarget(null);
+                            setAttachFile(null);
+                            setAttachNote('');
+                          }}
+                          disabled={busy !== null}
+                          className="rounded-md border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-warm hover:bg-white/10 disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  ) : null}
 
                   {editingDeliverableId === deliverable.id ? (
                     <form

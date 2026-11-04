@@ -139,6 +139,7 @@ export type ApiErrorCode =
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'NOT_IMPLEMENTED'
+  | 'PAYLOAD_TOO_LARGE'
   | 'RATE_LIMITED'
   | 'INTERNAL_ERROR';
 
@@ -357,6 +358,12 @@ export interface Deliverable extends Timestamps, TenantScoped, SoftDeletable {
   readonly description: string | null;
   readonly status: DeliverableStatus;
   readonly fileUrl: string | null;
+  /** Storage key for an uploaded asset; null when the file is an external URL. */
+  readonly fileKey: string | null;
+  /** SHA-256 of the stored bytes, lowercase hex. */
+  readonly fileSha256: string | null;
+  readonly fileSize: number | null;
+  readonly fileMimeType: string | null;
   /** Monotonic content version, starting at 1. Every edit bumps it. */
   readonly version: number;
   /** Staff member who produced this deliverable; null for legacy rows. */
@@ -378,6 +385,10 @@ export interface DeliverableVersion extends TenantScoped {
   readonly title: string;
   readonly description: string | null;
   readonly fileUrl: string | null;
+  readonly fileKey: string | null;
+  readonly fileSha256: string | null;
+  readonly fileSize: number | null;
+  readonly fileMimeType: string | null;
   readonly createdById: Uuid | null;
   /** Why the version changed, when the editor said so. */
   readonly changeNote: string | null;
@@ -403,4 +414,20 @@ export interface DeliveryHistory {
   readonly requestCount: number;
   readonly latestReleasedAt: IsoDateTime | null;
   readonly entries: readonly DeliveryHistoryEntry[];
+}
+
+/**
+ * Result of re-reading a stored file from disk and comparing its digest with the
+ * one recorded when it was uploaded. `ok: false` means the bytes on disk no longer
+ * match what was signed off.
+ */
+export interface FileIntegrityReport {
+  readonly deliverableId: Uuid;
+  readonly version: number;
+  readonly fileKey: string;
+  readonly ok: boolean;
+  readonly expectedSha256: string;
+  readonly actualSha256: string;
+  readonly sizeBytes: number;
+  readonly recordedSizeBytes: number | null;
 }

@@ -29,6 +29,9 @@ export default defineConfig({
       // Capture invitations in memory so dispatch can be asserted.
       NOTIFICATION_DRIVER: 'memory',
       WEB_APP_URL: 'http://localhost:3000',
+      // Uploads must not land in the directory the dev server writes to, or a test
+      // run would overwrite real deliverable files (and vice versa).
+      UPLOAD_DIR: 'storage/test',
     },
   },
 });

@@ -39,3 +39,6 @@ uploads/
 
 # Prisma generated client (regenerate with `pnpm db:generate`)
 apps/api/src/generated/
+
+# Uploaded deliverable files (local storage adapter)
+apps/api/storage/

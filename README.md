@@ -160,6 +160,9 @@ Base URL: `http://localhost:3001/api/v1`
 | GET | `/service-requests/:requestId/deliverables/:deliverableId/versions` | bearer + scope | `deliverable:read` — newest version first |
 | PATCH | `/service-requests/:requestId/deliverables/:deliverableId/status` | bearer + scope | `deliverable:review` — release requires a prior human approval; AI actors blocked |
 | GET | `/deliverables/history` | bearer + scope | `deliverable:read` — released assets across the workspace with counts, `?limit=` |
+| PUT | `/service-requests/:requestId/deliverables/:deliverableId/file` | bearer + scope | `deliverable:update` — raw bytes as the body; SHA-256 recorded; always a new version |
+| GET | `/deliverables/:deliverableId/file` | bearer + scope | `deliverable:read` — the stored bytes, with `x-checksum-sha256` |
+| GET | `/deliverables/:deliverableId/file/integrity` | bearer + scope | `deliverable:read` — re-reads the file and reports `ok` / expected / actual digest |
 | GET | `/service-categories` | bearer + scope | `category:read` — active only, `?includeInactive=true` for the full catalogue |
 | POST | `/service-categories` | bearer + scope | `category:manage` — slug derived from the name when omitted, 409 on duplicate |
 | PATCH | `/service-categories/:categoryId` | bearer + scope | `category:manage` — rename, re-slug, re-describe, retire/reactivate |
@@ -433,6 +436,13 @@ API_INTERNAL_BASE_URL=http://localhost:3001/api/v1      # server-side health pro
 
 `NEXT_PUBLIC_*` is baked in at build time — rebuild after changing it.
 
+API-side upload settings (`apps/api/.env`):
+
+```bash
+UPLOAD_DIR=storage        # relative to apps/api; where deliverable bytes are written
+FILE_MAX_BYTES=10485760   # 10 MiB per file; larger uploads get 413 PAYLOAD_TOO_LARGE
+```
+
 ### Known limits
 
 - The organization switcher lists what `GET /auth/organizations` returns; staff see all tenants,
@@ -443,10 +453,11 @@ API_INTERNAL_BASE_URL=http://localhost:3001/api/v1      # server-side health pro
   form shows the toggle only to staff, and the API downgrades the flag if a client sends it.
 - Deliverables carry `createdById` (stamped from the actor) alongside `approvedById`; the create form
   is staff-only and offers an optional file URL.
-- Deliverable files are URL references, not stored bytes — a version records which URL was current, so
-  swapping the file behind an unchanged URL is invisible to that audit trail.
-- Replacing content on an approved or released deliverable clears the approval (`approvalReset: true`);
-  it must be signed off again before it can be released.
+- Deliverable files can be **uploaded** (bytes stored by the API, SHA-256 recorded, verifiable) or left
+  as an external URL. Uploading always appends a version and clears a prior approval.
+- Files are stored on local disk (`UPLOAD_DIR`, default `apps/api/storage`) with no virus scanning,
+  signed-URL expiry or retention job yet; a failed DB write after the bytes land leaves an orphan file.
+- A mismatch under **Verify checksum** means the bytes on disk no longer match what was approved.
 - Dashboard metrics are computed over the first 100 requests of the active tenant, not a SQL
   aggregate.
 - Request editing is refused once a request is `CLOSED` or `CANCELLED` — the record is history by
@@ -479,7 +490,8 @@ API_INTERNAL_BASE_URL=http://localhost:3001/api/v1      # server-side health pro
 | Phase 2 catalogue: `/service-categories` CRUD + category picker, request edit form | done |
 | Phase 2 delivery: staff deliverable form with file refs, internal-note toggle | done |
 | Phase 2 versioning: deliverable versions, re-approval on replace, `/deliveries` history | done |
-| Integration test harness (Vitest + Supertest, 185 tests) | done |
+| Phase 2 files: stored uploads with SHA-256, download, integrity check | done |
+| Integration test harness (Vitest + Supertest, 197 tests) | done |
 | Delivery retry/backoff, bounce handling, delivery read API | not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |

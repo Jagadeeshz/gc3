@@ -346,6 +346,10 @@ model Deliverable {
   status         DeliverableStatus @default(PENDING)
   version        Int               @default(1)
   fileUrl        String?           @map("file_url") @db.VarChar(500)
+  fileKey        String?           @map("file_key") @db.VarChar(300)
+  fileSha256     String?           @map("file_sha256") @db.VarChar(64)
+  fileSize       Int?              @map("file_size")
+  fileMimeType   String?           @map("file_mime_type") @db.VarChar(120)
   createdById    String?           @map("created_by_id") @db.Uuid
   approvedById   String?           @map("approved_by_id") @db.Uuid
   approvedAt     DateTime?         @map("approved_at") @db.Timestamptz(3)
@@ -380,6 +384,10 @@ model DeliverableVersion {
   title          String   @db.VarChar(200)
   description    String?  @db.VarChar(1000)
   fileUrl        String?  @map("file_url") @db.VarChar(500)
+  fileKey        String?  @map("file_key") @db.VarChar(300)
+  fileSha256     String?  @map("file_sha256") @db.VarChar(64)
+  fileSize       Int?     @map("file_size")
+  fileMimeType   String?  @map("file_mime_type") @db.VarChar(120)
   createdById    String?  @map("created_by_id") @db.Uuid
   changeNote     String?  @map("change_note") @db.VarChar(500)
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)

@@ -17,6 +17,10 @@ type DeliverableRow = {
   status: DeliverableStatus;
   version: number;
   fileUrl: string | null;
+  fileKey: string | null;
+  fileSha256: string | null;
+  fileSize: number | null;
+  fileMimeType: string | null;
   createdById: string | null;
   approvedById: string | null;
   approvedAt: Date | null;
@@ -36,6 +40,10 @@ function toEntity(row: DeliverableRow): Deliverable {
     status: row.status,
     version: row.version,
     fileUrl: row.fileUrl,
+    fileKey: row.fileKey,
+    fileSha256: row.fileSha256,
+    fileSize: row.fileSize,
+    fileMimeType: row.fileMimeType,
     createdById: row.createdById,
     approvedById: row.approvedById,
     approvedAt: row.approvedAt ? row.approvedAt.toISOString() : null,
@@ -54,6 +62,10 @@ type VersionRow = {
   title: string;
   description: string | null;
   fileUrl: string | null;
+  fileKey: string | null;
+  fileSha256: string | null;
+  fileSize: number | null;
+  fileMimeType: string | null;
   createdById: string | null;
   changeNote: string | null;
   createdAt: Date;
@@ -68,6 +80,10 @@ function toVersionEntity(row: VersionRow): DeliverableVersion {
     title: row.title,
     description: row.description,
     fileUrl: row.fileUrl,
+    fileKey: row.fileKey,
+    fileSha256: row.fileSha256,
+    fileSize: row.fileSize,
+    fileMimeType: row.fileMimeType,
     createdById: row.createdById,
     changeNote: row.changeNote,
     createdAt: row.createdAt.toISOString(),
@@ -223,8 +239,89 @@ export const deliverableRepository = {
           title: nextTitle,
           description: nextDescription,
           fileUrl: nextFileUrl,
+          // A metadata edit carries the existing file reference forward.
+          fileKey: current.fileKey,
+          fileSha256: current.fileSha256,
+          fileSize: current.fileSize,
+          fileMimeType: current.fileMimeType,
           createdById: actorId ?? null,
           changeNote: input.changeNote ?? null,
+        },
+      });
+
+      return updated;
+    });
+
+    return { deliverable: toEntity(row), approvalReset };
+  },
+
+  /**
+   * Attaches uploaded bytes to a deliverable as a new version.
+   *
+   * Uploading a replacement file is a content change like any other, so it follows
+   * the same rule: if the deliverable was already approved or released, the
+   * approval is cleared and it returns to PENDING. That is the whole point of
+   * storing a checksum — the sign-off must apply to these exact bytes.
+   */
+  async attachFileScoped(
+    organizationId: string,
+    id: string,
+    file: {
+      fileKey: string;
+      fileSha256: string;
+      fileSize: number;
+      fileMimeType: string;
+    },
+    actorId?: string,
+    changeNote?: string,
+  ): Promise<PatchDeliverableResult | null> {
+    const current = await prisma.deliverable.findFirst({
+      where: { id, organizationId, deletedAt: null },
+    });
+
+    if (!current) {
+      return null;
+    }
+
+    const nextVersion = current.version + 1;
+    const approvalReset = isClientFacing(current.status);
+
+    const row = await prisma.$transaction(async (tx) => {
+      const updated = await tx.deliverable.update({
+        where: { id: current.id },
+        data: {
+          version: nextVersion,
+          fileKey: file.fileKey,
+          fileSha256: file.fileSha256,
+          fileSize: file.fileSize,
+          fileMimeType: file.fileMimeType,
+          // The stored bytes supersede any external URL reference.
+          fileUrl: null,
+          ...(approvalReset
+            ? {
+                status: 'PENDING' as const,
+                approvedById: null,
+                approvedAt: null,
+                releasedAt: null,
+              }
+            : {}),
+        },
+      });
+
+      await tx.deliverableVersion.create({
+        data: {
+          organizationId,
+          deliverableId: current.id,
+          version: nextVersion,
+          title: current.title,
+          description: current.description,
+          fileUrl: null,
+          fileKey: file.fileKey,
+          fileSha256: file.fileSha256,
+          fileSize: file.fileSize,
+          fileMimeType: file.fileMimeType,
+          createdById: actorId ?? null,
+          changeNote: changeNote ?? `Uploaded ${file.fileMimeType}`,
         },
       });
 

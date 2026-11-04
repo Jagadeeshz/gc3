@@ -24,7 +24,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 8 | Phase 2 · Service request UI | `0bb6e7e` | ✅ delivered |
 | 9 | Phase 2 · Categories & request editing | `a119478`, `7a94ef8` | ✅ delivered |
 | 10 | Phase 2 · Staff deliverables & internal notes | `68ac590`, `1e5d813` | ✅ delivered |
-| 11 | Phase 2 · Deliverable versioning & delivery history | `351e1d4` | ✅ delivered |
+| 11 | Phase 2 · Deliverable versioning & delivery history | `351e1d4`, `be00a48` | ✅ delivered |
+| 12 | Phase 2 · Stored file uploads & checksums | `<pending>` | ✅ delivered |
 
 ---
 
@@ -540,7 +541,8 @@ is not necessarily the actor who raised the request.
 
 ## Slice 11 — Phase 2 · Deliverable versioning & delivery history  ✅
 
-**Commit:** `351e1d4` — feat(delivery): deliverable versioning and client delivery history
+**Commits:** `351e1d4` — feat(delivery): deliverable versioning and client delivery history
+· `be00a48` — docs(progress): pin slice 11 to 351e1d4
 **Brief refs:** §5.4 (deliverables), §8.3 (human sign-off survives content changes), §11 (API), §12 (tenancy)
 
 ### What shipped
@@ -589,11 +591,66 @@ is not necessarily the actor who raised the request.
 
 ---
 
+## Slice 12 — Phase 2 · Stored file uploads & checksums  ✅
+
+**Brief refs:** §5.4 (deliverables), §8.3 (the sign-off must apply to the actual asset), §11 (API), §12 (tenancy)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Storage adapter | `src/storage/local-storage.ts` — `put`/`get`/`resolveStoragePath`, keys are `<orgId>/<deliverableId>/v<n>-<uuid>.<ext>`, traversal rejected, swappable for S3 without touching routes |
+| Schema | `deliverables` **and** `deliverable_versions` gain `file_key`, `file_sha256`, `file_size`, `file_mime_type` (migration `20261104140000_deliverable_files`, all nullable) |
+| Upload | `PUT /service-requests/:requestId/deliverables/:deliverableId/file` — raw bytes as the body, caller's `Content-Type` is the MIME type, SHA-256 computed on arrival. Always a new version; clears a prior approval like any content change |
+| Download | `GET /deliverables/:deliverableId/file` — auth-gated, tenant-scoped, returns the exact bytes with `x-checksum-sha256` |
+| Integrity | `GET /deliverables/:deliverableId/file/integrity` — re-reads the bytes and compares digests, returning `ok`, expected and actual |
+| Contracts | MIME allow-list (PDF, images, text, CSV, JSON, ZIP, Office), 10 MiB cap, empty body rejected, `413 PAYLOAD_TOO_LARGE` for oversize |
+| UI | "Attach file" / "Replace file" with a file picker and change note, a metadata line (`APPLICATION/PDF · 277 B · SHA256 CAC7D814122A`), **Download** and **Verify checksum** buttons with an inline OK / MISMATCH result |
+| Tests | 12 new (upload contract, digest match, download bytes, tamper detection, approval reset, MIME/empty/oversize rejection, permissions, tenancy) |
+
+### Evidence
+
+- `pnpm test` **197/197** across 16 files (was 185)
+- `pnpm -r typecheck` 5/5 · `next build` clean
+- Migration applied; columns present on both tables
+- Browser, real file (`gc3-demo-runbook.pdf`, 277 B):
+  - uploaded through the file picker → notice *"Uploaded 277 B as version 3. The previous approval was
+    cleared — it is back to Pending…"*
+  - metadata line rendered `APPLICATION/PDF · 277 B · SHA256 CAC7D814122A`
+  - **Verify checksum** → *"Checksum OK — stored bytes match the record"*
+  - **Download** → no error surfaced
+  - file rewritten on disk (277 B → 52 B, `cac7d814…` → `d8799cb5…`) → **Verify checksum** →
+    *"Checksum MISMATCH — expected cac7d814122a…, found d8799cb5e171…"*
+  - original bytes restored → **Verify checksum** → OK again
+- `sha256sum` of the source file matched the digest the API recorded, byte for byte
+
+### Bug found and fixed
+
+The test suite was writing uploads into `apps/api/storage/` — **the same directory the dev server
+uses**. My first tamper-test run proved it by accident: `find storage -type f | head -1` returned a
+test-org file, not the demo file. Tests now run with `UPLOAD_DIR=storage/test` (set in
+`vitest.config.ts` so it applies before any module reads env), and the stale test artifacts were
+cleared. Verified: `storage/test` holds 7 test uploads, the dev org holds the single demo file.
+
+### Notes / limits
+
+- The upload contract is **raw body**, not multipart: the file's bytes are the request body and its
+  `Content-Type` header is the type. Simpler for scripts and browsers alike, and it means the global
+  JSON parser had to skip that path so the body survives as a Buffer.
+- An upload is a content change, so it always appends a version and clears a prior approval — a
+  released asset is never silently swapped.
+- Files are local-disk only. There is no virus scanning, no signed-URL expiry, and no retention job.
+- Orphan risk: if the DB write fails after the bytes land, the file is left unreferenced (no GC yet).
+- External `fileUrl` still works for deliverables whose asset lives elsewhere; uploading replaces it
+  with stored bytes.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Phase 2 step 7 | Stored file uploads (bytes + checksum) so a released asset is verifiable |
+| Phase 2 step 8 | Upload progress + limits surfaced in the UI, orphan file GC |
 | Delivery retry & backoff | Retry FAILED deliveries; bounce/complaint suppression list |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |

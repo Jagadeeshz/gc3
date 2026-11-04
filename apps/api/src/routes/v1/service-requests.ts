@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import type {
   ApiSuccess,
   Deliverable,
@@ -22,6 +22,14 @@ import {
   updateServiceRequestSchema,
 } from '@gc3/validation';
 import { ApiError } from '../../lib/api-error';
+import { env } from '../../config/env';
+import {
+  buildStorageKey,
+  fileStorage,
+  isSupportedMimeType,
+  sha256,
+  SUPPORTED_MIME_TYPES,
+} from '../../storage/local-storage';
 import { requireAuth, requirePermission } from '../../middleware/auth';
 import { forbidAgentCommercialAction, requireTenantScope } from '../../middleware/tenant-scope';
 import { deliverableRepository } from '../../repositories/deliverable.repository';
@@ -439,6 +447,116 @@ serviceRequestsRouter.patch(
       success: true,
       data: result,
     };
+    response.status(200).json(payload);
+  },
+);
+
+/**
+ * PUT /service-requests/:requestId/deliverables/:deliverableId/file
+ *
+ * Uploads the raw bytes of the asset. The client sends the file itself as the body
+ * with its own `Content-Type`; there is no multipart layer, which keeps the
+ * contract simple for both a browser and a script. The response carries the digest
+ * it recorded, so the caller can confirm what was stored without a second call.
+ */
+const rawUploadBody = express.raw({ type: () => true, limit: env.FILE_MAX_BYTES });
+
+serviceRequestsRouter.put(
+  '/:requestId/deliverables/:deliverableId/file',
+  forbidAgentCommercialAction,
+  requirePermission('deliverable:update'),
+  rawUploadBody,
+  async (request, response) => {
+    const params = deliverableParamsSchema.safeParse(request.params);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid route parameters', formatIssues(params.error));
+    }
+
+    const organizationId = scopeOf(request.organizationId);
+
+    const header = request.headers['content-type'] ?? '';
+    const mimeType = header.split(';')[0]?.trim().toLowerCase() ?? '';
+
+    if (!isSupportedMimeType(mimeType)) {
+      throw ApiError.badRequest(
+        `Unsupported file type${mimeType ? ` "${mimeType}"` : ''}. Send one of: ${SUPPORTED_MIME_TYPES.join(', ')}`,
+        [{ path: 'content-type', message: 'Unsupported media type' }],
+      );
+    }
+
+    const bytes = Buffer.isBuffer(request.body) ? request.body : Buffer.alloc(0);
+
+    if (bytes.length === 0) {
+      throw ApiError.badRequest('Upload body is empty', [
+        { path: 'body', message: 'Send the file bytes as the request body' },
+      ]);
+    }
+
+    if (bytes.length > env.FILE_MAX_BYTES) {
+      throw new ApiError(
+        413,
+        'PAYLOAD_TOO_LARGE',
+        `File exceeds the ${env.FILE_MAX_BYTES} byte limit`,
+      );
+    }
+
+    const existing = await deliverableRepository.findByIdScoped(
+      organizationId,
+      params.data.deliverableId,
+    );
+
+    if (!existing || existing.requestId !== params.data.requestId) {
+      throw ApiError.notFound('Deliverable not found on this request');
+    }
+
+    const nextVersion = existing.version + 1;
+    const fileKey = buildStorageKey({
+      organizationId,
+      deliverableId: existing.id,
+      version: nextVersion,
+      mimeType,
+    });
+    const digest = sha256(bytes);
+
+    await fileStorage.put(fileKey, bytes);
+
+    const note = typeof request.query.note === 'string' ? request.query.note.slice(0, 500) : undefined;
+
+    const result = await deliverableRepository.attachFileScoped(
+      organizationId,
+      existing.id,
+      {
+        fileKey,
+        fileSha256: digest,
+        fileSize: bytes.length,
+        fileMimeType: mimeType,
+      },
+      request.actor?.userId,
+      note,
+    );
+
+    if (!result) {
+      throw ApiError.notFound('Deliverable not found');
+    }
+
+    const payload: ApiSuccess<{
+      deliverable: Deliverable;
+      approvalReset: boolean;
+      integrity: { sha256: string; sizeBytes: number; mimeType: string; fileKey: string };
+    }> = {
+      success: true,
+      data: {
+        ...result,
+        integrity: {
+          sha256: digest,
+          sizeBytes: bytes.length,
+          mimeType,
+          fileKey,
+        },
+      },
+    };
+
     response.status(200).json(payload);
   },
 );

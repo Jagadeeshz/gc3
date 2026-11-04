@@ -72,6 +72,27 @@ export function priorityLabel(priority: ServiceRequestPriority): string {
 }
 
 /** Short, deterministic date for tables and record cards. */
+export function formatBytes(bytes: number | null): string {
+  if (bytes === null) {
+    return '—';
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** First 12 hex characters — enough to eyeball two digests, short enough to read. */
+export function shortDigest(sha256: string | null): string {
+  return sha256 ? sha256.slice(0, 12) : '—';
+}
+
 export function formatDate(value: string | null): string {
   if (!value) {
     return '—';

@@ -21,7 +21,18 @@ export function createApp(): Express {
   });
   app.use(requestIdMiddleware);
 
-  app.use(express.json({ limit: '1mb' }));
+  // JSON and form bodies for the ordinary API surface. The deliverable upload is
+  // excluded: it takes raw bytes (any content type, including application/json),
+  // so parsing it here would consume the body before the route sees a Buffer.
+  const jsonParser = express.json({ limit: '1mb' });
+  app.use((request, response, next) => {
+    if (request.method === 'PUT' && /\/deliverables\/[^/]+\/file\/?$/.test(request.path)) {
+      next();
+      return;
+    }
+
+    jsonParser(request, response, next);
+  });
   app.use(express.urlencoded({ extended: false }));
 
   // Explicit CORS allow-list; credentials stay off until the auth slice lands.

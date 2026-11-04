@@ -47,6 +47,11 @@ const envSchema = z.object({
   MAIL_FROM: z.string().min(3).default('GC3 Portal <no-reply@gc3.local>'),
 
   REDIS_URL: z.url().optional(),
+
+  /** Directory for uploaded deliverable files. Relative paths resolve from cwd. */
+  UPLOAD_DIR: z.string().min(1).default('storage'),
+  /** Hard cap on a single uploaded file, in bytes. Default 10 MiB. */
+  FILE_MAX_BYTES: z.coerce.number().int().min(1).max(104_857_600).default(10_485_760),
 });
 
 export type Env = z.infer<typeof envSchema>;
