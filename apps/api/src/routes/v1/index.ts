@@ -6,7 +6,9 @@ import { requireAuth, requirePermission } from '../../middleware/auth';
 import { authRouter } from './auth';
 import { deliverablesRouter } from './deliverables';
 import { notificationsRouter } from './notifications';
+import { opsRouter } from './ops';
 import { organizationsRouter } from './organizations';
+import { podsRouter } from './pods';
 import { serviceCategoriesRouter } from './service-categories';
 import { serviceRequestsRouter } from './service-requests';
 
@@ -122,3 +124,12 @@ v1Router.use('/deliverables', deliverablesRouter);
 
 /** Phase 1: delivery audit and manual retry control. */
 v1Router.use('/notifications', notificationsRouter);
+
+/** Phase 3: delivery pods and the routing decision they receive work through. */
+v1Router.use('/pods', podsRouter);
+
+/**
+ * Phase 3: the cross-tenant operations summary. Mounted without the tenant
+ * middleware by design — see the router for why.
+ */
+v1Router.use('/ops', opsRouter);

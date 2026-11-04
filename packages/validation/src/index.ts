@@ -249,6 +249,48 @@ export const notificationQuerySchema = paginationSchema.extend({
 
 export type NotificationQuery = z.infer<typeof notificationQuerySchema>;
 
+// ---------------------------------------------------------------------------
+// Pods, routing and the operations console (Phase 3)
+// ---------------------------------------------------------------------------
+
+export const createPodSchema = z.object({
+  name: z.string().trim().min(2, 'Give the pod a name').max(120),
+  /** Optional: derived from the name when omitted. */
+  slug: categorySlugSchema.optional(),
+  description: z.string().trim().max(500).nullable().optional(),
+  leadId: uuidSchema.nullable().optional(),
+  /** Staff users to seat in the pod at creation time. */
+  memberIds: z.array(uuidSchema).max(50).optional(),
+});
+
+export type CreatePodInput = z.infer<typeof createPodSchema>;
+
+export const podIdParamsSchema = z.object({ podId: uuidSchema });
+
+/**
+ * Routing decision for a request. At least one field must be present; sending
+ * `null` explicitly clears that assignment.
+ */
+export const assignRequestSchema = z
+  .object({
+    podId: uuidSchema.nullable().optional(),
+    assigneeId: uuidSchema.nullable().optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide podId or assigneeId',
+  });
+
+export type AssignRequestInput = z.infer<typeof assignRequestSchema>;
+
+/** `GET /ops/dashboard` — cross-tenant summary for platform operations. */
+export const opsDashboardQuerySchema = z.object({
+  queueLimit: z.coerce.number().int().min(1).max(100).default(20),
+  /** Narrow the queue to one tenant without leaving the platform view. */
+  organizationId: uuidSchema.optional(),
+});
+
+export type OpsDashboardQuery = z.infer<typeof opsDashboardQuerySchema>;
+
 export const createDeliverableSchema = z.object({
   title: z.string().trim().min(3).max(200),
   description: z.string().trim().max(1_000).optional(),

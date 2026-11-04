@@ -8,6 +8,7 @@ import {
   updateServiceCategorySchema,
 } from '@gc3/validation';
 import { ApiError } from '../../lib/api-error';
+import { slugify as sharedSlugify } from '../../lib/slug';
 import { requireAuth, requirePermission } from '../../middleware/auth';
 import { requireTenantScope } from '../../middleware/tenant-scope';
 import { serviceCategoryRepository } from '../../repositories/service-category.repository';
@@ -37,14 +38,7 @@ function scopeOf(organizationId: string | undefined): string {
 
 /** "Cloud Migration & Ops" -> "cloud-migration-ops". */
 function slugify(name: string): string {
-  const slug = name
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60);
-
-  return slug.length >= 2 ? slug : `category-${Date.now().toString(36)}`;
+  return sharedSlugify(name, 'category');
 }
 
 function isSlugConflict(error: unknown): boolean {

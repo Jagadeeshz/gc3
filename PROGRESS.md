@@ -28,6 +28,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 12 | Phase 2 · Stored file uploads & checksums | `f02c970`, `040eb38` | ✅ delivered |
 | 13 | Notifications · retry/backoff & delivery read API | `bf229cd`, `7b8f5ad` | ✅ delivered |
 | 14 | Notifications · deliverable-released & status-updated events | `b368a91`, `f3f99d1` | ✅ delivered |
+| 15 | Phase 3 · Operations console, pods & request routing | `<pending>` | ✅ delivered |
 
 ---
 
@@ -776,12 +777,76 @@ routes a request to a pod.
 
 ---
 
+## Slice 15 — Phase 3 · Operations console, pods and request routing  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §5 (staff operations), §11 (versioned API), §12 (tenancy)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Pod model | `pods` (tenant-owned, optional lead, unique `(organization_id, slug)`, soft delete) and `pod_members` (unique `(pod_id, user_id)`); `service_requests.pod_id` added, indexed, `ON DELETE SET NULL` — migration `20261104170000_pods_and_routing` |
+| Ops dashboard | `GET /api/v1/ops/dashboard` behind `ops:read`: totals, one row per tenant, every pod with load, and the routing queue. `?organizationId=` narrows to one tenant, `?queueLimit=` 1–100 (default 20) |
+| Pods API | `GET /pods` (`request:assign`) and `POST /pods` (`pod:manage`) — slug derived from the name, 409 on a duplicate slug inside a tenant, 400 when a member id does not exist |
+| Routing | `PATCH /service-requests/:id/assign` (`request:assign`) takes `podId` and/or `assigneeId`, `null` clears either, and a pod from another tenant is a 404 rather than a silent no-op |
+| Permissions | `ops:read` (ADMIN, OPS_MANAGER), `request:assign` (ADMIN, OPS_MANAGER, POD_MANAGER), `pod:manage` (ADMIN, OPS_MANAGER) |
+| Shared helpers | `lib/request-status.ts` (a request is open until CLOSED/CANCELLED), `lib/slug.ts` (one slugify, used by categories and pods) |
+| UI | `/ops`: six metric cards, tenant table, routing queue with a per-row pod selector, pod list with load, create-pod form. The sidebar gains a **Platform → Operations** group that only renders for admins and ops managers |
+| Tests | 26 new across 2 files: role guards (9), cross-tenant aggregation (4), pod structure (6), routing (7) |
+
+### Evidence
+
+- `pnpm test` **241/241** across 20 files (was 215/19)
+- `pnpm -r typecheck` 5/5; `next build` 10 routes, `/ops` included
+- **Mutation check** (deliberately broken, then restored):
+  - `ops:read` → `request:read` on the dashboard route: 3 role-guard tests failed
+  - dropped the tenant filter from the pod lookup in `assignScoped`: the foreign-pod test failed
+  - restored → 26/26 again
+- Live, browser as `portal.verify@gc3.local` (PLATFORM_ADMIN):
+  - console showed **7 tenants · 3 open · 3 unrouted · 0 pods**
+  - created pod *Cloud Delivery* in Helios Cloud → banner "Pod created.", Pods **0 → 1**
+  - routed `REQ-EA763D6B` via the queue selector → "Request routed to the pod.", Unrouted **3 → 2**,
+    Helios row Unrouted **2 → 1**, the queue row now reads `HELIOS CLOUD · CLOUD DELIVERY · NO OWNER`
+  - Postgres confirms: `pods` has `Cloud Delivery / cloud-delivery / Helios Cloud / 0 members`, and
+    `REQ-EA763D6B` has `routed = t`, `REQ-4746CD7A` still `routed = f`
+- Live denial, as a real `SPECIALIST` account created for this check:
+  - `GET /ops/dashboard` → **403** "requires the `ops:read` permission, which your role does not grant"
+  - `GET /pods` → 403; `PATCH /…/assign` → 403 (`request:assign`)
+  - in the browser that account has no **Operations** nav entry, and `/ops` renders the restricted
+    panel: *"It aggregates every tenant, so it is limited to platform administrators and operations
+    managers. Your account (SPECIALIST) does not hold that access."*
+
+### Bugs found and fixed
+
+1. My dashboard seed sent `status: BLOCKED` to request creation, which only accepts DRAFT/SUBMITTED — the
+   test now walks `IN_PROGRESS → BLOCKED` through the real transition endpoint. Two more seeds had the
+   same flaw (`IN_PROGRESS`, `CLOSED`); all now transition rather than assert a state the API cannot
+   create.
+2. `notificationQuerySchema`'s `kind` filter had already been widened for event kinds, but the
+   repository's filter type had not — typecheck caught the mismatch before it reached a request.
+
+### Notes / limits
+
+- `/ops` is mounted **without** tenant middleware on purpose. Consequence worth knowing: a client actor
+  has no resolved permissions on a platform route at all, so they are refused before `ops:read` is even
+  consulted. The assertion holds; the reason is broader than the permission.
+- Pod membership can only be set at creation — there is no endpoint yet to seat or remove a member, edit
+  a pod, or deactivate one. `is_active` exists and the routing handler honours it.
+- The dashboard aggregates with `groupBy` and reduces in Node. Correct and cheap at seven tenants; at
+  thousands it wants a materialised view.
+- The queue orders by `dueAt` then `createdAt`. Priority is displayed but not weighted, so an URGENT
+  request with no due date can sit below a routine one that is overdue.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Phase 2 step 10 | Upload progress + orphan file GC |
-| Notification prefs | Per-user opt-out and digesting before fan-out scales |
+| Phase 3 step 2 | Pod membership management: seat/remove members, edit a pod, deactivate |
+| Phase 3 step 3 | Task/work items under a request, assigned inside the pod |
+| Notification durability | BullMQ on the configured Redis so a restart cannot lose a queued event |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |
 | Offboarding | Revoke an ACTIVE member: session invalidation, audit, retention rules |

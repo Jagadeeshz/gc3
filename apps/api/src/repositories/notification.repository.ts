@@ -113,7 +113,7 @@ export const notificationRepository = {
     organizationId: string,
     filters: {
       status?: 'SENT' | 'FAILED' | 'SKIPPED';
-      kind?: 'INVITATION' | 'RESENT';
+      kind?: 'INVITATION' | 'RESENT' | 'DELIVERABLE_RELEASED' | 'REQUEST_STATUS_UPDATED';
       recipient?: string;
       page: number;
       pageSize: number;

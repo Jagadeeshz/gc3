@@ -15,6 +15,7 @@ type RequestRow = {
   priority: ServiceRequestPriority;
   requesterId: string;
   assigneeId: string | null;
+  podId: string | null;
   dueAt: Date | null;
   submittedAt: Date | null;
   closedAt: Date | null;
@@ -35,6 +36,7 @@ function toEntity(row: RequestRow): ServiceRequest {
     priority: row.priority,
     requesterId: row.requesterId,
     assigneeId: row.assigneeId,
+    podId: row.podId,
     dueAt: row.dueAt ? row.dueAt.toISOString() : null,
     submittedAt: row.submittedAt ? row.submittedAt.toISOString() : null,
     closedAt: row.closedAt ? row.closedAt.toISOString() : null,
@@ -156,6 +158,60 @@ export const serviceRequestRepository = {
     await prisma.serviceRequest.updateMany({
       where: { id, organizationId, deletedAt: null },
       data: patch,
+    });
+
+    return this.findByIdScoped(organizationId, id);
+  },
+
+  /**
+   * Routing decision: move a request into a pod and/or name a human owner.
+   *
+   * Both targets must belong to the same tenant as the request — a pod id from
+   * another organization is treated as absent, not silently applied. Passing
+   * `null` clears that half of the assignment.
+   */
+  async assignScoped(
+    organizationId: string,
+    id: string,
+    input: { podId?: string | null; assigneeId?: string | null },
+  ): Promise<ServiceRequest | null> {
+    const existing = await prisma.serviceRequest.findFirst({
+      where: { id, organizationId, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return null;
+    }
+
+    if (input.podId) {
+      const pod = await prisma.pod.findFirst({
+        where: { id: input.podId, organizationId, deletedAt: null, isActive: true },
+        select: { id: true },
+      });
+
+      if (!pod) {
+        throw ApiError.notFound('Pod not found in this organization');
+      }
+    }
+
+    if (input.assigneeId) {
+      const assignee = await prisma.user.findFirst({
+        where: { id: input.assigneeId, deletedAt: null },
+        select: { id: true },
+      });
+
+      if (!assignee) {
+        throw ApiError.notFound('Assignee not found');
+      }
+    }
+
+    await prisma.serviceRequest.updateMany({
+      where: { id, organizationId, deletedAt: null },
+      data: {
+        ...(input.podId !== undefined ? { podId: input.podId } : {}),
+        ...(input.assigneeId !== undefined ? { assigneeId: input.assigneeId } : {}),
+      },
     });
 
     return this.findByIdScoped(organizationId, id);

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { Building2, ClipboardList, LayoutDashboard, LogOut, Package, Plus, Tags } from 'lucide-react';
+import { Building2, ClipboardList, Gauge, LayoutDashboard, LogOut, Package, Plus, Tags } from 'lucide-react';
 import { activeRoles } from '../../lib/session';
 import { useSession } from '../../lib/session-context';
 
@@ -120,6 +120,32 @@ export function PortalShell({ children }: { readonly children: ReactNode }) {
             );
           })}
         </nav>
+
+        {/*
+          The operations console spans every tenant, so it is not part of the
+          workspace nav. Hiding it is a courtesy — the API still refuses
+          `/ops/dashboard` without `ops:read`.
+        */}
+        {session.actor.platformRole === 'PLATFORM_ADMIN' ||
+        session.actor.platformRole === 'OPERATIONS_MANAGER' ? (
+          <nav className="grid gap-1">
+            <span className="px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+              Platform
+            </span>
+            <Link
+              href="/ops"
+              className={[
+                'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
+                pathname === '/ops'
+                  ? 'bg-white/8 text-warm'
+                  : 'text-muted hover:bg-white/5 hover:text-warm',
+              ].join(' ')}
+            >
+              <Gauge aria-hidden className="size-4" strokeWidth={1.75} />
+              Operations
+            </Link>
+          </nav>
+        ) : null}
 
         <div className="mt-auto border-t border-white/10 pt-4">
           <p className="truncate text-xs text-warm">{session.actor.fullName}</p>

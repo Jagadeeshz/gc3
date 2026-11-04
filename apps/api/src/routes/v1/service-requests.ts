@@ -9,6 +9,7 @@ import type {
 } from '@gc3/types';
 import { isAllowedRequestTransition } from '@gc3/types';
 import {
+  assignRequestSchema,
   changeDeliverableStatusSchema,
   changeServiceRequestStatusSchema,
   createDeliverableSchema,
@@ -187,6 +188,46 @@ serviceRequestsRouter.patch(
       scopeOf(request.organizationId),
       params.data.requestId,
       body.data,
+    );
+
+    if (!updated) {
+      throw ApiError.notFound('Service request not found');
+    }
+
+    const payload: ApiSuccess<ServiceRequest> = { success: true, data: updated };
+    response.status(200).json(payload);
+  },
+);
+
+/**
+ * PATCH /service-requests/:requestId/assign — the routing decision.
+ *
+ * Separate from the field-update PATCH on purpose: moving work into a pod is an
+ * operations action with its own permission (`request:assign`), not a client's
+ * edit of their own request.
+ */
+serviceRequestsRouter.patch(
+  '/:requestId/assign',
+  requirePermission('request:assign'),
+  async (request, response) => {
+    const params = serviceRequestIdParamsSchema.safeParse(request.params);
+    const body = assignRequestSchema.safeParse(request.body);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid request id', formatIssues(params.error));
+    }
+
+    if (!body.success) {
+      throw ApiError.badRequest('Invalid assignment payload', formatIssues(body.error));
+    }
+
+    const updated = await serviceRequestRepository.assignScoped(
+      scopeOf(request.organizationId),
+      params.data.requestId,
+      {
+        ...(body.data.podId !== undefined ? { podId: body.data.podId } : {}),
+        ...(body.data.assigneeId !== undefined ? { assigneeId: body.data.assigneeId } : {}),
+      },
     );
 
     if (!updated) {

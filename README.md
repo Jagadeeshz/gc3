@@ -169,6 +169,10 @@ Base URL: `http://localhost:3001/api/v1`
 | POST | `/service-categories` | bearer + scope | `category:manage` — slug derived from the name when omitted, 409 on duplicate |
 | PATCH | `/service-categories/:categoryId` | bearer + scope | `category:manage` — rename, re-slug, re-describe, retire/reactivate |
 | DELETE | `/service-categories/:categoryId` | bearer + scope | `category:manage` — soft delete, 204; later calls 404 |
+| GET | `/ops/dashboard` | bearer only | `ops:read` — cross-tenant totals, per-tenant rows, pod load and the routing queue; `?organizationId=` narrows, `?queueLimit=` 1–100 (default 20). No tenant header: the permission is the boundary |
+| GET | `/pods` | bearer + scope | `request:assign` — live pods in the tenant with member and open-request counts |
+| POST | `/pods` | bearer + scope | `pod:manage` — slug derived from the name, 409 on duplicate, 400 for an unknown member id |
+| PATCH | `/service-requests/:requestId/assign` | bearer + scope | `request:assign` — `podId` and/or `assigneeId`; `null` clears; a pod from another tenant is 404 |
 
 `bearer + scope` means: `Authorization: Bearer <token>` **and** `x-organization-id: <uuid>`.
 
@@ -227,6 +231,9 @@ permissions. `INVITED` and `REVOKED` memberships contribute nothing.
 | `category:manage` | — | — | — | ✅ | ✅ | — | — | — | — |
 | `notification:read` | — | — | — | ✅ | ✅ | — | — | ✅ | — |
 | `notification:manage` | — | — | — | ✅ | ✅ | — | — | — | — |
+| `request:assign` | — | — | — | ✅ | ✅ | ✅ | — | — | — |
+| `pod:manage` | — | — | — | ✅ | ✅ | — | — | — | — |
+| `ops:read` | — | — | — | ✅ | ✅ | — | — | — | — |
 
 **Bootstrapping.** There is no public registration. Provision staff out of band:
 
@@ -435,6 +442,7 @@ its data through `apps/web/src/lib/api-client.ts`.
 | `/requests/new` | Create form (draft or submit) | `POST /service-requests` |
 | `/requests/[requestId]` | Detail: metadata, transitions, edit form, comments, deliverables | `GET /service-requests/:id` + `/comments` + `/deliverables`, `PATCH /:id`, `POST /:id/status`, `POST /:id/comments`, `PATCH …/deliverables/:did/status` |
 | `/categories` | Service catalogue: create, rename, retire, delete (read-only without `category:manage`) | `GET · POST /service-categories`, `PATCH · DELETE /service-categories/:id` |
+| `/ops` | Operations console: cross-tenant totals, tenant table, pod load, routing queue, create pod. Restricted panel without `ops:read` | `GET /ops/dashboard`, `GET · POST /pods`, `PATCH /service-requests/:id/assign` |
 | `/deliveries` | Delivery history: released assets, newest first | `GET /deliverables/history` |
 
 ### Session and headers
@@ -535,7 +543,8 @@ NOTIFICATION_RETRY_INTERVAL_SECONDS=300  # worker cadence; 0 disables the worker
 | Phase 2 files: stored uploads with SHA-256, download, integrity check | done |
 | Notifications: retry/backoff worker, manual sweep, delivery read API | done |
 | Notifications: deliverable-released and status-updated event emails | done |
-| Integration test harness (Vitest + Supertest, 215 tests) | done |
+| Integration test harness (Vitest + Supertest, 241 tests) | done |
+| Phase 3: operations console, pods, request routing | done |
 | Delivery retry/backoff, bounce handling, delivery read API | retry + read API done; bounce handling not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |

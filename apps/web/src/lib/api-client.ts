@@ -12,6 +12,8 @@ import type {
   DeliverableVersion,
   DeliveryHistory,
   FileIntegrityReport,
+  OpsDashboard,
+  PodSummary,
 } from '@gc3/types';
 import { API_BASE_URL } from './config';
 
@@ -474,6 +476,66 @@ export async function fetchFileIntegrity(
   deliverableId: string,
 ): Promise<FileIntegrityReport> {
   return request<FileIntegrityReport>(`/deliverables/${deliverableId}/file/integrity`, {
+    token,
+    organizationId,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Operations console (Phase 3)
+// ---------------------------------------------------------------------------
+
+/**
+ * The cross-tenant summary. No `organizationId` on purpose — this call is
+ * platform-scoped, and the API refuses it for anyone without `ops:read`.
+ */
+export async function fetchOpsDashboard(
+  token: string,
+  options: { organizationId?: string; queueLimit?: number } = {},
+): Promise<OpsDashboard> {
+  const query = new URLSearchParams();
+
+  if (options.organizationId) {
+    query.set('organizationId', options.organizationId);
+  }
+
+  if (options.queueLimit) {
+    query.set('queueLimit', String(options.queueLimit));
+  }
+
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  return request<OpsDashboard>(`/ops/dashboard${suffix}`, { token });
+}
+
+/** Pods in the active tenant, with member and load counts. */
+export async function listPods(token: string, organizationId: string): Promise<PodSummary[]> {
+  return request<PodSummary[]>('/pods', { token, organizationId });
+}
+
+export interface CreatePodInput {
+  readonly name: string;
+  readonly description?: string;
+  readonly memberIds?: readonly string[];
+}
+
+export async function createPod(
+  token: string,
+  organizationId: string,
+  input: CreatePodInput,
+): Promise<PodSummary> {
+  return request<PodSummary>('/pods', { method: 'POST', body: input, token, organizationId });
+}
+
+/** The routing decision: send a request into a pod, or clear the assignment. */
+export async function assignRequest(
+  token: string,
+  organizationId: string,
+  requestId: string,
+  input: { podId?: string | null; assigneeId?: string | null },
+): Promise<ServiceRequest> {
+  return request<ServiceRequest>(`/service-requests/${requestId}/assign`, {
+    method: 'PATCH',
+    body: input,
     token,
     organizationId,
   });

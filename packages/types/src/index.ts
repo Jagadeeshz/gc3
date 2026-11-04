@@ -200,7 +200,10 @@ export type Permission =
   | 'deliverable:update'
   | 'deliverable:review'
   | 'notification:read'
-  | 'notification:manage';
+  | 'notification:manage'
+  | 'request:assign'
+  | 'pod:manage'
+  | 'ops:read';
 
 /** The authenticated caller, resolved from a verified access token. */
 export interface AuthActor {
@@ -338,6 +341,8 @@ export interface ServiceRequest extends Timestamps, TenantScoped, SoftDeletable 
   readonly priority: ServiceRequestPriority;
   readonly requesterId: Uuid;
   readonly assigneeId: Uuid | null;
+  /** Delivery pod that owns execution. Set by the routing handler. */
+  readonly podId: Uuid | null;
   readonly dueAt: IsoDateTime | null;
   readonly submittedAt: IsoDateTime | null;
   readonly closedAt: IsoDateTime | null;
@@ -481,4 +486,79 @@ export interface RetrySweepReport {
   readonly exhausted: number;
   /** Could not be retried because the invitation is no longer outstanding. */
   readonly skipped: number;
+}
+
+/**
+ * A delivery pod: the standing team inside one tenant that owns execution of
+ * requests. Tenant-owned like everything else — pods never span organizations.
+ */
+export interface Pod extends Timestamps, TenantScoped, SoftDeletable {
+  readonly id: Uuid;
+  readonly name: string;
+  readonly slug: string;
+  readonly description: string | null;
+  /** Staff user who leads the pod. */
+  readonly leadId: Uuid | null;
+  readonly isActive: boolean;
+}
+
+/** A pod with the numbers an operations view needs beside it. */
+export interface PodSummary extends Pod {
+  readonly memberCount: number;
+  readonly openRequests: number;
+}
+
+/** Per-tenant row of the operations dashboard. */
+export interface OpsOrganizationSummary {
+  readonly organizationId: Uuid;
+  readonly name: string;
+  readonly slug: string;
+  readonly status: OrganizationStatus;
+  readonly openRequests: number;
+  readonly blockedRequests: number;
+  readonly overdueRequests: number;
+  readonly unassignedRequests: number;
+  readonly podCount: number;
+  readonly memberCount: number;
+  readonly releasedDeliverables: number;
+}
+
+/** A request waiting on a routing decision. */
+export interface OpsQueueItem {
+  readonly requestId: Uuid;
+  readonly reference: string;
+  readonly title: string;
+  readonly organizationId: Uuid;
+  readonly organizationName: string;
+  readonly status: ServiceRequestStatus;
+  readonly priority: ServiceRequestPriority;
+  readonly dueAt: IsoDateTime | null;
+  readonly podId: Uuid | null;
+  readonly podName: string | null;
+  readonly assigneeId: Uuid | null;
+  readonly assigneeName: string | null;
+}
+
+export interface OpsPodSummary extends PodSummary {
+  readonly organizationName: string;
+}
+
+/**
+ * Cross-tenant operations summary. Platform-scoped by definition: it is only
+ * served to callers holding `ops:read`, and never takes a tenant header.
+ */
+export interface OpsDashboard {
+  readonly generatedAt: IsoDateTime;
+  readonly totals: {
+    readonly organizations: number;
+    readonly openRequests: number;
+    readonly blockedRequests: number;
+    readonly overdueRequests: number;
+    readonly unassignedRequests: number;
+    readonly pods: number;
+    readonly releasedDeliverables: number;
+  };
+  readonly organizations: readonly OpsOrganizationSummary[];
+  readonly pods: readonly OpsPodSummary[];
+  readonly queue: readonly OpsQueueItem[];
 }
