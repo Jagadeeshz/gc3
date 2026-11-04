@@ -24,7 +24,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 8 | Phase 2 · Service request UI | `0bb6e7e` | ✅ delivered |
 | 9 | Phase 2 · Categories & request editing | `a119478`, `7a94ef8` | ✅ delivered |
 | 10 | Phase 2 · Staff deliverables & internal notes | `68ac590`, `1e5d813` | ✅ delivered |
-| 11 | Phase 2 · Deliverable versioning & delivery history | `<pending>` | ✅ delivered |
+| 11 | Phase 2 · Deliverable versioning & delivery history | `351e1d4` | ✅ delivered |
 
 ---
 
@@ -540,6 +540,7 @@ is not necessarily the actor who raised the request.
 
 ## Slice 11 — Phase 2 · Deliverable versioning & delivery history  ✅
 
+**Commit:** `351e1d4` — feat(delivery): deliverable versioning and client delivery history
 **Brief refs:** §5.4 (deliverables), §8.3 (human sign-off survives content changes), §11 (API), §12 (tenancy)
 
 ### What shipped
