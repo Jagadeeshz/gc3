@@ -51,6 +51,15 @@ export type AgentRole = 'AI_AGENT';
 
 export type Role = ClientRole | InternalRole | AgentRole;
 
+/** GC3 internal role, stored on the user rather than on a membership. */
+export type StaffRole =
+  | 'PLATFORM_ADMIN'
+  | 'OPERATIONS_MANAGER'
+  | 'ACCOUNT_MANAGER'
+  | 'POD_MANAGER'
+  | 'SPECIALIST'
+  | 'FINANCE_MANAGER';
+
 /** Actors that must be authorised by organization membership. */
 export const CLIENT_ROLES: readonly ClientRole[] = [
   'CLIENT_OWNER',
@@ -159,4 +168,46 @@ export interface HealthReport {
   readonly environment: string;
   readonly uptimeSeconds: number;
   readonly timestamp: IsoDateTime;
+}
+
+// ---------------------------------------------------------------------------
+// Auth & RBAC (Phase 1, slice 2)
+// ---------------------------------------------------------------------------
+
+/**
+ * Granular capability checked at the route layer. Permissions are derived from
+ * roles server-side; a client may read its own list but can never assert one.
+ */
+export type Permission =
+  | 'organization:read'
+  | 'organization:create'
+  | 'organization:update'
+  | 'membership:read'
+  | 'membership:invite'
+  | 'membership:revoke'
+  | 'tenant:context';
+
+/** The authenticated caller, resolved from a verified access token. */
+export interface AuthActor {
+  readonly userId: Uuid;
+  readonly email: string;
+  readonly fullName: string;
+  /** STAFF act across tenants by role; CLIENT act inside a membership. */
+  readonly kind: 'STAFF' | 'CLIENT';
+  readonly platformRole: StaffRole | null;
+}
+
+/** Response body of `POST /api/v1/auth/login`. */
+export interface AuthSession {
+  readonly accessToken: string;
+  readonly tokenType: 'Bearer';
+  readonly expiresIn: number;
+  readonly actor: AuthActor;
+}
+
+/** Response body of `GET /api/v1/auth/me`. */
+export interface AuthProfile {
+  readonly actor: AuthActor;
+  /** Permissions the actor holds without any tenant scope applied. */
+  readonly permissions: readonly Permission[];
 }

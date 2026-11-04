@@ -23,6 +23,9 @@ export default defineConfig({
     env: {
       NODE_ENV: 'test',
       DATABASE_URL: testDatabaseUrl,
+      // Fixed test secret: tokens are minted and verified inside the suite only.
+      AUTH_SECRET: 'test-secret-0123456789-0123456789-abcdef',
+      AUTH_TOKEN_TTL_SECONDS: '900',
     },
   },
 });

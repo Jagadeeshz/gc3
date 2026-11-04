@@ -72,11 +72,65 @@ Organization 1 ──< Membership >── 1 User
 
 ### Known gaps carried forward
 
-- **Authentication is absent.** `POST /organizations` is open — it must never be exposed publicly.
-- Timestamps are `timestamp(3)` **without** time zone (Prisma default); audit rows therefore lose zone
-  context. To be corrected with `@db.Timestamptz(3)`.
-- Invited users have no credential path; there is no invite-acceptance flow.
-- No RBAC: membership `roles` are stored but not yet enforced anywhere.
+- ~~**Authentication is absent.**~~ Closed in slice 2 — all tenant routes require a bearer token and
+  `POST /organizations` requires `organization:create`.
+- ~~Timestamps without time zone.~~ Closed in slice 2 — migrated to `timestamptz(3)`.
+- Invited users have no credential path; there is no invite-acceptance flow. **Still open.**
+- No refresh tokens, no revocation list, no login rate limiting. **Still open.**
+
+---
+
+## Slice 2 — Auth & RBAC  ✅
+
+**Brief refs:** §3 (roles & access), §12 (security), §8.3 (agent guardrails)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Credentials | scrypt (N=2^14, r=8, p=1) via `node:crypto` — no native dependency; self-describing digest `scrypt$N$r$p$salt$hash` |
+| Tokens | HS256 JWT (jose), 15-min default TTL, issuer + audience checked, `sub`/`email`/`platformRole` claims |
+| Login | `POST /auth/login` — uniform 401 for unknown email, wrong password, and invited-without-password; unknown email burns a dummy scrypt so timing does not enumerate accounts |
+| Session introspection | `GET /auth/me` (actor + permissions), `GET /auth/config` (token TTL) |
+| Middleware | `requireAuth` verifies the token **and re-reads the user**, so suspension/revocation takes effect immediately |
+| Authorization | `requirePermission(...)` — routes declare a permission, never a role |
+| Role mapping | `ClientRole`/`StaffRole` → 7 granular permissions in `src/auth/permissions.ts` |
+| Tenant creation | `POST /organizations` gated behind `organization:create` (PLATFORM_ADMIN, OPERATIONS_MANAGER) |
+| Bootstrap | `pnpm auth:bootstrap` provisions the first staff account (no public registration exists) |
+| Schema | `users.password_hash`, `users.platform_role`; all timestamps → `timestamptz(3)` |
+| Migration | `20261104080000_auth_rbac_timestamptz` |
+| Tests | 56 total across 4 files (was 20) |
+
+### Permission matrix
+
+| Permission | Client owner | Team member | Approver | Platform admin | Ops manager | Account mgr |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|
+| `organization:read` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `organization:create` | — | — | — | ✅ | ✅ | — |
+| `membership:read` | ✅ | — | — | ✅ | ✅ | ✅ |
+| `membership:invite` | ✅ | — | — | ✅ | ✅ | — |
+| `tenant:context` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+A tenant-scoped request resolves permissions from the caller's **ACTIVE** membership; staff roles add
+theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
+
+### Evidence
+
+- `pnpm -r typecheck` — 5/5 clean
+- `pnpm test` — **56/56 passed** (4 files, ~16 s)
+- `prisma migrate status` up to date · `migrate diff` empty · DDL confirmed `timestamptz`
+- Live flow: no token → 401 · wrong password → 401 · login → 200 + 3-segment JWT · create tenant
+  with token → 201 · scoped read → 200 · wrong scope → 403 · `/auth/me` → permissions list
+- **Mutation check:** disabling `requirePermission` failed **exactly the 7 negative-authorization
+  tests** (client-cannot-create-tenant, specialist-cannot-create, INVITED membership, REVOKED
+  membership, team-member-cannot-list, approver-cannot-list, approver-cannot-invite) while every
+  positive path stayed green. Reverted and re-ran 56/56.
+
+### Contract changes to note
+
+- Every tenant route now requires `Authorization: Bearer <token>`; unauthenticated calls return 401
+  (this is the 8th foundation behaviour, added deliberately).
+- The seven Phase 0 behaviours are otherwise unchanged.
 
 ---
 
@@ -84,8 +138,8 @@ Organization 1 ──< Membership >── 1 User
 
 | Step | Scope |
 |---|---|
-| Auth & RBAC | JWT issuance, `requireAuth`, `PLATFORM_ADMIN` gate, ClientRole → permission mapping |
-| Invite acceptance | Set password, transition membership INVITED → ACTIVE |
-| Token lifecycle | Refresh/revocation, rate limiting on login |
-| Phase 2 | Client portal foundation reading tenant-scoped data |
+| Invite acceptance | Set password, transition membership INVITED → ACTIVE (closes the "invited user can never log in" gap) |
+| Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |
+| Phase 2 | Client portal foundation: authenticated dashboard reading tenant-scoped data |
 | Tooling | ESLint + Prettier, CI running typecheck/test/build |
+| Hardening | Password policy on set, audit events for login success/failure |

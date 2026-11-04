@@ -50,6 +50,20 @@ export const membershipRepository = {
   },
 
   /**
+   * The caller's ACTIVE membership in the given tenant, or null. Consulted on
+   * every permission check, so revoking a membership is effective immediately.
+   */
+  async findActiveScoped(
+    organizationId: string,
+    userId: string,
+  ): Promise<{ id: string; roles: readonly string[] } | null> {
+    return prisma.membership.findFirst({
+      where: { organizationId, userId, status: 'ACTIVE' },
+      select: { id: true, roles: true },
+    });
+  },
+
+  /**
    * Invites a user to the tenant. The user identity is global (upserted by
    * email); the membership is the tenant-owned record and carries the roles.
    */

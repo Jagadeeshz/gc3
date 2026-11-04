@@ -37,10 +37,22 @@ enum MembershipStatus {
   REVOKED
 }
 
+/// Roles held inside a tenant. Client-side only.
 enum ClientRole {
   CLIENT_OWNER
   CLIENT_TEAM_MEMBER
   CLIENT_APPROVER
+}
+
+/// GC3 internal roles. Global, never tenant-attached: staff act across tenants
+/// through assignment and platform duty, not membership.
+enum StaffRole {
+  PLATFORM_ADMIN
+  OPERATIONS_MANAGER
+  ACCOUNT_MANAGER
+  POD_MANAGER
+  SPECIALIST
+  FINANCE_MANAGER
 }
 
 enum ActorType {
@@ -60,9 +72,9 @@ model Organization {
   status    OrganizationStatus @default(PROSPECT)
   timezone  String             @default("Asia/Kolkata") @db.VarChar(64)
   region    String             @default("global") @db.VarChar(64)
-  createdAt DateTime           @default(now()) @map("created_at")
-  updatedAt DateTime           @updatedAt @map("updated_at")
-  deletedAt DateTime?          @map("deleted_at")
+  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt DateTime?          @map("deleted_at") @db.Timestamptz(3)
 
   memberships Membership[]
   auditEvents AuditEvent[]
@@ -77,14 +89,23 @@ model User {
   email      String     @unique @db.VarChar(254)
   fullName   String     @map("full_name") @db.VarChar(120)
   status     UserStatus @default(INVITED)
-  lastSeenAt DateTime?  @map("last_seen_at")
-  createdAt  DateTime   @default(now()) @map("created_at")
-  updatedAt  DateTime   @updatedAt @map("updated_at")
-  deletedAt  DateTime?  @map("deleted_at")
+
+  /// scrypt digest. Null for invited users who have not yet set a password —
+  /// such a user cannot authenticate at all.
+  passwordHash String? @map("password_hash")
+
+  /// Present only for GC3 staff. Client users have no platform role.
+  platformRole StaffRole? @map("platform_role")
+
+  lastSeenAt DateTime? @map("last_seen_at") @db.Timestamptz(3)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt  DateTime?  @map("deleted_at") @db.Timestamptz(3)
 
   memberships Membership[]
 
   @@index([status])
+  @@index([platformRole])
   @@map("users")
 }
 
@@ -96,8 +117,8 @@ model Membership {
   userId         String           @map("user_id") @db.Uuid
   roles          ClientRole[]
   status         MembershipStatus @default(INVITED)
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -119,7 +140,7 @@ model AuditEvent {
   targetType     String?   @map("target_type") @db.VarChar(60)
   targetId       String?   @map("target_id") @db.VarChar(60)
   metadata       Json?
-  createdAt      DateTime  @default(now()) @map("created_at")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 

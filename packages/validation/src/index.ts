@@ -68,6 +68,14 @@ export const organizationSlugSchema = z
   .max(60)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and single hyphens');
 
+/** Login contract. Password length is only bounded here; policy lives at set-password. */
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, 'Password is required').max(200),
+});
+
+export type LoginInput = z.infer<typeof loginSchema>;
+
 export const createOrganizationSchema = z.object({
   name: z.string().trim().min(2).max(120),
   slug: organizationSlugSchema,

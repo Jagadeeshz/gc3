@@ -1,0 +1,72 @@
+import type { ClientRole, Permission, StaffRole } from '@gc3/types';
+
+/**
+ * Role → permission mapping (Development Brief §3, §12).
+ *
+ * This table is the single source of truth for authorization. Routes declare the
+ * permission they need, never a role name, so adding a role or re-scoping one is
+ * a change to this file alone.
+ *
+ * Client roles are held per tenant (on Membership); staff roles are global.
+ */
+
+const ALL_PERMISSIONS: readonly Permission[] = [
+  'organization:read',
+  'organization:create',
+  'organization:update',
+  'membership:read',
+  'membership:invite',
+  'membership:revoke',
+  'tenant:context',
+];
+
+export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = {
+  // Full platform control, including tenant creation.
+  PLATFORM_ADMIN: ALL_PERMISSIONS,
+  // Runs delivery and onboarding; can stand up tenants but not administer the platform.
+  OPERATIONS_MANAGER: [
+    'organization:read',
+    'organization:create',
+    'organization:update',
+    'membership:read',
+    'membership:invite',
+    'tenant:context',
+  ],
+  // Owns the client relationship; read-only over membership.
+  ACCOUNT_MANAGER: ['organization:read', 'membership:read', 'tenant:context'],
+  POD_MANAGER: ['organization:read', 'tenant:context'],
+  SPECIALIST: ['organization:read', 'tenant:context'],
+  FINANCE_MANAGER: ['organization:read', 'tenant:context'],
+};
+
+export const CLIENT_ROLE_PERMISSIONS: Record<ClientRole, readonly Permission[]> = {
+  // The client's administrative owner inside their own organization.
+  CLIENT_OWNER: [
+    'organization:read',
+    'membership:read',
+    'membership:invite',
+    'membership:revoke',
+    'tenant:context',
+  ],
+  // Day-to-day contributor: sees the tenant, cannot manage people.
+  CLIENT_TEAM_MEMBER: ['organization:read', 'tenant:context'],
+  // Signs off on deliverables; deliberately cannot manage people.
+  CLIENT_APPROVER: ['organization:read', 'tenant:context'],
+};
+
+/** Permissions a caller holds with no tenant in play. */
+export function staffPermissions(role: StaffRole | null): readonly Permission[] {
+  return role ? STAFF_ROLE_PERMISSIONS[role] : [];
+}
+
+/** Permissions granted by membership roles inside one tenant. */
+export function clientPermissions(roles: readonly ClientRole[]): readonly Permission[] {
+  return roles.flatMap((role) => CLIENT_ROLE_PERMISSIONS[role]);
+}
+
+export function hasPermission(
+  held: readonly Permission[],
+  required: Permission,
+): boolean {
+  return held.includes(required);
+}

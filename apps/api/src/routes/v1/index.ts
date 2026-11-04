@@ -2,6 +2,8 @@ import { Router } from 'express';
 import type { ApiSuccess, HealthReport } from '@gc3/types';
 import { SERVICE_NAME, SERVICE_VERSION, env } from '../../config/env';
 import { requireTenantScope } from '../../middleware/tenant-scope';
+import { requireAuth, requirePermission } from '../../middleware/auth';
+import { authRouter } from './auth';
 import { organizationsRouter } from './organizations';
 
 /**
@@ -35,9 +37,8 @@ v1Router.get('/meta', (_request, response) => {
       service: SERVICE_NAME,
       apiVersion: 'v1',
       tenantHeader: 'x-organization-id',
-      implemented: ['/health', '/meta', '/tenant-context', '/organizations'],
+      implemented: ['/health', '/meta', '/auth', '/tenant-context', '/organizations'],
       planned: [
-        '/auth',
         '/users',
         '/organizations',
         '/roles',
@@ -65,17 +66,30 @@ v1Router.get('/meta', (_request, response) => {
 
 /**
  * Proves the isolation chain end to end: a request without a validated
- * `x-organization-id` is rejected before reaching this handler.
+ * `x-organization-id` is rejected before reaching this handler, and only an
+ * authenticated caller holding `tenant:context` gets here.
  */
-v1Router.get('/tenant-context', requireTenantScope, (request, response) => {
-  response.status(200).json({
-    success: true,
-    data: {
-      organizationId: request.organizationId,
-      requestId: request.requestId,
-    },
-  });
-});
+v1Router.get(
+  '/tenant-context',
+  requireAuth,
+  requireTenantScope,
+  requirePermission('tenant:context'),
+  (request, response) => {
+    response.status(200).json({
+      success: true,
+      data: {
+        organizationId: request.organizationId,
+        requestId: request.requestId,
+        actorId: request.actor?.userId,
+      },
+    });
+  },
+);
+
+/**
+ * Public: /health and /meta. Everything else needs a verified access token.
+ */
+v1Router.use('/auth', authRouter);
 
 /**
  * Tenant-scoped domain routers. Each router owns its own guard chain, so the

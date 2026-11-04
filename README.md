@@ -4,8 +4,9 @@ Multi-tenant operating platform for **Global Cloud Capability & Consulting (GC³
 delivery operations, pod workspaces, finance, and AI-augmented workflows.
 
 Built to the **GC3 Development Brief v1.0** (`Development-Breif.md` in this folder). The repository is
-at **Phase 1, slice 1**: identity and tenancy are persisted in PostgreSQL behind a repository layer,
-with integration tests that pin the API contract and the isolation rules.
+at **Phase 1, slices 1–2**: identity and tenancy are persisted in PostgreSQL, and every tenant route
+is authenticated and authorized through a role → permission map. Integration tests pin the API
+contract, the tenancy rules and the authorization matrix.
 
 ---
 
@@ -53,6 +54,7 @@ folder is not architecture.
 | ORM | Prisma (Rust-free client + `pg` driver adapter) | 7.10.1 |
 | Database | PostgreSQL | 16.15 |
 | Validation | Zod | 4.6.7 |
+| Auth | HS256 JWT (jose) + scrypt password digests | 6.2.15 |
 | Testing | Vitest + Supertest | 5.1.0 / 7.3.1 |
 | Language | TypeScript (strict, no `any`) | 5.9.3 |
 | Runtime | Node.js | ≥ 22 |
@@ -76,6 +78,7 @@ pnpm test             # creates/migrates the test DB, then runs Vitest + Superte
 pnpm build            # build every package that defines a build script
 pnpm db:generate      # prisma generate (after a schema change)
 pnpm db:migrate       # prisma migrate dev (new migration)
+pnpm auth:bootstrap   # provision the first PLATFORM_ADMIN (needs ADMIN_EMAIL / ADMIN_PASSWORD)
 pnpm clean            # clear build output
 ```
 
@@ -121,15 +124,20 @@ worse than an honest refusal.
 
 Base URL: `http://localhost:3001/api/v1`
 
-| Method | Path | Status | Notes |
+| Method | Path | Auth | Notes |
 |---|---|---|---|
-| GET | `/health` | implemented | Liveness + version, no tenant scope required |
-| GET | `/meta` | implemented | Implemented vs planned endpoint inventory |
-| GET | `/tenant-context` | implemented | Echoes the resolved tenant scope; proves the isolation chain |
-| POST | `/organizations` | implemented | Creates a tenant (platform-level, **unauthenticated — do not expose**) |
-| GET | `/organizations/:organizationId` | implemented | Tenant scope required; 403 if the path id ≠ scope, 404 if absent |
-| GET | `/organizations/:organizationId/memberships` | implemented | Tenant-scoped membership list |
-| POST | `/organizations/:organizationId/memberships` | implemented | Invites a member (upserts the global user, creates the membership) |
+| GET | `/health` | public | Liveness + version |
+| GET | `/meta` | public | Implemented vs planned endpoint inventory |
+| POST | `/auth/login` | public | Issues a bearer token; uniform 401 on failure |
+| GET | `/auth/me` | bearer | Actor + the permissions their staff role grants |
+| GET | `/auth/config` | public | Token type, TTL, issuer, audience |
+| GET | `/tenant-context` | bearer + scope | Echoes the resolved tenant scope |
+| POST | `/organizations` | bearer | Requires `organization:create` (PLATFORM_ADMIN / OPERATIONS_MANAGER) |
+| GET | `/organizations/:organizationId` | bearer + scope | `organization:read`; 403 if path ≠ scope, 404 if absent |
+| GET | `/organizations/:organizationId/memberships` | bearer + scope | `membership:read` (CLIENT_OWNER or staff) |
+| POST | `/organizations/:organizationId/memberships` | bearer + scope | `membership:invite` (CLIENT_OWNER or staff) |
+
+`bearer + scope` means: `Authorization: Bearer <token>` **and** `x-organization-id: <uuid>`.
 
 Response envelope (every response, success or failure):
 
@@ -140,6 +148,45 @@ Response envelope (every response, success or failure):
 
 Every response carries an `x-request-id` header; failures echo it as `error.requestId` so a client
 report can be traced to a single request.
+
+---
+
+## Auth & RBAC
+
+**Credentials.** Passwords are hashed with scrypt (`N=2^14, r=8, p=1`, 16-byte salt, 64-byte key) using
+`node:crypto` — no native build step. The digest is self-describing
+(`scrypt$N$r$p$salt$hash`) so parameters can be raised later without a flag day.
+
+**Tokens.** HS256 JWTs signed with `AUTH_SECRET` (≥ 32 chars, required at boot), carrying only
+`sub`, `email` and `platformRole`. **No tenant scope and no permissions in the token** — both are
+re-derived per request, so revoking a membership or suspending an account takes effect immediately
+rather than at expiry. `requireAuth` re-reads the user row on every request for exactly this reason.
+
+**Roles → permissions.** Routes declare a permission, never a role
+(`apps/api/src/auth/permissions.ts`):
+
+| Permission | Client owner | Team member | Approver | Platform admin | Ops manager | Account mgr |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|
+| `organization:read` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `organization:create` | — | — | — | ✅ | ✅ | — |
+| `organization:update` | — | — | — | ✅ | ✅ | — |
+| `membership:read` | ✅ | — | — | ✅ | ✅ | ✅ |
+| `membership:invite` | ✅ | — | — | ✅ | ✅ | — |
+| `membership:revoke` | ✅ | — | — | ✅ | — | — |
+| `tenant:context` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+A tenant-scoped request combines the caller's **ACTIVE** membership permissions with their staff
+permissions. `INVITED` and `REVOKED` memberships contribute nothing.
+
+**Bootstrapping.** There is no public registration. Provision staff out of band:
+
+```bash
+ADMIN_EMAIL=admin@gc3.local ADMIN_PASSWORD='…' pnpm auth:bootstrap
+# optional: ADMIN_NAME, ADMIN_ROLE (defaults to PLATFORM_ADMIN)
+```
+
+**Not yet implemented:** refresh tokens, revocation lists, login rate limiting/lockout, and the
+invite-acceptance flow (a user invited via the API cannot set a password yet).
 
 ---
 
@@ -216,27 +263,29 @@ classes used by shared components.
 | Shared types, validation, UI primitives | done |
 | Prisma schema + migrations (organizations, users, memberships, audit) | done |
 | Tenant-scoped repository layer | done |
-| Integration test harness (Vitest + Supertest, 20 tests) | done |
-| Authentication & session handling | not started — next |
-| Role/permission enforcement beyond membership | not started |
+| Auth: JWT issuance, `requireAuth`, scrypt credentials, bootstrap script | done |
+| RBAC: ClientRole/StaffRole → permission map, platform-admin gate | done |
+| Integration test harness (Vitest + Supertest, 56 tests) | done |
+| Invite acceptance (set password, INVITED → ACTIVE) | not started — next |
+| Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
 
 ### Test coverage
 
-`apps/api/tests/foundation.test.ts` pins the seven Phase 0 API behaviours (health, missing scope,
-malformed scope, valid scope, in-scope read, cross-tenant 403, unknown route 404) plus correlation-id
-echo. `apps/api/tests/identity.test.ts` covers persistence, validation detail, duplicate-slug 409,
-audit writes, membership invite/list, and four isolation cases — including a repository-level assertion
-that a foreign tenant id returns `null`.
+| File | Covers |
+|---|---|
+| `foundation.test.ts` | the 8 foundation behaviours (health, missing/malformed scope, valid scope, in-scope read, cross-tenant 403, unknown route 404, unauthenticated 401) + correlation-id echo |
+| `identity.test.ts` | persistence, validation detail, duplicate slug/membership, audit attribution, tenant isolation (HTTP and repository level) |
+| `auth.test.ts` | login success/failure, no account enumeration, invited-without-password, suspended account, `/auth/me`, tampered/expired tokens, `lastSeenAt` |
+| `rbac.test.ts` | route-level permission matrix, `PLATFORM_ADMIN` gate, INVITED/REVOKED membership denial, post-issuance suspension and revocation |
 
-The suite runs against a real PostgreSQL database (never a mock), with `TRUNCATE ... CASCADE` between
-tests.
+All suites run against a real PostgreSQL database (never a mock) with `TRUNCATE ... CASCADE` between
+cases. The permission guard was verified load-bearing: disabling `requirePermission` failed exactly
+the seven negative-authorization tests and nothing else.
 
 ### Immediate next steps
 
-1. Authentication: session issuance, password/OAuth provider, `requireAuth` middleware.
-2. Permission enforcement: map `Role` → allowed actions; gate `POST /organizations` behind
-   `PLATFORM_ADMIN`.
-3. Expand the identity slice: membership status transitions (invite → active → revoked), soft deletes.
+1. Invite acceptance: token link → set password → membership INVITED → ACTIVE.
+2. Token lifecycle: refresh tokens, revocation, login rate limiting.
+3. Phase 2 — client portal foundation: first authenticated dashboard reading tenant-scoped data.
 4. ESLint + Prettier and a CI workflow running `typecheck`, `test` and `build`.
-5. Client portal foundation (Phase 2): first authenticated dashboard reading tenant-scoped data.

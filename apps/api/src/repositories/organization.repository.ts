@@ -30,7 +30,7 @@ function toEntity(row: OrganizationRow): Organization {
 }
 
 export const organizationRepository = {
-  async create(input: CreateOrganizationInput): Promise<Organization> {
+  async create(input: CreateOrganizationInput, actorId?: string): Promise<Organization> {
     const row = await prisma.organization.create({
       data: {
         name: input.name,
@@ -43,7 +43,9 @@ export const organizationRepository = {
     await prisma.auditEvent.create({
       data: {
         organizationId: row.id,
-        actorType: 'SYSTEM',
+        // Attribute the event to the authenticated creator when there is one.
+        actorType: actorId ? 'USER' : 'SYSTEM',
+        actorId: actorId ?? null,
         action: 'organization.created',
         targetType: 'organization',
         targetId: row.id,

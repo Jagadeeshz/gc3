@@ -11,18 +11,19 @@ import { isUniqueViolation } from '../../db/client';
 import { organizationRepository } from '../../repositories/organization.repository';
 import { membershipRepository } from '../../repositories/membership.repository';
 import { requireMatchingTenant, requireTenantScope } from '../../middleware/tenant-scope';
+import { requireAuth, requirePermission } from '../../middleware/auth';
 
 export const organizationsRouter: Router = Router();
 
 /**
  * POST /api/v1/organizations
  *
- * Creates a tenant. This is a platform-level operation, so it is deliberately
- * NOT tenant-scoped — a tenant cannot create another tenant. Authentication and
- * the PLATFORM_ADMIN check land with the auth slice; until then this endpoint is
- * open and must not be exposed publicly.
+ * Creates a tenant. Platform-level operation — deliberately NOT tenant-scoped,
+ * because a tenant cannot create another tenant. Requires the
+ * `organization:create` permission, granted to PLATFORM_ADMIN and
+ * OPERATIONS_MANAGER only.
  */
-organizationsRouter.post('/', async (request, response) => {
+organizationsRouter.post('/', requireAuth, requirePermission('organization:create'), async (request, response) => {
   const parsed = createOrganizationSchema.safeParse(request.body);
 
   if (!parsed.success) {
@@ -30,7 +31,7 @@ organizationsRouter.post('/', async (request, response) => {
   }
 
   try {
-    const organization = await organizationRepository.create(parsed.data);
+    const organization = await organizationRepository.create(parsed.data, request.actor?.userId);
     const body: ApiSuccess<Organization> = { success: true, data: organization };
     response.status(201).json(body);
   } catch (error) {
@@ -49,7 +50,9 @@ organizationsRouter.post('/', async (request, response) => {
  */
 organizationsRouter.get(
   '/:organizationId',
+  requireAuth,
   requireTenantScope,
+  requirePermission('organization:read'),
   requireMatchingTenant,
   async (request, response) => {
     const params = organizationIdParamsSchema.safeParse(request.params);
@@ -75,7 +78,9 @@ organizationsRouter.get(
 /** GET /api/v1/organizations/:organizationId/memberships — tenant-scoped list. */
 organizationsRouter.get(
   '/:organizationId/memberships',
+  requireAuth,
   requireTenantScope,
+  requirePermission('membership:read'),
   requireMatchingTenant,
   async (request, response) => {
     const scope = request.organizationId as string;
@@ -98,7 +103,9 @@ organizationsRouter.get(
 /** POST /api/v1/organizations/:organizationId/memberships — invite a member. */
 organizationsRouter.post(
   '/:organizationId/memberships',
+  requireAuth,
   requireTenantScope,
+  requirePermission('membership:invite'),
   requireMatchingTenant,
   async (request, response) => {
     const parsed = inviteUserSchema.safeParse(request.body);

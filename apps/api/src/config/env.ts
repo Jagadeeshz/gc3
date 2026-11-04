@@ -12,6 +12,14 @@ const envSchema = z.object({
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
   /** PostgreSQL connection string. Required from Phase 1 onward. */
   DATABASE_URL: z.url(),
+
+  /** HMAC secret for access tokens. Must be ≥ 32 chars; rotate per environment. */
+  AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters'),
+  AUTH_ISSUER: z.string().min(1).default('gc3-portal'),
+  AUTH_AUDIENCE: z.string().min(1).default('gc3-api'),
+  /** Access-token lifetime in seconds (short by design; refresh lands later). */
+  AUTH_TOKEN_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).default(900),
+
   REDIS_URL: z.url().optional(),
 });
 

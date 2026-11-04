@@ -8,6 +8,8 @@ declare global {
       requestId: string;
       /** Tenant scope resolved by `requireTenantScope`; absent on unscoped routes. */
       organizationId?: string;
+      /** Authenticated caller resolved by `requireAuth`. */
+      actor?: import('@gc3/types').AuthActor;
     }
   }
 }
