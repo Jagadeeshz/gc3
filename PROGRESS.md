@@ -28,7 +28,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 12 | Phase 2 · Stored file uploads & checksums | `f02c970`, `040eb38` | ✅ delivered |
 | 13 | Notifications · retry/backoff & delivery read API | `bf229cd`, `7b8f5ad` | ✅ delivered |
 | 14 | Notifications · deliverable-released & status-updated events | `b368a91`, `f3f99d1` | ✅ delivered |
-| 15 | Phase 3 · Operations console, pods & request routing | `<pending>` | ✅ delivered |
+| 15 | Phase 3 · Operations console, pods & request routing | `9474ff4` | ✅ delivered |
 
 ---
 
@@ -779,7 +779,7 @@ routes a request to a pod.
 
 ## Slice 15 — Phase 3 · Operations console, pods and request routing  ✅
 
-**Commit:** `<pending>`
+**Commit:** `9474ff4` — feat(ops): operations console, pods and request routing
 **Brief refs:** §5 (staff operations), §11 (versioned API), §12 (tenancy)
 
 ### What shipped
