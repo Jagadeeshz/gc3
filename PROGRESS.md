@@ -32,7 +32,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 16 | Phase 3 · Pod membership & staffing management | `e62198f` | ✅ delivered |
 | 17 | Phase 3 · Task breakdown & work allocation | `ed56399` | ✅ delivered |
 | 18 | Phase 3 · Internal SLA monitoring & risk alerts | `e4b5847` | ✅ delivered |
-| 19 | Phase 3 polish · Durable dispatch on Redis (events, retries, SLA) | `<pending>` | ✅ delivered |
+| 19 | Phase 3 polish · Durable dispatch on Redis (events, retries, SLA) | `3666e2d` | ✅ delivered |
 
 **Phase 3 — Delivery Operations, Pod Workspaces & SLA Tracking — is complete** (slices 15–19).
 
@@ -981,7 +981,7 @@ routes a request to a pod.
 
 ## Slice 19 — Phase 3 polish · Durable dispatch on Redis  ✅
 
-**Commit:** `<pending>`
+**Commit:** `3666e2d` — feat(queue): durable dispatch on Redis for events, retries and SLA sweeps
 **Brief refs:** §5 (SLA monitor, operations), §7 (notifications), §10.2 (Redis in the stack)
 
 ### Why
