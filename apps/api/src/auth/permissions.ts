@@ -22,10 +22,17 @@ const ALL_PERMISSIONS: readonly Permission[] = [
   'request:create',
   'request:update',
   'request:comment',
+  'category:read',
+  'category:manage',
   'deliverable:read',
   'deliverable:create',
   'deliverable:review',
 ];
+
+/**
+ * `category:manage` is catalogue administration: it changes the list of services
+ * a tenant can raise work under. Clients read the catalogue, staff own it.
+ */
 
 export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = {
   // Full platform control, including tenant creation.
@@ -42,6 +49,8 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'request:create',
     'request:update',
     'request:comment',
+    'category:read',
+    'category:manage',
     'deliverable:read',
     'deliverable:create',
     'deliverable:review',
@@ -53,6 +62,7 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'tenant:context',
     'request:read',
     'request:comment',
+    'category:read',
     'deliverable:read',
   ],
   // Runs the pod: assigns and progresses work, produces deliverables.
@@ -63,6 +73,7 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'request:create',
     'request:update',
     'request:comment',
+    'category:read',
     'deliverable:read',
     'deliverable:create',
     'deliverable:review',
@@ -73,10 +84,17 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'tenant:context',
     'request:read',
     'request:comment',
+    'category:read',
     'deliverable:read',
     'deliverable:create',
   ],
-  FINANCE_MANAGER: ['organization:read', 'tenant:context', 'request:read', 'deliverable:read'],
+  FINANCE_MANAGER: [
+    'organization:read',
+    'tenant:context',
+    'request:read',
+    'category:read',
+    'deliverable:read',
+  ],
 };
 
 export const CLIENT_ROLE_PERMISSIONS: Record<ClientRole, readonly Permission[]> = {
@@ -91,6 +109,7 @@ export const CLIENT_ROLE_PERMISSIONS: Record<ClientRole, readonly Permission[]> 
     'request:create',
     'request:update',
     'request:comment',
+    'category:read',
     'deliverable:read',
     'deliverable:review',
   ],
@@ -101,6 +120,7 @@ export const CLIENT_ROLE_PERMISSIONS: Record<ClientRole, readonly Permission[]> 
     'request:read',
     'request:create',
     'request:comment',
+    'category:read',
     'deliverable:read',
   ],
   // Signs off on deliverables; deliberately cannot manage people.
@@ -109,6 +129,7 @@ export const CLIENT_ROLE_PERMISSIONS: Record<ClientRole, readonly Permission[]> 
     'tenant:context',
     'request:read',
     'request:comment',
+    'category:read',
     'deliverable:read',
     'deliverable:review',
   ],

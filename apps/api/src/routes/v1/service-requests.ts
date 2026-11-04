@@ -155,6 +155,23 @@ serviceRequestsRouter.patch(
       throw ApiError.badRequest('Invalid update payload', formatIssues(body.error));
     }
 
+    const existing = await serviceRequestRepository.findByIdScoped(
+      scopeOf(request.organizationId),
+      params.data.requestId,
+    );
+
+    if (!existing) {
+      throw ApiError.notFound('Service request not found');
+    }
+
+    // Content edits stay open while work is active; once the request is closed or
+    // cancelled the record is history and only a new request may change it.
+    if (existing.status === 'CLOSED' || existing.status === 'CANCELLED') {
+      throw ApiError.conflict(
+        `A ${existing.status.toLowerCase()} request can no longer be edited`,
+      );
+    }
+
     const updated = await serviceRequestRepository.updateScoped(
       scopeOf(request.organizationId),
       params.data.requestId,

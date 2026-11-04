@@ -157,6 +157,10 @@ Base URL: `http://localhost:3001/api/v1`
 | GET | `/service-requests/:requestId/deliverables` | bearer + scope | `deliverable:read` |
 | POST | `/service-requests/:requestId/deliverables` | bearer + scope | `deliverable:create` |
 | PATCH | `/service-requests/:requestId/deliverables/:deliverableId/status` | bearer + scope | `deliverable:review` — release requires a prior human approval; AI actors blocked |
+| GET | `/service-categories` | bearer + scope | `category:read` — active only, `?includeInactive=true` for the full catalogue |
+| POST | `/service-categories` | bearer + scope | `category:manage` — slug derived from the name when omitted, 409 on duplicate |
+| PATCH | `/service-categories/:categoryId` | bearer + scope | `category:manage` — rename, re-slug, re-describe, retire/reactivate |
+| DELETE | `/service-categories/:categoryId` | bearer + scope | `category:manage` — soft delete, 204; later calls 404 |
 
 `bearer + scope` means: `Authorization: Bearer <token>` **and** `x-organization-id: <uuid>`.
 
@@ -210,6 +214,8 @@ permissions. `INVITED` and `REVOKED` memberships contribute nothing.
 | `deliverable:read` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `deliverable:create` | — | — | — | ✅ | ✅ | ✅ | ✅ | — | — |
 | `deliverable:review` | ✅ | — | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| `category:read` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `category:manage` | — | — | — | ✅ | ✅ | — | — | — | — |
 
 **Bootstrapping.** There is no public registration. Provision staff out of band:
 
@@ -385,7 +391,8 @@ its data through `apps/web/src/lib/api-client.ts`.
 | `/dashboard` | Metrics, recent requests, quick actions | `GET /service-requests?pageSize=100` |
 | `/requests` | Request list with status tabs | `GET /service-requests?status=…` |
 | `/requests/new` | Create form (draft or submit) | `POST /service-requests` |
-| `/requests/[requestId]` | Detail: metadata, transitions, comments, deliverables | `GET /service-requests/:id` + `/comments` + `/deliverables`, `POST /:id/status`, `POST /:id/comments`, `PATCH …/deliverables/:did/status` |
+| `/requests/[requestId]` | Detail: metadata, transitions, edit form, comments, deliverables | `GET /service-requests/:id` + `/comments` + `/deliverables`, `PATCH /:id`, `POST /:id/status`, `POST /:id/comments`, `PATCH …/deliverables/:did/status` |
+| `/categories` | Service catalogue: create, rename, retire, delete (read-only without `category:manage`) | `GET · POST /service-categories`, `PATCH · DELETE /service-categories/:id` |
 
 ### Session and headers
 
@@ -431,7 +438,10 @@ API_INTERNAL_BASE_URL=http://localhost:3001/api/v1      # server-side health pro
   toggle for it in the form yet.
 - Dashboard metrics are computed over the first 100 requests of the active tenant, not a SQL
   aggregate.
-- No request editing form yet (`PATCH /service-requests/:id` exists and is tested).
+- Request editing is refused once a request is `CLOSED` or `CANCELLED` — the record is history by
+  then (`409`).
+- Category management is staff-only (`category:manage`); clients see the catalogue read-only, and the
+  picker offers active categories only.
 
 ---
 
@@ -455,7 +465,8 @@ API_INTERNAL_BASE_URL=http://localhost:3001/api/v1      # server-side health pro
 | Phase 2 data layer: categories, requests, comments, deliverables (tenant-scoped) | done |
 | Phase 2 API: Zod contracts + `/service-requests` routes with RBAC guards | done |
 | Phase 2 UI: login, dashboard, request list/create/detail with live API | done |
-| Integration test harness (Vitest + Supertest, 142 tests) | done |
+| Phase 2 catalogue: `/service-categories` CRUD + category picker, request edit form | done |
+| Integration test harness (Vitest + Supertest, 162 tests) | done |
 | Delivery retry/backoff, bounce handling, delivery read API | not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
@@ -481,7 +492,7 @@ the seven negative-authorization tests and nothing else.
 
 ### Immediate next steps
 
-1. Phase 2 step 4: service **category** management routes + UI, and a request edit form.
+1. Phase 2 step 5: deliverable creation UI for staff, and an internal-note toggle on comments.
 2. Delivery retry/backoff for FAILED rows, plus a `GET /organizations/:id/notifications` read API.
 3. Token lifecycle: refresh tokens, revocation, login rate limiting.
 4. Offboarding an ACTIVE member (session invalidation, retention rules).

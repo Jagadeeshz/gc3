@@ -42,6 +42,11 @@ export class ApiError extends Error {
     return new ApiError(404, 'NOT_FOUND', message);
   }
 
+  /** The request is well-formed but the current state forbids it (409). */
+  static conflict(message = 'The current state does not allow this') {
+    return new ApiError(409, 'CONFLICT', message);
+  }
+
   static notImplemented(message = 'Not implemented yet') {
     return new ApiError(501, 'NOT_IMPLEMENTED', message);
   }

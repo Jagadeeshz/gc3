@@ -22,6 +22,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 6 | Phase 2 · Service request data layer | `8fa7acc`, `bdc98ca` | ✅ delivered |
 | 7 | Phase 2 · Service request API | `eb3d433`, `41a1264` | ✅ delivered |
 | 8 | Phase 2 · Service request UI | `0bb6e7e` | ✅ delivered |
+| 9 | Phase 2 · Categories & request editing | `<pending>` | ✅ delivered |
 
 ---
 
@@ -426,11 +427,63 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ---
 
+## Slice 9 — Phase 2 · Category management & request editing  ✅
+
+**Brief refs:** §5.2 (request edits), §6.2 (service catalogue), §11 (API), §12 (tenancy, RBAC)
+
+Slice 8 was already recorded against `0bb6e7e` in the index above; no re-statement needed.
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Category API | `GET · POST /service-categories`, `PATCH · DELETE /service-categories/:categoryId` — tenant-scoped, soft delete, slug derived from the name when omitted, `?includeInactive=true` to see retired ones |
+| New permissions | `category:read` (every role), `category:manage` (PLATFORM_ADMIN, OPERATIONS_MANAGER) — routes declare permissions, never roles |
+| Request editing | `PATCH /service-requests/:id` was delivered in slice 7; this slice adds the policy that a CLOSED/CANCELLED request can no longer be edited (409) and the form that drives it |
+| Category UI | `/categories`: create, rename, re-slug, retire/reactivate, delete — with the catalogue rendered read-only for anyone without `category:manage` |
+| Request UI | Edit form on the detail screen (title, description, priority, category) and a category picker on the create form |
+| Regression test | A create with `description: null` now succeeds — the bug this slice found |
+
+### Evidence
+
+- `pnpm test` **162/162** across 12 files (was 142): +13 category tests, +7 request-editing tests
+- `pnpm -r typecheck` 5/5 · `pnpm --filter @gc3/web build` clean, 8 routes
+- Browser against the live API:
+  - created *Cloud Migration* through the form → `201`, slug derived as `cloud-migration`
+  - renamed it to *Cloud Migration & Modernisation* → row updated, slug deliberately unchanged
+  - retired it → `RETIRED` badge, action flipped to Reactivate, and it disappeared from the
+    create-request picker
+  - duplicate name → `409` "A category with that slug already exists in this organization", surfaced
+    in the UI
+  - created *FinOps* with **no description** → `201` (this failed before the fix below)
+  - edited a live request: title → "Provision the staging cluster (revised)", priority → Urgent,
+    category → FinOps; header and metadata cards updated, editor closed
+  - created *Quarterly FinOps review* with category FinOps → `REQ-4746CD7A`, `SUBMITTED`, with a
+    `CATEGORY FinOps` card on the detail screen
+
+### Bug found and fixed
+
+The categories form sent `description: null` when the field was empty, and
+`createServiceCategorySchema` accepted only `string | undefined` — so **creating a category with no
+description failed with 400 "Invalid category payload"**. Caught in the browser, not by the tests
+that existed at the time. Fixed on both sides: the schema now accepts `null` on create (normalised to
+omitted), the form omits an empty description on create, and a test locks the behaviour.
+
+### Notes / limits
+
+- Deleting a category is a soft delete; historical requests keep their reference and simply show `—`
+  for the name once the category is gone from the catalogue fetch.
+- The category picker lists active categories only; a request pointing at a retired category keeps it.
+- `category:manage` is staff-only by design — clients read the catalogue, they do not curate it.
+- No bulk import or default catalogue seeding yet (§6.2's platform defaults are still a seeding task).
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Phase 2 step 4 | Service category management routes + UI, request edit form |
+| Phase 2 step 5 | Deliverable creation UI for staff, internal-note toggle on comments |
 | Delivery retry & backoff | Retry FAILED deliveries; bounce/complaint suppression list |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |

@@ -83,4 +83,36 @@ export const serviceCategoryRepository = {
 
     return result.count === 1;
   },
+
+  /**
+   * Tenant-guarded field update. Returns null when the id is not this tenant's,
+   * deleted, or missing — the caller turns all three into the same 404.
+   */
+  async updateScoped(
+    organizationId: string,
+    id: string,
+    input: {
+      name?: string;
+      slug?: string;
+      description?: string | null;
+      isActive?: boolean;
+    },
+  ): Promise<ServiceCategory | null> {
+    const result = await prisma.serviceCategory.updateMany({
+      where: { id, organizationId, deletedAt: null },
+      data: {
+        ...(input.name !== undefined ? { name: input.name } : {}),
+        ...(input.slug !== undefined ? { slug: input.slug } : {}),
+        ...(input.description !== undefined ? { description: input.description } : {}),
+        ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
+      },
+    });
+
+    if (result.count !== 1) {
+      return null;
+    }
+
+    const row = await prisma.serviceCategory.findFirst({ where: { id, organizationId } });
+    return row ? toEntity(row) : null;
+  },
 };

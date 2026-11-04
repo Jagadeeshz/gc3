@@ -8,6 +8,7 @@ import type {
   ServiceRequest,
   ServiceRequestPriority,
   ServiceRequestStatus,
+  ServiceCategory,
 } from '@gc3/types';
 import { API_BASE_URL } from './config';
 
@@ -66,6 +67,11 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     | { success: true; data: T }
     | { success: false; error: ApiErrorBody }
     | null;
+
+  // 204 has no body by design (DELETE), so there is nothing to unwrap.
+  if (response.status === 204) {
+    return undefined as T;
+  }
 
   if (!response.ok || !payload || payload.success === false) {
     const error: ApiErrorBody = payload && payload.success === false
@@ -214,4 +220,86 @@ export async function updateDeliverableStatus(
     `/service-requests/${requestId}/deliverables/${deliverableId}/status`,
     { method: 'PATCH', token, organizationId, body: { status } },
   );
+}
+
+export interface UpdateRequestInput {
+  title?: string;
+  description?: string;
+  priority?: ServiceRequestPriority;
+  categoryId?: string | null;
+  dueAt?: string | null;
+}
+
+/** PATCH /service-requests/:id — content edits while the request is still live. */
+export async function updateRequest(
+  token: string,
+  organizationId: string,
+  requestId: string,
+  input: UpdateRequestInput,
+): Promise<ServiceRequest> {
+  return request<ServiceRequest>(`/service-requests/${requestId}`, {
+    method: 'PATCH',
+    token,
+    organizationId,
+    body: input,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Service categories (per-tenant catalogue)
+// ---------------------------------------------------------------------------
+
+export async function listCategories(
+  token: string,
+  organizationId: string,
+  includeInactive = false,
+): Promise<ServiceCategory[]> {
+  const query = includeInactive ? '?includeInactive=true' : '';
+  return request<ServiceCategory[]>(`/service-categories${query}`, { token, organizationId });
+}
+
+export interface CategoryInput {
+  name?: string;
+  slug?: string;
+  description?: string | null;
+  isActive?: boolean;
+}
+
+export async function createCategory(
+  token: string,
+  organizationId: string,
+  input: CategoryInput & { name: string },
+): Promise<ServiceCategory> {
+  return request<ServiceCategory>('/service-categories', {
+    method: 'POST',
+    token,
+    organizationId,
+    body: input,
+  });
+}
+
+export async function updateCategory(
+  token: string,
+  organizationId: string,
+  categoryId: string,
+  input: CategoryInput,
+): Promise<ServiceCategory> {
+  return request<ServiceCategory>(`/service-categories/${categoryId}`, {
+    method: 'PATCH',
+    token,
+    organizationId,
+    body: input,
+  });
+}
+
+export async function deleteCategory(
+  token: string,
+  organizationId: string,
+  categoryId: string,
+): Promise<void> {
+  await request<void>(`/service-categories/${categoryId}`, {
+    method: 'DELETE',
+    token,
+    organizationId,
+  });
 }

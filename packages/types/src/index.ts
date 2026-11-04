@@ -192,6 +192,8 @@ export type Permission =
   | 'request:create'
   | 'request:update'
   | 'request:comment'
+  | 'category:read'
+  | 'category:manage'
   | 'deliverable:read'
   | 'deliverable:create'
   | 'deliverable:review';

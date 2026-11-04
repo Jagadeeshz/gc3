@@ -149,6 +149,12 @@ export function authPatch(path: string, token: string, body: unknown, organizati
   return organizationId ? req.set(ORG_HEADER, organizationId) : req;
 }
 
+/** Bearer-authenticated DELETE, optionally tenant-scoped. */
+export function authDelete(path: string, token: string, organizationId?: string) {
+  const req = request(app).delete(path).set('authorization', `Bearer ${token}`);
+  return organizationId ? req.set(ORG_HEADER, organizationId) : req;
+}
+
 // ---------------------------------------------------------------------------
 // Tenants
 // ---------------------------------------------------------------------------

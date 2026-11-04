@@ -6,7 +6,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
   Deliverable,
   RequestComment,
+  ServiceCategory,
   ServiceRequest,
+  ServiceRequestPriority,
   ServiceRequestStatus,
 } from '@gc3/types';
 import { SERVICE_REQUEST_TRANSITIONS } from '@gc3/types';
@@ -16,9 +18,11 @@ import {
   ApiClientError,
   changeRequestStatus,
   getRequest,
+  listCategories,
   listComments,
   listDeliverables,
   updateDeliverableStatus,
+  updateRequest,
 } from '@/lib/api-client';
 import { activeRoles } from '@/lib/session';
 import { useSession } from '@/lib/session-context';
@@ -44,6 +48,14 @@ export default function RequestDetailPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [draftComment, setDraftComment] = useState('');
+  const [categories, setCategories] = useState<readonly ServiceCategory[]>([]);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState<{
+    title: string;
+    description: string;
+    priority: ServiceRequestPriority;
+    categoryId: string;
+  }>({ title: '', description: '', priority: 'NORMAL', categoryId: '' });
 
   const token = session?.accessToken ?? null;
   const organizationId = session?.activeOrganizationId ?? null;
@@ -57,15 +69,18 @@ export default function RequestDetailPage() {
     setError(null);
 
     try {
-      const [loadedRequest, loadedComments, loadedDeliverables] = await Promise.all([
-        getRequest(token, organizationId, requestId),
-        listComments(token, organizationId, requestId),
-        listDeliverables(token, organizationId, requestId),
-      ]);
+      const [loadedRequest, loadedComments, loadedDeliverables, loadedCategories] =
+        await Promise.all([
+          getRequest(token, organizationId, requestId),
+          listComments(token, organizationId, requestId),
+          listDeliverables(token, organizationId, requestId),
+          listCategories(token, organizationId),
+        ]);
 
       setRequest(loadedRequest);
       setComments(loadedComments);
       setDeliverables(loadedDeliverables);
+      setCategories(loadedCategories);
     } catch (caught) {
       setError(
         caught instanceof ApiClientError ? caught.message : 'Could not load this request',
@@ -161,6 +176,51 @@ export default function RequestDetailPage() {
     }
   }
 
+  function startEditing() {
+    if (!request) {
+      return;
+    }
+
+    setEditing(true);
+    setActionError(null);
+    setEditForm({
+      title: request.title,
+      description: request.description,
+      priority: request.priority,
+      categoryId: request.categoryId ?? '',
+    });
+  }
+
+  async function onSaveEdit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!token || !organizationId || !request) {
+      return;
+    }
+
+    setBusy('edit');
+    setActionError(null);
+
+    try {
+      const updated = await updateRequest(token, organizationId, request.id, {
+        title: editForm.title.trim(),
+        description: editForm.description.trim(),
+        priority: editForm.priority,
+        // '' means "no category"; the API distinguishes null from omitted.
+        categoryId: editForm.categoryId === '' ? null : editForm.categoryId,
+      });
+
+      setRequest(updated);
+      setEditing(false);
+    } catch (caught) {
+      setActionError(
+        caught instanceof ApiClientError ? caught.message : 'Could not save the changes',
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
   if (loading) {
     return <p className="text-sm text-muted">Loading request…</p>;
   }
@@ -193,14 +253,31 @@ export default function RequestDetailPage() {
             {request.title}
           </h1>
         </div>
-        <Badge tone={requestStatusTone(request.status)}>
-          {requestStatusLabel(request.status)}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge tone={requestStatusTone(request.status)}>
+            {requestStatusLabel(request.status)}
+          </Badge>
+          {request.status !== 'CLOSED' && request.status !== 'CANCELLED' ? (
+            <button
+              type="button"
+              onClick={startEditing}
+              disabled={editing || busy !== null}
+              className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-warm transition-colors hover:border-gold/40 hover:bg-white/10 disabled:opacity-50"
+            >
+              Edit
+            </button>
+          ) : null}
+        </div>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-4">
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {[
           { label: 'Priority', value: priorityLabel(request.priority) },
+          {
+            label: 'Category',
+            value:
+              categories.find((category) => category.id === request.categoryId)?.name ?? '—',
+          },
           { label: 'Created', value: formatDate(request.createdAt) },
           { label: 'Submitted', value: formatDate(request.submittedAt) },
           { label: 'Due', value: formatDate(request.dueAt) },
@@ -214,12 +291,105 @@ export default function RequestDetailPage() {
         ))}
       </div>
 
-      <section className="mt-5 rounded-[14px] border border-white/10 bg-graphite/85 p-5">
-        <h2 className="text-sm font-semibold text-warm">Description</h2>
-        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted">
-          {request.description}
-        </p>
-      </section>
+      {editing ? (
+        <form
+          className="mt-5 rounded-[14px] border border-gold/30 bg-graphite/85 p-5"
+          onSubmit={onSaveEdit}
+        >
+          <h2 className="text-sm font-semibold text-warm">Edit request</h2>
+
+          <label className="mt-4 grid gap-1.5">
+            <span className="text-xs font-medium text-muted">Title</span>
+            <input
+              required
+              minLength={3}
+              maxLength={200}
+              value={editForm.title}
+              onChange={(event) => setEditForm({ ...editForm, title: event.target.value })}
+              className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+            />
+          </label>
+
+          <label className="mt-3 grid gap-1.5">
+            <span className="text-xs font-medium text-muted">Description</span>
+            <textarea
+              required
+              minLength={10}
+              rows={5}
+              maxLength={20_000}
+              value={editForm.description}
+              onChange={(event) => setEditForm({ ...editForm, description: event.target.value })}
+              className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+            />
+          </label>
+
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="grid gap-1.5">
+              <span className="text-xs font-medium text-muted">Priority</span>
+              <select
+                value={editForm.priority}
+                onChange={(event) =>
+                  setEditForm({
+                    ...editForm,
+                    priority: event.target.value as ServiceRequestPriority,
+                  })
+                }
+                className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm focus:border-gold/60 focus:outline-none"
+              >
+                {(['LOW', 'NORMAL', 'HIGH', 'URGENT'] as ServiceRequestPriority[]).map((value) => (
+                  <option key={value} value={value}>
+                    {value.charAt(0) + value.slice(1).toLowerCase()}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-1.5">
+              <span className="text-xs font-medium text-muted">Category</span>
+              <select
+                value={editForm.categoryId}
+                onChange={(event) => setEditForm({ ...editForm, categoryId: event.target.value })}
+                className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm focus:border-gold/60 focus:outline-none"
+              >
+                <option value="">No category</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="submit"
+              disabled={busy !== null}
+              className="min-h-10 rounded-[10px] border border-gold-deep/40 bg-[linear-gradient(180deg,#E2C777_0%,#D9B65D_100%)] px-4 py-2 text-sm font-medium text-ink disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {busy === 'edit' ? 'Saving…' : 'Save changes'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(false);
+                setActionError(null);
+              }}
+              disabled={busy !== null}
+              className="min-h-10 rounded-[10px] border border-white/15 bg-white/5 px-4 py-2 text-sm text-warm hover:bg-white/10 disabled:opacity-60"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : (
+        <section className="mt-5 rounded-[14px] border border-white/10 bg-graphite/85 p-5">
+          <h2 className="text-sm font-semibold text-warm">Description</h2>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted">
+            {request.description}
+          </p>
+        </section>
+      )}
 
       {actionError ? (
         <p

@@ -144,6 +144,48 @@ export const deliverableParamsSchema = z.object({
   deliverableId: uuidSchema,
 });
 
+/** Lowercase, hyphen-separated. Stable in URLs and safe to derive from a name. */
+export const categorySlugSchema = z
+  .string()
+  .trim()
+  .min(2, 'Slug is too short')
+  .max(60)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and single hyphens');
+
+export const createServiceCategorySchema = z.object({
+  name: z.string().trim().min(2, 'Give the category a name').max(120),
+  /** Optional: derived from the name when omitted. */
+  slug: categorySlugSchema.optional(),
+  /** `null` is treated the same as omitted — an empty description. */
+  description: z.string().trim().max(500).nullable().optional(),
+  isActive: z.boolean().default(true),
+});
+
+export type CreateServiceCategoryInput = z.infer<typeof createServiceCategorySchema>;
+
+export const updateServiceCategorySchema = z
+  .object({
+    name: z.string().trim().min(2).max(120).optional(),
+    slug: categorySlugSchema.optional(),
+    description: z.string().trim().max(500).nullable().optional(),
+    isActive: z.boolean().optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update',
+  });
+
+export type UpdateServiceCategoryInput = z.infer<typeof updateServiceCategorySchema>;
+
+export const serviceCategoryIdParamsSchema = z.object({ categoryId: uuidSchema });
+
+export const listServiceCategoriesQuerySchema = z.object({
+  /** `?includeInactive=true` also returns retired categories. */
+  includeInactive: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((value) => value === 'true'),
+});
+
 export const createServiceRequestSchema = z.object({
   title: z.string().trim().min(3, 'Give the request a title').max(200),
   description: z.string().trim().min(10, 'Describe the work in a little more detail').max(20_000),

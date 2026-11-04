@@ -5,6 +5,7 @@ import { requireTenantScope } from '../../middleware/tenant-scope';
 import { requireAuth, requirePermission } from '../../middleware/auth';
 import { authRouter } from './auth';
 import { organizationsRouter } from './organizations';
+import { serviceCategoriesRouter } from './service-categories';
 import { serviceRequestsRouter } from './service-requests';
 
 /**
@@ -45,6 +46,7 @@ v1Router.get('/meta', (_request, response) => {
         '/tenant-context',
         '/organizations',
         '/service-requests',
+        '/service-categories',
       ],
       planned: [
         '/users',
@@ -107,3 +109,6 @@ v1Router.use('/organizations', organizationsRouter);
 
 /** Phase 2: client portal work items, tenant-scoped end to end. */
 v1Router.use('/service-requests', serviceRequestsRouter);
+
+/** Phase 2: the per-tenant service catalogue those requests are raised against. */
+v1Router.use('/service-categories', serviceCategoriesRouter);

@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import type { ServiceRequestPriority } from '@gc3/types';
-import { ApiClientError, createRequest } from '@/lib/api-client';
+import { useEffect, useState } from 'react';
+import type { ServiceCategory, ServiceRequestPriority } from '@gc3/types';
+import { ApiClientError, createRequest, listCategories } from '@/lib/api-client';
 import { useSession } from '@/lib/session-context';
 
 const PRIORITIES: ServiceRequestPriority[] = ['LOW', 'NORMAL', 'HIGH', 'URGENT'];
@@ -15,8 +15,38 @@ export default function NewRequestPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<ServiceRequestPriority>('NORMAL');
+  const [categoryId, setCategoryId] = useState('');
+  const [categories, setCategories] = useState<readonly ServiceCategory[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<'DRAFT' | 'SUBMITTED' | null>(null);
+
+  const token = session?.accessToken ?? null;
+  const organizationId = session?.activeOrganizationId ?? null;
+
+  // Catalogue is optional context: an empty list just means no category to pick.
+  useEffect(() => {
+    if (!token || !organizationId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void listCategories(token, organizationId)
+      .then((loaded) => {
+        if (!cancelled) {
+          setCategories(loaded);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCategories([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, organizationId]);
 
   async function submit(status: 'DRAFT' | 'SUBMITTED') {
     if (!session?.accessToken || !session.activeOrganizationId) {
@@ -31,7 +61,13 @@ export default function NewRequestPage() {
       const created = await createRequest(
         session.accessToken,
         session.activeOrganizationId,
-        { title: title.trim(), description: description.trim(), priority, status },
+        {
+          title: title.trim(),
+          description: description.trim(),
+          priority,
+          status,
+          ...(categoryId ? { categoryId } : {}),
+        },
       );
 
       router.push(`/requests/${created.id}`);
@@ -95,6 +131,27 @@ export default function NewRequestPage() {
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="grid gap-1.5">
+          <span className="text-xs font-medium text-muted">Category</span>
+          <select
+            value={categoryId}
+            onChange={(event) => setCategoryId(event.target.value)}
+            className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm focus:border-gold/60 focus:outline-none"
+          >
+            <option value="">No category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+          {categories.length === 0 ? (
+            <span className="text-[11px] text-muted">
+              No active categories in this workspace yet.
+            </span>
+          ) : null}
         </label>
 
         {error ? (
