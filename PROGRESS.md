@@ -3,6 +3,14 @@
 Status of each delivered slice, with the evidence that backs it. Source of truth for requirements is
 `Development-Breif.md`; this file tracks what has actually been built and verified.
 
+## Phase status
+
+| Phase | Scope | State |
+|---|---|---|
+| 0 — Foundation | monorepo, design system, API shell | ✅ complete |
+| 1 — Identity & Onboarding | identity, tenancy, auth, RBAC, invites, email delivery | ✅ **COMPLETE** |
+| 2 — Client Portal & Service Requests | service catalogue, requests, comments, deliverables | 🚧 in progress (step 1) |
+
 | Slice | Scope | Commit | State |
 |---|---|---|---|
 | 0 | Monorepo foundation | `3b19258` | ✅ delivered |
@@ -10,7 +18,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 2 | Auth & RBAC | `26f8a93` | ✅ delivered |
 | 3 | Invite acceptance | `1aba41a`, `74d0853` | ✅ delivered |
 | 4 | Invite lifecycle & email stub | `7348d0f`, `65c2aff` | ✅ delivered |
-| 5 | Real email provider & delivery audit | `7a9c745` | ✅ delivered |
+| 5 | Real email provider & delivery audit | `7a9c745`, `ff82ac4` | ✅ delivered |
 
 ---
 
@@ -231,7 +239,8 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ## Slice 5 — Real email provider & delivery audit  ✅
 
-**Commit:** `7a9c745` — feat(email): SMTP driver and a permanent delivery audit
+**Commits:** `7a9c745` — feat(email): SMTP driver and a permanent delivery audit
+· `ff82ac4` — docs(progress): pin slice 5 to 7a9c745
 **Brief refs:** §11.1 (integration adapters), §12 (auditability), §14 (notifications)
 
 ### What shipped
