@@ -1,6 +1,6 @@
 import type { ClientRole } from '@gc3/types';
 import { buildInviteUrl, notifications } from './index';
-import { nextAttemptAfter } from './retry';
+import { nextAttemptAfter } from './schedule';
 import type { DeliveryReceipt } from './types';
 import { notificationRepository } from '../repositories/notification.repository';
 

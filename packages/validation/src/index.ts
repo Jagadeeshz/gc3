@@ -241,7 +241,9 @@ export type ListServiceRequestsQuery = z.infer<typeof listServiceRequestsQuerySc
 /** `GET /notifications/deliveries` — filters over the delivery audit. */
 export const notificationQuerySchema = paginationSchema.extend({
   status: z.enum(['SENT', 'FAILED', 'SKIPPED']).optional(),
-  kind: z.enum(['INVITATION', 'RESENT']).optional(),
+  kind: z
+    .enum(['INVITATION', 'RESENT', 'DELIVERABLE_RELEASED', 'REQUEST_STATUS_UPDATED'])
+    .optional(),
   recipient: z.string().trim().min(1).max(254).optional(),
 });
 

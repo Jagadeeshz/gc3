@@ -269,6 +269,23 @@ DELETE /organizations/:id/memberships/:userId/invite          → revoke (idempo
   cancelling an active member is offboarding, not invitation management.
 - Resending a **REVOKED** invitation re-opens it (`reopened: true`) instead of dead-ending the user.
 
+### Event notifications
+
+Two events email the client automatically, both dispatched after the response is sent:
+
+| Event | Trigger | Who receives it |
+|---|---|---|
+| `DELIVERABLE_RELEASED` | a deliverable moves to `RELEASED` (approval alone sends nothing) | ACTIVE members holding `CLIENT_OWNER` or `CLIENT_APPROVER` |
+| `REQUEST_STATUS_UPDATED` | a legal request transition actually changes the status | the request's requester |
+
+Each send is written to `notification_deliveries` with `kind`, the recipient, the provider `messageId`
+and `subject_request_id` / `subject_deliverable_id`. A failure joins the same retry queue as an invite —
+and because the subject is recorded, a retry **rebuilds** the email from the current data instead of
+replaying a stored string.
+
+The dispatcher is in-process (`enqueueEvent` / `drainEventQueue`). That suits a single-node deploy; a
+durable queue (BullMQ on the configured Redis) is the next step if jobs must survive a restart.
+
 ### Notification retries
 
 A failed delivery is not a dead end. It enters a retry queue with an exponential schedule
@@ -517,7 +534,8 @@ NOTIFICATION_RETRY_INTERVAL_SECONDS=300  # worker cadence; 0 disables the worker
 | Phase 2 versioning: deliverable versions, re-approval on replace, `/deliveries` history | done |
 | Phase 2 files: stored uploads with SHA-256, download, integrity check | done |
 | Notifications: retry/backoff worker, manual sweep, delivery read API | done |
-| Integration test harness (Vitest + Supertest, 208 tests) | done |
+| Notifications: deliverable-released and status-updated event emails | done |
+| Integration test harness (Vitest + Supertest, 215 tests) | done |
 | Delivery retry/backoff, bounce handling, delivery read API | retry + read API done; bounce handling not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |

@@ -65,6 +65,8 @@ enum ActorType {
 enum NotificationKind {
   INVITATION
   RESENT
+  DELIVERABLE_RELEASED
+  REQUEST_STATUS_UPDATED
 }
 
 /// Outcome of a delivery attempt. SKIPPED is a real state: a noop driver has
@@ -230,9 +232,13 @@ model AuditEvent {
 model NotificationDelivery {
   id             String             @id @default(uuid()) @db.Uuid
   organizationId String             @map("organization_id") @db.Uuid
-  membershipId   String             @map("membership_id") @db.Uuid
+  /// Null for event notifications, which go to a person, not a membership row.
+  membershipId   String?            @map("membership_id") @db.Uuid
   userId         String             @map("user_id") @db.Uuid
   kind           NotificationKind
+  /// Event subjects — what makes an event email rebuildable on retry.
+  subjectRequestId     String?      @map("subject_request_id") @db.Uuid
+  subjectDeliverableId String?      @map("subject_deliverable_id") @db.Uuid
   channel        String             @default("email") @db.VarChar(20)
   driver         String             @db.VarChar(40)
   status         NotificationStatus
@@ -248,11 +254,14 @@ model NotificationDelivery {
   createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  membership   Membership   @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  membership   Membership?  @relation(fields: [membershipId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectRequest     ServiceRequest? @relation("NotificationSubjectRequest", fields: [subjectRequestId], references: [id], onDelete: SetNull)
+  subjectDeliverable Deliverable?    @relation("NotificationSubjectDeliverable", fields: [subjectDeliverableId], references: [id], onDelete: SetNull)
 
   @@index([organizationId, createdAt])
   @@index([membershipId])
+  @@index([userId])
   @@index([status])
   @@index([status, nextAttemptAt])
   @@map("notification_deliveries")
@@ -311,6 +320,7 @@ model ServiceRequest {
   category     ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   requester    User             @relation("ServiceRequestRequester", fields: [requesterId], references: [id], onDelete: Restrict)
   assignee     User?            @relation("ServiceRequestAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  notifications NotificationDelivery[] @relation("NotificationSubjectRequest")
   comments     RequestComment[]
   deliverables Deliverable[]
 
@@ -368,6 +378,7 @@ model Deliverable {
   request      ServiceRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
   createdBy    User?           @relation("DeliverableCreator", fields: [createdById], references: [id], onDelete: SetNull)
   approvedBy   User?           @relation("DeliverableApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  notifications NotificationDelivery[] @relation("NotificationSubjectDeliverable")
   versions     DeliverableVersion[]
 
   @@index([organizationId, status])

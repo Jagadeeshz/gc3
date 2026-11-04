@@ -437,9 +437,9 @@ export interface FileIntegrityReport {
 export interface NotificationDeliveryRecord {
   readonly id: Uuid;
   readonly organizationId: Uuid;
-  readonly membershipId: Uuid;
+  readonly membershipId: Uuid | null;
   readonly userId: Uuid;
-  readonly kind: 'INVITATION' | 'RESENT';
+  readonly kind: 'INVITATION' | 'RESENT' | 'DELIVERABLE_RELEASED' | 'REQUEST_STATUS_UPDATED';
   readonly channel: string;
   readonly driver: string;
   readonly status: 'SENT' | 'FAILED' | 'SKIPPED';

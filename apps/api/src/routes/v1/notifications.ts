@@ -25,9 +25,9 @@ notificationsRouter.use(requireAuth, requireTenantScope);
 interface DeliveryRow {
   id: string;
   organizationId: string;
-  membershipId: string;
+  membershipId: string | null;
   userId: string;
-  kind: 'INVITATION' | 'RESENT';
+  kind: 'INVITATION' | 'RESENT' | 'DELIVERABLE_RELEASED' | 'REQUEST_STATUS_UPDATED';
   channel: string;
   driver: string;
   status: 'SENT' | 'FAILED' | 'SKIPPED';

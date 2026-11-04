@@ -23,6 +23,7 @@ import {
 } from '@gc3/validation';
 import { ApiError } from '../../lib/api-error';
 import { env } from '../../config/env';
+import { enqueueEvent } from '../../notifications/events';
 import {
   buildStorageKey,
   fileStorage,
@@ -251,6 +252,18 @@ serviceRequestsRouter.post(
         authorId: request.actor.userId,
         body: body.data.note,
         isInternal: isStaff(request),
+      });
+    }
+
+    // Fire-and-forget: the transition is already committed, and a mail problem must
+    // never fail a state change the caller can already see.
+    if (current.status !== body.data.status) {
+      enqueueEvent({
+        kind: 'request_status_updated',
+        organizationId,
+        requestId: params.data.requestId,
+        fromStatus: current.status,
+        toStatus: body.data.status,
       });
     }
 
@@ -635,6 +648,17 @@ serviceRequestsRouter.patch(
 
     if (!updated) {
       throw ApiError.notFound('Deliverable not found');
+    }
+
+    // Release is the moment the client has the asset — that is the event worth
+    // emailing about. Approval alone stays internal.
+    if (body.data.status === 'RELEASED') {
+      enqueueEvent({
+        kind: 'deliverable_released',
+        organizationId,
+        requestId: params.data.requestId,
+        deliverableId: params.data.deliverableId,
+      });
     }
 
     const payload: ApiSuccess<Deliverable> = { success: true, data: updated };

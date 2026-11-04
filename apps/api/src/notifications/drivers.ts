@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import type { DeliveryReceipt, InviteEmailPayload, NotificationService } from './types';
+import type {
+  DeliveryReceipt,
+  EventEmailPayload,
+  InviteEmailPayload,
+  NotificationService,
+} from './types';
 
 /**
  * Drivers. Only `memory` and `noop` are safe regardless of environment;
@@ -26,6 +31,21 @@ export class ConsoleNotificationService implements NotificationService {
 
     return { status: 'sent', driver: this.driver, messageId: randomUUID() };
   }
+
+  async sendEvent(payload: EventEmailPayload): Promise<DeliveryReceipt> {
+    // Event bodies carry no secret, so printing them in development is harmless.
+    console.log(
+      [
+        '[gc3-api][email:console]',
+        `to=${payload.to}`,
+        `kind=${payload.kind}`,
+        `request=${payload.requestReference}`,
+        `url=${payload.requestUrl}`,
+      ].join(' '),
+    );
+
+    return { status: 'sent', driver: this.driver, messageId: randomUUID() };
+  }
 }
 
 /** Captures messages in memory. Used by the test suite to assert dispatch. */
@@ -34,14 +54,26 @@ export interface CapturedMessage extends InviteEmailPayload {
   readonly sentAt: Date;
 }
 
+/** Event messages are captured separately so invite assertions stay unchanged. */
+export interface CapturedEventMessage extends EventEmailPayload {
+  readonly messageId: string;
+  readonly sentAt: Date;
+}
+
 const outbox: CapturedMessage[] = [];
+const eventOutbox: CapturedEventMessage[] = [];
 
 export function getOutbox(): readonly CapturedMessage[] {
   return outbox;
 }
 
+export function getEventOutbox(): readonly CapturedEventMessage[] {
+  return eventOutbox;
+}
+
 export function resetOutbox(): void {
   outbox.length = 0;
+  eventOutbox.length = 0;
 }
 
 export class MemoryNotificationService implements NotificationService {
@@ -50,6 +82,12 @@ export class MemoryNotificationService implements NotificationService {
   async sendInvite(payload: InviteEmailPayload): Promise<DeliveryReceipt> {
     const messageId = randomUUID();
     outbox.push({ ...payload, messageId, sentAt: new Date() });
+    return { status: 'sent', driver: this.driver, messageId };
+  }
+
+  async sendEvent(payload: EventEmailPayload): Promise<DeliveryReceipt> {
+    const messageId = randomUUID();
+    eventOutbox.push({ ...payload, messageId, sentAt: new Date() });
     return { status: 'sent', driver: this.driver, messageId };
   }
 }
@@ -65,6 +103,10 @@ export class NoopNotificationService implements NotificationService {
   async sendInvite(_payload: InviteEmailPayload): Promise<DeliveryReceipt> {
     return { status: 'skipped', driver: this.driver };
   }
+
+  async sendEvent(_payload: EventEmailPayload): Promise<DeliveryReceipt> {
+    return { status: 'skipped', driver: this.driver };
+  }
 }
 
 /** Always fails. Test-only: proves a delivery failure cannot roll back an invite. */
@@ -72,6 +114,10 @@ export class FailingNotificationService implements NotificationService {
   readonly driver = 'failing';
 
   async sendInvite(_payload: InviteEmailPayload): Promise<DeliveryReceipt> {
+    return { status: 'failed', driver: this.driver, error: 'simulated provider failure' };
+  }
+
+  async sendEvent(_payload: EventEmailPayload): Promise<DeliveryReceipt> {
     return { status: 'failed', driver: this.driver, error: 'simulated provider failure' };
   }
 }

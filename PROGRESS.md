@@ -26,7 +26,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 10 | Phase 2 · Staff deliverables & internal notes | `68ac590`, `1e5d813` | ✅ delivered |
 | 11 | Phase 2 · Deliverable versioning & delivery history | `351e1d4`, `be00a48` | ✅ delivered |
 | 12 | Phase 2 · Stored file uploads & checksums | `f02c970`, `040eb38` | ✅ delivered |
-| 13 | Notifications · retry/backoff & delivery read API | `bf229cd` | ✅ delivered |
+| 13 | Notifications · retry/backoff & delivery read API | `bf229cd`, `7b8f5ad` | ✅ delivered |
+| 14 | Notifications · deliverable-released & status-updated events | `<pending>` | ✅ delivered |
 
 ---
 
@@ -651,7 +652,8 @@ cleared. Verified: `storage/test` holds 7 test uploads, the dev org holds the si
 
 ## Slice 13 — Notifications · retry/backoff & delivery read API  ✅
 
-**Commit:** `bf229cd` — feat(notifications): retry with backoff and a delivery read API
+**Commits:** `bf229cd` — feat(notifications): retry with backoff and a delivery read API
+· `7b8f5ad` — docs(progress): pin slice 13 to bf229cd
 **Brief refs:** §7 (notifications), §11 (API), §12 (tenancy, RBAC)
 
 ### What shipped
@@ -706,12 +708,67 @@ it — the first version expected one row and got two.
 
 ---
 
+## Slice 14 — Notifications · event dispatch (deliverable released, status updated)  ✅
+
+**Brief refs:** §7 (notifications), §5.4 (delivery), §12 (tenancy)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Templates | `src/notifications/templates.ts` — one shared dark card shell, plain-text alternative for every email, invite + both event kinds. Every tenant-supplied string escaped |
+| Drivers | `sendEvent()` added to all five drivers (console, memory, noop, failing, smtp); memory captures events in a **separate** outbox so invite assertions stay untouched |
+| Schema | `NotificationKind` += `DELIVERABLE_RELEASED`, `REQUEST_STATUS_UPDATED`; `membership_id` now nullable (events target a person); `subject_request_id` / `subject_deliverable_id` record what the email was about (migration `20261104160000_notification_events`) |
+| Dispatcher | `src/notifications/events.ts` — in-process queue with `enqueueEvent()` / `drainEventQueue()`, payload built from committed state, one audit row per recipient |
+| Triggers | `POST /service-requests/:id/status` enqueues on a real change (not on a refused or no-op transition); `PATCH …/deliverables/:did/status` enqueues when the new status is `RELEASED`. Approval alone sends nothing |
+| Recipients | Release → ACTIVE members holding `CLIENT_OWNER` or `CLIENT_APPROVER`; status change → the request's requester |
+| Retry | Failed event emails join the same queue; `retryEventDelivery()` **rebuilds** the message from the request/deliverable instead of replaying a captured string, and abandons when the subject or recipient is gone |
+| Refactor | Backoff moved to `src/notifications/schedule.ts` so the dispatcher and the sweep share it without a circular import |
+| Tests | 7 new: release fan-out + audit rows, no email on approval, status email with from/to, no email on a refused transition, failure → retry queue → rebuilt retry, abandon when the subject is deleted, audit filter by kind |
+
+### Evidence
+
+- `pnpm test` **215/215** across 18 files (was 208)
+- `pnpm -r typecheck` 5/5
+- Live against Mailpit, one session each:
+  - moved `REQ-EA763D6B` `TRIAGE → IN_PROGRESS` → Mailpit received
+    *"Request REQ-EA763D6B is now IN PROGRESS"* to `portal.verify@gc3.local` (the requester), body:
+    *"…moved from TRIAGE to IN PROGRESS. Follow it in the portal: http://localhost:3000/requests/ea763d6b…"*
+  - approved then released *Staging cluster runbook* (v3) → Mailpit received
+    *"Deliverable released: Staging cluster runbook (REQ-EA763D6B)"* to `client.owner@helios.test`, body:
+    *"Helios Cloud has released a deliverable for request REQ-EA763D6B — Provision the staging cluster
+    (revised). Deliverable: Staging cluster runbook (v3). Open it in the portal: …"*
+  - `GET /notifications/deliveries` → `{sent:4, failed:1, skipped:0, pendingRetry:0}`, rows
+    `DELIVERABLE_RELEASED SENT attempt=1` and `REQUEST_STATUS_UPDATED SENT attempt=1` alongside the
+    earlier invitation attempts
+
+### Bugs found and fixed
+
+1. The audit query rejected `?kind=DELIVERABLE_RELEASED` with 400 — the validation enum still listed only
+   the two invite kinds. Extended, with a test that filters by the new kind.
+2. My "subject deleted" test asserted the wrong message: `ON DELETE SET NULL` clears
+   `subject_deliverable_id` before the sweep runs, so the abandon reason is "no subject deliverable"
+   rather than "no longer exists". The behaviour was right; the assertion and its comment now match it.
+
+### Notes / limits
+
+- The dispatcher is **in-process**, not durable: a restart between the response and the drain loses that
+  job. This is the seam where BullMQ on the configured Redis belongs. What is not lost is the audit trail
+  for anything that was attempted.
+- A status-update retry does not know the original `fromStatus`, so it re-reads the current status and
+  reports that. Still true, and arguably more useful hours later.
+- Release fan-out is bounded to owners and approvers; a tenant with fifty of them gets fifty emails. No
+  digesting yet.
+- No per-user notification preferences and no unsubscribe — the client cannot opt out.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Phase 2 step 9 | Upload progress + orphan file GC |
-| Notification kinds | Deliverable-released and request-updated emails, with their own retry payloads |
+| Phase 2 step 10 | Upload progress + orphan file GC |
+| Notification prefs | Per-user opt-out and digesting before fan-out scales |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |
 | Offboarding | Revoke an ACTIVE member: session invalidation, audit, retention rules |

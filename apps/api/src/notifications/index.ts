@@ -9,7 +9,13 @@ import { SmtpNotificationService } from './smtp.driver';
 import type { InviteEmailPayload, NotificationService } from './types';
 
 export type { InviteEmailPayload, DeliveryReceipt, NotificationService } from './types';
-export { getOutbox, resetOutbox, type CapturedMessage } from './drivers';
+export {
+  getOutbox,
+  getEventOutbox,
+  resetOutbox,
+  type CapturedMessage,
+  type CapturedEventMessage,
+} from './drivers';
 
 /**
  * Builds the driver named by `NOTIFICATION_DRIVER`.

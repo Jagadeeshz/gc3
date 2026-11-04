@@ -21,6 +21,26 @@ export interface InviteEmailPayload {
 }
 
 /**
+ * An event notification — something happened in the workspace and the client
+ * should hear about it. Unlike an invite, this payload is fully reconstructible
+ * from the database, which is what makes it safely retryable.
+ */
+export interface EventEmailPayload {
+  readonly to: string;
+  readonly recipientName: string;
+  readonly organizationName: string;
+  readonly kind: 'deliverable_released' | 'request_status_updated';
+  readonly requestReference: string;
+  readonly requestTitle: string;
+  /** Deep link into the portal request page. */
+  readonly requestUrl: string;
+  readonly deliverableTitle?: string;
+  readonly deliverableVersion?: number;
+  readonly fromStatus?: string;
+  readonly toStatus?: string;
+}
+
+/**
  * `skipped` is deliberate: a noop driver has not sent anything, and reporting
  * `sent` would be a lie in the audit trail.
  */
@@ -36,4 +56,5 @@ export interface DeliveryReceipt {
 export interface NotificationService {
   readonly driver: string;
   sendInvite(payload: InviteEmailPayload): Promise<DeliveryReceipt>;
+  sendEvent(payload: EventEmailPayload): Promise<DeliveryReceipt>;
 }

@@ -2,9 +2,10 @@ import { prisma } from '../db/client';
 
 export interface RecordDeliveryInput {
   readonly organizationId: string;
-  readonly membershipId: string;
+  /** Absent for event notifications, which target a user rather than a membership. */
+  readonly membershipId?: string | null;
   readonly userId: string;
-  readonly kind: 'invitation' | 'resent';
+  readonly kind: 'invitation' | 'resent' | 'deliverable_released' | 'request_status_updated';
   readonly driver: string;
   readonly status: 'sent' | 'failed' | 'skipped';
   readonly recipient: string;
@@ -16,11 +17,20 @@ export interface RecordDeliveryInput {
   readonly lastAttemptAt?: Date;
   /** When the next retry is due, when this attempt failed and retries remain. */
   readonly nextAttemptAt?: Date | null;
+  /** Event subjects, so a retry can rebuild the message from the database. */
+  readonly subjectRequestId?: string | null;
+  readonly subjectDeliverableId?: string | null;
 }
 
 const ERROR_MAX = 500;
 
-const KIND_MAP = { invitation: 'INVITATION', resent: 'RESENT' } as const;
+const KIND_MAP = {
+  invitation: 'INVITATION',
+  resent: 'RESENT',
+  deliverable_released: 'DELIVERABLE_RELEASED',
+  request_status_updated: 'REQUEST_STATUS_UPDATED',
+} as const;
+
 const STATUS_MAP = { sent: 'SENT', failed: 'FAILED', skipped: 'SKIPPED' } as const;
 
 /**
@@ -33,9 +43,11 @@ export const notificationRepository = {
     const row = await prisma.notificationDelivery.create({
       data: {
         organizationId: input.organizationId,
-        membershipId: input.membershipId,
+        membershipId: input.membershipId ?? null,
         userId: input.userId,
         kind: KIND_MAP[input.kind],
+        subjectRequestId: input.subjectRequestId ?? null,
+        subjectDeliverableId: input.subjectDeliverableId ?? null,
         driver: input.driver,
         status: STATUS_MAP[input.status],
         recipient: input.recipient,

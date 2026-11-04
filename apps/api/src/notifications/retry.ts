@@ -3,35 +3,130 @@ import { generateInviteToken } from '../auth/invite';
 import { env } from '../config/env';
 import { prisma } from '../db/client';
 import { notificationRepository } from '../repositories/notification.repository';
+import { buildEventPayload, loadEventSubject, type EventJob } from './events';
 import { buildInviteUrl, notifications } from './index';
+import { backoffSeconds, nextAttemptAfter } from './schedule';
 import type { DeliveryReceipt } from './types';
 
+// The backoff schedule lives in ./schedule so the event dispatcher can share it
+// without importing this module back.
+export { backoffSeconds, nextAttemptAfter } from './schedule';
+
 /**
- * Retry schedule for a failed notification.
+ * Retry a failed *event* notification.
  *
- * Deliberately slow and bounded: an invite email is not a chat message. Five
- * attempts spread over roughly eight hours rides out a relay outage without
- * hammering a provider that is already unhappy, and stops before an invitation
- * link is a week stale.
+ * Unlike an invitation, nothing needs rotating: the message is rebuilt from the
+ * request and deliverable the delivery row points at. If either is gone, the retry
+ * is abandoned rather than sending a link to nothing.
  */
-const BACKOFF_SECONDS = [60, 300, 900, 3_600, 21_600] as const;
-
-/** Delay before the retry that follows `attempt` (1-based). */
-export function backoffSeconds(attempt: number): number {
-  const index = Math.min(Math.max(attempt, 1), BACKOFF_SECONDS.length) - 1;
-  return BACKOFF_SECONDS[index] ?? BACKOFF_SECONDS[BACKOFF_SECONDS.length - 1]!;
-}
-
-/**
- * When the next attempt is due, or null when the chain is over because
- * `attempt` has reached NOTIFICATION_MAX_ATTEMPTS.
- */
-export function nextAttemptAfter(attempt: number, from: Date = new Date()): Date | null {
-  if (attempt >= env.NOTIFICATION_MAX_ATTEMPTS) {
-    return null;
+async function retryEventDelivery(
+  row: {
+    id: string;
+    organizationId: string;
+    userId: string;
+    kind: 'DELIVERABLE_RELEASED' | 'REQUEST_STATUS_UPDATED';
+    subjectRequestId: string | null;
+    subjectDeliverableId: string | null;
+    attempt: number;
+  },
+  now: Date,
+  report: { sent: number; failed: number; exhausted: number; skipped: number },
+): Promise<void> {
+  if (!row.subjectRequestId) {
+    await notificationRepository.abandonRetry(row.id, 'Not retried: no subject request on this delivery');
+    report.skipped += 1;
+    return;
   }
 
-  return new Date(from.getTime() + backoffSeconds(attempt) * 1_000);
+  if (row.kind === 'DELIVERABLE_RELEASED' && !row.subjectDeliverableId) {
+    await notificationRepository.abandonRetry(row.id, 'Not retried: no subject deliverable on this delivery');
+    report.skipped += 1;
+    return;
+  }
+
+  const user = await prisma.user.findFirst({
+    where: { id: row.userId, deletedAt: null },
+    select: { id: true, email: true, fullName: true, status: true },
+  });
+
+  if (!user || user.status !== 'ACTIVE') {
+    await notificationRepository.abandonRetry(row.id, 'Not retried: the recipient is no longer active');
+    report.skipped += 1;
+    return;
+  }
+
+  const job: EventJob =
+    row.kind === 'DELIVERABLE_RELEASED'
+      ? {
+          kind: 'deliverable_released',
+          organizationId: row.organizationId,
+          requestId: row.subjectRequestId,
+          deliverableId: row.subjectDeliverableId!,
+        }
+      : {
+          kind: 'request_status_updated',
+          organizationId: row.organizationId,
+          requestId: row.subjectRequestId,
+          // The original from/to are not stored; a retry reports the status as it
+          // is now, which stays true even if the request moved on meanwhile.
+          fromStatus: '',
+          toStatus: '',
+        };
+
+  const subject = await loadEventSubject(job);
+
+  if (!subject) {
+    await notificationRepository.abandonRetry(row.id, 'Not retried: the request or deliverable no longer exists');
+    report.skipped += 1;
+    return;
+  }
+
+  const effectiveJob: EventJob =
+    job.kind === 'request_status_updated'
+      ? { ...job, toStatus: subject.requestStatus }
+      : job;
+
+  const payload = buildEventPayload(effectiveJob, subject, {
+    userId: user.id,
+    email: user.email,
+    fullName: user.fullName,
+  });
+
+  let receipt: DeliveryReceipt;
+
+  try {
+    receipt = await notifications.current.sendEvent(payload);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    receipt = { status: 'failed', driver: notifications.current.driver, error: message };
+  }
+
+  const attempt = row.attempt + 1;
+  const schedule = receipt.status === 'failed' ? nextAttemptAfter(attempt, now) : null;
+
+  await notificationRepository.record({
+    organizationId: row.organizationId,
+    userId: row.userId,
+    kind: row.kind === 'DELIVERABLE_RELEASED' ? 'deliverable_released' : 'request_status_updated',
+    driver: receipt.driver,
+    status: receipt.status,
+    recipient: user.email,
+    ...(receipt.messageId ? { messageId: receipt.messageId } : {}),
+    ...(receipt.error ? { error: receipt.error } : {}),
+    attempt,
+    lastAttemptAt: now,
+    nextAttemptAt: schedule,
+    subjectRequestId: row.subjectRequestId,
+    subjectDeliverableId: row.subjectDeliverableId,
+  });
+
+  if (receipt.status === 'sent') {
+    report.sent += 1;
+  } else if (schedule) {
+    report.failed += 1;
+  } else {
+    report.exhausted += 1;
+  }
 }
 
 /**
@@ -77,6 +172,31 @@ export async function runRetrySweep(
       continue;
     }
 
+    // Event notifications go to a user, not a membership, and are rebuilt from the
+    // request/deliverable they point at. Handle them before touching membership.
+    if (row.kind === 'DELIVERABLE_RELEASED' || row.kind === 'REQUEST_STATUS_UPDATED') {
+      await retryEventDelivery(
+        {
+          id: row.id,
+          organizationId: row.organizationId,
+          userId: row.userId,
+          kind: row.kind,
+          subjectRequestId: row.subjectRequestId,
+          subjectDeliverableId: row.subjectDeliverableId,
+          attempt: row.attempt,
+        },
+        now,
+        report,
+      );
+      continue;
+    }
+
+    if (!row.membershipId) {
+      await notificationRepository.abandonRetry(row.id, 'Not retried: no membership on this delivery');
+      report.skipped += 1;
+      continue;
+    }
+
     const membership = await prisma.membership.findFirst({
       where: { id: row.membershipId },
       include: {
@@ -85,8 +205,6 @@ export async function runRetrySweep(
       },
     });
 
-    // Nothing left to deliver: the invite was accepted, revoked, or the
-    // membership is gone. Retrying would email a dead link.
     if (!membership || membership.status !== 'INVITED') {
       await notificationRepository.abandonRetry(
         row.id,
