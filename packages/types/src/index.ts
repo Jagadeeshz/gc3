@@ -229,3 +229,78 @@ export interface InviteAcceptance extends AuthSession {
   readonly organizationName: string;
   readonly roles: readonly ClientRole[];
 }
+
+// ---------------------------------------------------------------------------
+// Phase 2 — client portal & service requests (Development Brief §5.2, §9)
+// ---------------------------------------------------------------------------
+
+export type ServiceRequestStatus =
+  | 'DRAFT'
+  | 'SUBMITTED'
+  | 'TRIAGE'
+  | 'IN_PROGRESS'
+  | 'BLOCKED'
+  | 'IN_REVIEW'
+  | 'DELIVERED'
+  | 'CLOSED'
+  | 'CANCELLED';
+
+export type ServiceRequestPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+
+export type DeliverableStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'IN_REVIEW'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'RELEASED';
+
+/** Statuses that close a request; the service stamps `closedAt` on entry. */
+export const TERMINAL_REQUEST_STATUSES: readonly ServiceRequestStatus[] = ['CLOSED', 'CANCELLED'];
+
+/** A service a tenant can raise requests under. Tenant-owned, never global. */
+export interface ServiceCategory extends Timestamps, TenantScoped, SoftDeletable {
+  readonly id: Uuid;
+  readonly name: string;
+  readonly slug: string;
+  readonly description: string | null;
+  readonly isActive: boolean;
+}
+
+export interface ServiceRequest extends Timestamps, TenantScoped, SoftDeletable {
+  readonly id: Uuid;
+  /** Human-facing reference, unique per tenant: `REQ-3F2A91BC`. */
+  readonly reference: string;
+  readonly categoryId: Uuid | null;
+  readonly title: string;
+  readonly description: string;
+  readonly status: ServiceRequestStatus;
+  readonly priority: ServiceRequestPriority;
+  readonly requesterId: Uuid;
+  readonly assigneeId: Uuid | null;
+  readonly dueAt: IsoDateTime | null;
+  readonly submittedAt: IsoDateTime | null;
+  readonly closedAt: IsoDateTime | null;
+}
+
+/** A message on a request. `isInternal` notes are never shown to the client. */
+export interface RequestComment extends Timestamps, TenantScoped {
+  readonly id: Uuid;
+  readonly requestId: Uuid;
+  readonly authorId: Uuid;
+  readonly body: string;
+  readonly isInternal: boolean;
+}
+
+/** An output delivered against a request. RELEASED requires human sign-off. */
+export interface Deliverable extends Timestamps, TenantScoped, SoftDeletable {
+  readonly id: Uuid;
+  readonly requestId: Uuid | null;
+  readonly title: string;
+  readonly description: string | null;
+  readonly status: DeliverableStatus;
+  readonly fileUrl: string | null;
+  readonly approvedById: Uuid | null;
+  readonly approvedAt: IsoDateTime | null;
+  readonly releasedAt: IsoDateTime | null;
+}

@@ -4,12 +4,11 @@ Multi-tenant operating platform for **Global Cloud Capability & Consulting (GC³
 delivery operations, pod workspaces, finance, and AI-augmented workflows.
 
 Built to the **GC3 Development Brief v1.0** (`Development-Breif.md` in this folder). The repository is
-at **Phase 1, slices 1–5**: identity and tenancy are persisted in PostgreSQL, every tenant route is
+at **Phase 2** (Phase 1 complete): identity and tenancy persist in PostgreSQL, every tenant route is
 authenticated and authorized through a role → permission map, client users join through a hashed,
-single-use invitation that can be rotated or revoked, invitations are delivered over SMTP through a
-driver-swappable seam, and every dispatch attempt is recorded in a delivery audit table. Integration
-tests pin the API contract, the tenancy rules, the authorization matrix, the invite lifecycle and the
-mail path itself.
+single-use invitation that can be rotated or revoked, invitations are delivered over SMTP with a
+permanent delivery audit, and Phase 2 has landed its data layer — service categories, requests,
+comments and deliverables, all tenant-scoped with no unscoped read in existence.
 
 ---
 
@@ -310,6 +309,25 @@ organization, and it is the only path to access. Isolation is enforced twice:
 `AuditEvent` records consequential writes (`organization.created`, `membership.invited`); it is
 append-only by convention and scoped to the tenant where applicable.
 
+### Phase 2 tables
+
+```text
+Organization 1 ──< ServiceCategory ──< ServiceRequest ──< RequestComment
+                                            │
+                                            └──< Deliverable
+```
+
+All four tables carry a **required, indexed `organization_id`**, and are only reachable through
+scope-first repository methods. There is no global row for a tenant query to blend in, and no unscoped
+read method exists — a handler cannot forget the tenant because it must supply one.
+
+| Table | Notes |
+|---|---|
+| `service_categories` | per-tenant catalogue; slug unique **per tenant** |
+| `service_requests` | `reference` unique per tenant, status/priority enums, requester + assignee, soft delete |
+| `request_comments` | `is_internal` notes are excluded from client-facing reads by default |
+| `deliverables` | `RELEASED` is refused by the repository until a named human has approved |
+
 ---
 
 ## Design system
@@ -347,7 +365,9 @@ classes used by shared components.
 | Notification seam with driver factory + production guards | done |
 | SMTP driver (nodemailer) with HTML/text templates + escaping | done |
 | Delivery audit table (`notification_deliveries`) with SENT/FAILED/SKIPPED | done |
-| Integration test harness (Vitest + Supertest, 91 tests) | done |
+| Phase 2 data layer: categories, requests, comments, deliverables (tenant-scoped) | done |
+| Phase 2 API: Zod contracts + `/service-requests` routes | not started — next |
+| Integration test harness (Vitest + Supertest, 110 tests) | done |
 | Delivery retry/backoff, bounce handling, delivery read API | not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
@@ -364,6 +384,7 @@ classes used by shared components.
 | `invite-lifecycle.test.ts` | resend rotation (old link dies, new one works), expiry extension, re-open after revoke, 409 on ACTIVE, RBAC denials, idempotent revoke, delivery dispatch, provider-failure resilience, noop honesty |
 | `delivery-audit.test.ts` | audit rows for SENT/RESENT/FAILED/SKIPPED, `auditId` ↔ row identity, tenant scoping |
 | `email-smtp.test.ts` | real SMTP relay round-trip, API→relay→accept-link, HTML escaping, unreachable relay recorded as FAILED |
+| `service-requests.test.ts` | Phase 2 data layer: per-tenant categories, request CRUD + lifecycle timestamps, cross-tenant read/write refusal, internal-note filtering, deliverable approval/release rules |
 
 All suites run against a real PostgreSQL database (never a mock) with `TRUNCATE ... CASCADE` between
 cases. The permission guard was verified load-bearing: disabling `requirePermission` failed exactly
@@ -371,8 +392,9 @@ the seven negative-authorization tests and nothing else.
 
 ### Immediate next steps
 
-1. Delivery retry/backoff for FAILED rows, plus a `GET /organizations/:id/notifications` read API.
-2. Token lifecycle: refresh tokens, revocation, login rate limiting.
-3. Offboarding an ACTIVE member (session invalidation, retention rules).
-4. Phase 2 — client portal foundation: first authenticated dashboard reading tenant-scoped data.
+1. Phase 2 step 2: Zod contracts and `/api/v1/service-requests` routes over this data layer, with
+   permission-based guards (`requests:create`, `requests:read`, `deliverables:release`).
+2. Delivery retry/backoff for FAILED rows, plus a `GET /organizations/:id/notifications` read API.
+3. Token lifecycle: refresh tokens, revocation, login rate limiting.
+4. Offboarding an ACTIVE member (session invalidation, retention rules).
 5. ESLint + Prettier and a CI workflow running `typecheck`, `test` and `build`.

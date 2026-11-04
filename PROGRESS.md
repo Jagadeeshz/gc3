@@ -19,6 +19,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 3 | Invite acceptance | `1aba41a`, `74d0853` | ✅ delivered |
 | 4 | Invite lifecycle & email stub | `7348d0f`, `65c2aff` | ✅ delivered |
 | 5 | Real email provider & delivery audit | `7a9c745`, `ff82ac4` | ✅ delivered |
+| 6 | Phase 2 · Service request data layer | — | ✅ delivered |
 
 ---
 
@@ -284,13 +285,54 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ---
 
+## Slice 6 — Phase 2 · Service request data layer  ✅
+
+**Brief refs:** §5.2 (request lifecycle), §6.2 (service catalogue), §9 (data model), §12 (tenancy)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Schema | four new tables + three enums; **every** table carries a required indexed `organization_id` |
+| ServiceRequest | `reference` (`REQ-XXXXXXXX`) unique per tenant, status + priority enums, requester/assignee FKs, due/submitted/closed timestamps, soft delete |
+| ServiceCategory | per-tenant catalogue, slug unique **per tenant** (same slug allowed across tenants), isActive + soft delete |
+| RequestComment | `is_internal` flag; the client-facing list excludes internal notes by default rather than by call-site filter |
+| Deliverable | approval/release rules encoded in the repository — `RELEASED` is refused until a named human has approved |
+| Repositories | scope-first methods only (`createScoped`, `findByIdScoped`, `listScoped`, `updateStatusScoped`); no unscoped read exists to call by accident |
+| Migration | `20261104110000_phase2_service_requests` (Prisma-generated, renamed to keep history monotonic) |
+| Tests | 110 across 9 files (was 91) |
+
+### Evidence
+
+- `pnpm -r typecheck` 5/5 clean · `pnpm test` **110/110 passed** (9 files, ~39 s)
+- `prisma migrate status` 6 migrations up to date · `migrate diff` empty
+- `psql`: `service_requests`, `request_comments`, `deliverables`, `service_categories` all carry
+  `organization_id`; 11 foreign keys across the four tables
+- 19 new tests, all isolation-focused: cross-tenant read returns null, cross-tenant write changes
+  nothing, cross-tenant category attachment is refused, comment/deliverable lists never leak
+- **Mutation check:** removing `organizationId` from `findByIdScoped` and from the `listScoped` where
+  clause failed **exactly 2** tests — "never returns another tenant's request by id" and "lists only
+  the calling tenant's requests" — with the other 17 green. Reverted → 110/110.
+
+### Notes / limits
+
+- `ServiceCategory` is tenant-owned here. The Brief's platform-wide catalogue (§6.2) will be a
+  *seeding* concern layered on top when that slice lands, not global rows that tenant queries must
+  special-case.
+- **No HTTP routes yet** — this step is schema + data layer only, as scoped. `POST /requests` etc. and
+  their Zod contracts are the next step.
+- The deliverable release guard lives in the repository and must be mirrored (not replaced) at the API
+  layer, together with the `AGENT_PROHIBITED_ACTIONS` check for AI actors.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
+| Phase 2 step 2 | Zod contracts + `/api/v1/service-requests` routes on top of this data layer |
 | Delivery retry & backoff | Retry FAILED deliveries; bounce/complaint suppression list |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |
 | Offboarding | Revoke an ACTIVE member: session invalidation, audit, retention rules |
-| Phase 2 | Client portal foundation: authenticated dashboard reading tenant-scoped data |
 | Tooling | ESLint + Prettier, CI running typecheck/test/build |

@@ -76,6 +76,41 @@ enum NotificationStatus {
 }
 
 // ---------------------------------------------------------------------------
+// Phase 2 — client portal & service requests (Development Brief §5.2, §9)
+// ---------------------------------------------------------------------------
+
+/// Service request lifecycle.
+enum ServiceRequestStatus {
+  DRAFT
+  SUBMITTED
+  TRIAGE
+  IN_PROGRESS
+  BLOCKED
+  IN_REVIEW
+  DELIVERED
+  CLOSED
+  CANCELLED
+}
+
+enum ServiceRequestPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+/// Deliverable lifecycle (§5.4). RELEASED is terminal and requires human
+/// sign-off — an AI actor may never set it (see AGENT_PROHIBITED_ACTIONS).
+enum DeliverableStatus {
+  PENDING
+  IN_PROGRESS
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  RELEASED
+}
+
+// ---------------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------------
 
@@ -93,6 +128,10 @@ model Organization {
   memberships Membership[]
   auditEvents AuditEvent[]
   notifications NotificationDelivery[]
+  serviceCategories ServiceCategory[]
+  serviceRequests ServiceRequest[]
+  requestComments RequestComment[]
+  deliverables Deliverable[]
 
   @@index([status])
   @@index([createdAt])
@@ -119,6 +158,11 @@ model User {
 
   memberships Membership[]
   notifications NotificationDelivery[]
+
+  requestsRequested  ServiceRequest[]  @relation("ServiceRequestRequester")
+  requestsAssigned   ServiceRequest[]  @relation("ServiceRequestAssignee")
+  requestComments    RequestComment[]  @relation("RequestCommentAuthor")
+  deliverablesApproved Deliverable[]   @relation("DeliverableApprover")
 
   @@index([status])
   @@index([platformRole])
@@ -203,4 +247,114 @@ model NotificationDelivery {
   @@index([membershipId])
   @@index([status])
   @@map("notification_deliveries")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2 — Client portal data model
+//
+// Tenancy rule holds without exception here: all four tables carry a required
+// organizationId, are indexed on it, and are only ever read through a
+// scope-first repository method. There is no "global" row that a query could
+// accidentally blend into a tenant's result.
+// ---------------------------------------------------------------------------
+
+/// A service a tenant can request work under (Development Brief §6.2).
+model ServiceCategory {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  name           String    @db.VarChar(120)
+  slug           String    @db.VarChar(60)
+  description    String?   @db.VarChar(500)
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  requests     ServiceRequest[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, isActive])
+  @@map("service_categories")
+}
+
+/// A client request for work (Development Brief §5.2, §9).
+model ServiceRequest {
+  id             String                  @id @default(uuid()) @db.Uuid
+  organizationId String                  @map("organization_id") @db.Uuid
+  /// Human-facing reference, unique per tenant: REQ-3F2A91BC.
+  reference      String                  @db.VarChar(24)
+  categoryId     String?                 @map("category_id") @db.Uuid
+  title          String                  @db.VarChar(200)
+  description    String                  @db.Text
+  status         ServiceRequestStatus    @default(DRAFT)
+  priority       ServiceRequestPriority  @default(NORMAL)
+  requesterId    String                  @map("requester_id") @db.Uuid
+  assigneeId     String?                 @map("assignee_id") @db.Uuid
+  dueAt          DateTime?               @map("due_at") @db.Timestamptz(3)
+  submittedAt    DateTime?               @map("submitted_at") @db.Timestamptz(3)
+  closedAt       DateTime?               @map("closed_at") @db.Timestamptz(3)
+  createdAt      DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt      DateTime?               @map("deleted_at") @db.Timestamptz(3)
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  category     ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  requester    User             @relation("ServiceRequestRequester", fields: [requesterId], references: [id], onDelete: Restrict)
+  assignee     User?            @relation("ServiceRequestAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  comments     RequestComment[]
+  deliverables Deliverable[]
+
+  @@unique([organizationId, reference])
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt])
+  @@index([organizationId, requesterId])
+  @@index([categoryId])
+  @@map("service_requests")
+}
+
+/// A message on a request. isInternal marks staff-only notes the client never
+/// sees — the API layer must filter, the schema records the intent.
+model RequestComment {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  requestId      String   @map("request_id") @db.Uuid
+  authorId       String   @map("author_id") @db.Uuid
+  body           String   @db.Text
+  isInternal     Boolean  @default(false) @map("is_internal")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  request      ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  author       User           @relation("RequestCommentAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, requestId, createdAt])
+  @@map("request_comments")
+}
+
+/// An output delivered against a request (Development Brief §5.4).
+model Deliverable {
+  id             String            @id @default(uuid()) @db.Uuid
+  organizationId String            @map("organization_id") @db.Uuid
+  requestId      String?           @map("request_id") @db.Uuid
+  title          String            @db.VarChar(200)
+  description    String?           @db.VarChar(1000)
+  status         DeliverableStatus @default(PENDING)
+  fileUrl        String?           @map("file_url") @db.VarChar(500)
+  approvedById   String?           @map("approved_by_id") @db.Uuid
+  approvedAt     DateTime?         @map("approved_at") @db.Timestamptz(3)
+  releasedAt     DateTime?         @map("released_at") @db.Timestamptz(3)
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt      DateTime?         @map("deleted_at") @db.Timestamptz(3)
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  request      ServiceRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  approvedBy   User?           @relation("DeliverableApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt])
+  @@index([requestId])
+  @@map("deliverables")
 }
