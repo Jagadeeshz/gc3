@@ -9,7 +9,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 1 | Database & Identity | `e4d8ae7` | ✅ delivered |
 | 2 | Auth & RBAC | `26f8a93` | ✅ delivered |
 | 3 | Invite acceptance | `1aba41a`, `74d0853` | ✅ delivered |
-| 4 | Invite lifecycle & email stub | `7348d0f` | ✅ delivered |
+| 4 | Invite lifecycle & email stub | `7348d0f`, `65c2aff` | ✅ delivered |
 
 ---
 
@@ -186,7 +186,8 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ## Slice 4 — Invite lifecycle & email delivery stub  ✅
 
-**Commit:** `7348d0f` — feat(invite): resend/rotation, revocation and a pluggable notification seam
+**Commits:** `7348d0f` — feat(invite): resend/rotation, revocation and a pluggable notification seam
+· `65c2aff` — docs(progress): pin slice 4 to 7348d0f
 **Brief refs:** §5.1 (client onboarding), §11.1 (integration adapters), §12 (security)
 
 ### What shipped
