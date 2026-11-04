@@ -25,7 +25,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 9 | Phase 2 · Categories & request editing | `a119478`, `7a94ef8` | ✅ delivered |
 | 10 | Phase 2 · Staff deliverables & internal notes | `68ac590`, `1e5d813` | ✅ delivered |
 | 11 | Phase 2 · Deliverable versioning & delivery history | `351e1d4`, `be00a48` | ✅ delivered |
-| 12 | Phase 2 · Stored file uploads & checksums | `<pending>` | ✅ delivered |
+| 12 | Phase 2 · Stored file uploads & checksums | `f02c970` | ✅ delivered |
 
 ---
 
@@ -593,6 +593,7 @@ is not necessarily the actor who raised the request.
 
 ## Slice 12 — Phase 2 · Stored file uploads & checksums  ✅
 
+**Commit:** `f02c970` — feat(delivery): stored file uploads with SHA-256 integrity
 **Brief refs:** §5.4 (deliverables), §8.3 (the sign-off must apply to the actual asset), §11 (API), §12 (tenancy)
 
 ### What shipped
