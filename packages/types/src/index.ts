@@ -506,6 +506,28 @@ export interface Pod extends Timestamps, TenantScoped, SoftDeletable {
 export interface PodSummary extends Pod {
   readonly memberCount: number;
   readonly openRequests: number;
+  readonly members: readonly PodMemberSummary[];
+}
+
+/** One person seated in a pod, with the load they are carrying. */
+export interface PodMemberSummary {
+  readonly userId: Uuid;
+  readonly fullName: string;
+  readonly email: string;
+  readonly platformRole: StaffRole | null;
+  /** Open service requests this person owns. */
+  readonly openRequests: number;
+  readonly seatedAt: IsoDateTime;
+}
+
+/** A staff account that can be seated in a pod. */
+export interface StaffCandidate {
+  readonly userId: Uuid;
+  readonly fullName: string;
+  readonly email: string;
+  readonly platformRole: StaffRole;
+  /** Pods this person already sits in, inside the current tenant. */
+  readonly podCount: number;
 }
 
 /** Per-tenant row of the operations dashboard. */

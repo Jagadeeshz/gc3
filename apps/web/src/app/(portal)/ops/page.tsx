@@ -1,12 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { OpsDashboard, PodSummary } from '@gc3/types';
+import type { OpsDashboard, PodSummary, StaffCandidate } from '@gc3/types';
 import {
   ApiClientError,
+  addPodMember,
   assignRequest,
   createPod,
   fetchOpsDashboard,
+  fetchStaffCandidates,
+  removePodMember,
 } from '@/lib/api-client';
 import { useSession } from '@/lib/session-context';
 import { formatDate } from '@/components/portal/status';
@@ -44,9 +47,13 @@ export default function OpsConsolePage() {
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
   const [podDraft, setPodDraft] = useState({ name: '', description: '' });
   const [creatingPod, setCreatingPod] = useState(false);
+  const [staff, setStaff] = useState<StaffCandidate[]>([]);
+  const [seatDraft, setSeatDraft] = useState<Record<string, string>>({});
+  const [busyMember, setBusyMember] = useState<string | null>(null);
 
   const token = session?.accessToken ?? null;
   const platformRole = session?.actor.platformRole ?? null;
+  const activeOrganizationId = session?.activeOrganizationId ?? null;
   const allowed = platformRole !== null && OPS_ROLES.includes(platformRole as 'PLATFORM_ADMIN');
 
   const load = useCallback(async () => {
@@ -60,12 +67,18 @@ export default function OpsConsolePage() {
 
     try {
       setDashboard(await fetchOpsDashboard(token, { queueLimit: 25 }));
+
+      // Staffing is tenant-scoped even though the dashboard is not, so the roster
+      // is loaded for the active workspace only.
+      if (activeOrganizationId) {
+        setStaff(await fetchStaffCandidates(token, activeOrganizationId));
+      }
     } catch (caught) {
       setError(caught instanceof ApiClientError ? caught.message : 'Could not load operations data');
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, activeOrganizationId]);
 
   useEffect(() => {
     if (allowed) {
@@ -104,6 +117,49 @@ export default function OpsConsolePage() {
       setError(caught instanceof ApiClientError ? caught.message : 'Could not route the request');
     } finally {
       setBusyRequestId(null);
+    }
+  }
+
+  async function seatMember(podId: string, organizationId: string) {
+    const userId = seatDraft[podId];
+
+    if (!token || !userId) {
+      return;
+    }
+
+    setBusyMember(podId);
+    setError(null);
+    setNotice(null);
+
+    try {
+      await addPodMember(token, organizationId, podId, userId);
+      setSeatDraft((draft) => ({ ...draft, [podId]: '' }));
+      setNotice('Specialist seated in the pod.');
+      await load();
+    } catch (caught) {
+      setError(caught instanceof ApiClientError ? caught.message : 'Could not seat that person');
+    } finally {
+      setBusyMember(null);
+    }
+  }
+
+  async function unseatMember(podId: string, organizationId: string, userId: string) {
+    if (!token) {
+      return;
+    }
+
+    setBusyMember(`${podId}:${userId}`);
+    setError(null);
+    setNotice(null);
+
+    try {
+      await removePodMember(token, organizationId, podId, userId);
+      setNotice('Removed from the pod.');
+      await load();
+    } catch (caught) {
+      setError(caught instanceof ApiClientError ? caught.message : 'Could not remove that person');
+    } finally {
+      setBusyMember(null);
     }
   }
 
@@ -338,26 +394,105 @@ export default function OpsConsolePage() {
                 </div>
               ) : (
                 <ul className="mt-3 grid gap-2">
-                  {dashboard.pods.map((pod) => (
-                    <li
-                      key={pod.id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-white/10 bg-graphite/85 p-3.5"
-                    >
-                      <div>
-                        <p className="text-sm text-warm">{pod.name}</p>
-                        <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-                          {pod.organizationName} · {pod.memberCount} member
-                          {pod.memberCount === 1 ? '' : 's'}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-display text-lg text-warm">{pod.openRequests}</p>
-                        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-                          open
-                        </p>
-                      </div>
-                    </li>
-                  ))}
+                  {dashboard.pods.map((pod) => {
+                    const staffingHere = pod.organizationId === activeOrganizationId;
+                    const busyPod = busyMember === pod.id;
+
+                    return (
+                      <li
+                        key={pod.id}
+                        className="rounded-[12px] border border-white/10 bg-graphite/85 p-3.5"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm text-warm">{pod.name}</p>
+                            <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+                              {pod.organizationName} · {pod.memberCount} member
+                              {pod.memberCount === 1 ? '' : 's'}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-display text-lg text-warm">{pod.openRequests}</p>
+                            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+                              open
+                            </p>
+                          </div>
+                        </div>
+
+                        {pod.members.length > 0 ? (
+                          <ul className="mt-2.5 grid gap-1 border-t border-white/8 pt-2.5">
+                            {pod.members.map((member) => {
+                              const memberBusy = busyMember === `${pod.id}:${member.userId}`;
+
+                              return (
+                                <li
+                                  key={member.userId}
+                                  className="flex items-center justify-between gap-2 text-[11px]"
+                                >
+                                  <span className="min-w-0 truncate text-warm">
+                                    {member.fullName}
+                                    <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
+                                      {(member.platformRole ?? 'member').replace(/_/g, ' ')}
+                                      {member.openRequests > 0
+                                        ? ` · ${member.openRequests} open`
+                                        : ' · idle'}
+                                    </span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    disabled={!staffingHere || memberBusy}
+                                    onClick={() =>
+                                      void unseatMember(pod.id, pod.organizationId, member.userId)
+                                    }
+                                    className="shrink-0 rounded border border-white/12 px-1.5 py-0.5 text-[10px] text-muted transition-colors hover:border-red-400/40 hover:text-red-300 disabled:opacity-40"
+                                  >
+                                    {memberBusy ? '…' : 'Remove'}
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        ) : (
+                          <p className="mt-2 border-t border-white/8 pt-2 text-[11px] text-muted">
+                            No one seated yet.
+                          </p>
+                        )}
+
+                        {staffingHere ? (
+                          <div className="mt-2.5 flex items-center gap-2">
+                            <select
+                              aria-label={`Seat someone in ${pod.name}`}
+                              value={seatDraft[pod.id] ?? ''}
+                              onChange={(event) =>
+                                setSeatDraft((draft) => ({ ...draft, [pod.id]: event.target.value }))
+                              }
+                              className="min-w-0 flex-1 rounded-lg border border-white/12 bg-void px-2.5 py-1.5 text-xs text-warm focus:border-gold/60 focus:outline-none"
+                            >
+                              <option value="">Choose a specialist…</option>
+                              {staff.map((candidate) => (
+                                <option key={candidate.userId} value={candidate.userId}>
+                                  {candidate.fullName} · {candidate.platformRole.replace(/_/g, ' ')}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              disabled={busyPod || !seatDraft[pod.id]}
+                              onClick={() => void seatMember(pod.id, pod.organizationId)}
+                              className="rounded-lg border border-gold/40 bg-gold/15 px-2.5 py-1.5 text-[11px] font-semibold text-gold-light transition-colors hover:bg-gold/25 disabled:opacity-40"
+                            >
+                              {busyPod ? 'Seating…' : 'Seat'}
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="mt-2 text-[10px] text-muted">
+                            Staffing is tenant-scoped — switch to {pod.organizationName} to seat
+                            people here.
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>

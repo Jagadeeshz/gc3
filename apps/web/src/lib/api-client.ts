@@ -14,6 +14,7 @@ import type {
   FileIntegrityReport,
   OpsDashboard,
   PodSummary,
+  StaffCandidate,
 } from '@gc3/types';
 import { API_BASE_URL } from './config';
 
@@ -536,6 +537,43 @@ export async function assignRequest(
   return request<ServiceRequest>(`/service-requests/${requestId}/assign`, {
     method: 'PATCH',
     body: input,
+    token,
+    organizationId,
+  });
+}
+
+/** Staff accounts that can be seated in a pod, with how many pods they are in. */
+export async function fetchStaffCandidates(
+  token: string,
+  organizationId: string,
+): Promise<StaffCandidate[]> {
+  return request<StaffCandidate[]>('/pods/staff', { token, organizationId });
+}
+
+/** Seat a person in a pod; returns the updated pod roster. */
+export async function addPodMember(
+  token: string,
+  organizationId: string,
+  podId: string,
+  userId: string,
+): Promise<PodSummary | null> {
+  return request<PodSummary | null>(`/pods/${podId}/members`, {
+    method: 'POST',
+    body: { userId },
+    token,
+    organizationId,
+  });
+}
+
+/** Remove a person from a pod (204, so nothing comes back). */
+export async function removePodMember(
+  token: string,
+  organizationId: string,
+  podId: string,
+  userId: string,
+): Promise<void> {
+  return request<void>(`/pods/${podId}/members/${userId}`, {
+    method: 'DELETE',
     token,
     organizationId,
   });

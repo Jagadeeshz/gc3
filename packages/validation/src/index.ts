@@ -267,6 +267,11 @@ export type CreatePodInput = z.infer<typeof createPodSchema>;
 
 export const podIdParamsSchema = z.object({ podId: uuidSchema });
 
+/** Seat a staff account in a pod. */
+export const addPodMemberSchema = z.object({ userId: uuidSchema });
+
+export const podMemberParamsSchema = z.object({ podId: uuidSchema, userId: uuidSchema });
+
 /**
  * Routing decision for a request. At least one field must be present; sending
  * `null` explicitly clears that assignment.

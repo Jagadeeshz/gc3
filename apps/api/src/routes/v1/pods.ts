@@ -1,6 +1,12 @@
 import { Router } from 'express';
-import type { ApiSuccess, PodSummary } from '@gc3/types';
-import { createPodSchema, formatIssues } from '@gc3/validation';
+import type { ApiSuccess, PodSummary, StaffCandidate } from '@gc3/types';
+import {
+  addPodMemberSchema,
+  createPodSchema,
+  formatIssues,
+  podIdParamsSchema,
+  podMemberParamsSchema,
+} from '@gc3/validation';
 import { ApiError } from '../../lib/api-error';
 import { slugify } from '../../lib/slug';
 import { requireAuth, requirePermission } from '../../middleware/auth';
@@ -44,6 +50,86 @@ podsRouter.get('/', requirePermission('request:assign'), async (request, respons
   const payload: ApiSuccess<PodSummary[]> = { success: true, data: pods };
   response.status(200).json(payload);
 });
+
+/**
+ * GET /pods/staff — staff accounts that can be seated.
+ *
+ * Declared before `/:podId/members` so the literal path wins the match.
+ */
+podsRouter.get('/staff', requirePermission('request:assign'), async (request, response) => {
+  const staff = await podRepository.listStaffCandidates(scopeOf(request.organizationId));
+
+  const payload: ApiSuccess<StaffCandidate[]> = { success: true, data: staff };
+  response.status(200).json(payload);
+});
+
+/** POST /pods/:podId/members — seat a staff account in the pod. */
+podsRouter.post(
+  '/:podId/members',
+  requirePermission('pod:manage'),
+  async (request, response) => {
+    const params = podIdParamsSchema.safeParse(request.params);
+    const body = addPodMemberSchema.safeParse(request.body);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid pod id', formatIssues(params.error));
+    }
+
+    if (!body.success) {
+      throw ApiError.badRequest('Invalid member payload', formatIssues(body.error));
+    }
+
+    const outcome = await podRepository.addMemberScoped(
+      scopeOf(request.organizationId),
+      params.data.podId,
+      body.data.userId,
+    );
+
+    if (outcome === 'pod-not-found') {
+      throw ApiError.notFound('Pod not found in this organization');
+    }
+
+    if (outcome === 'user-not-found') {
+      throw ApiError.notFound('User not found');
+    }
+
+    if (outcome === 'already-seated') {
+      throw ApiError.conflict('That person is already seated in this pod');
+    }
+
+    const pod = await podRepository
+      .listScoped(scopeOf(request.organizationId))
+      .then((pods) => pods.find((entry) => entry.id === params.data.podId) ?? null);
+
+    const payload: ApiSuccess<PodSummary | null> = { success: true, data: pod };
+    response.status(201).json(payload);
+  },
+);
+
+/** DELETE /pods/:podId/members/:userId — remove a person from the pod. */
+podsRouter.delete(
+  '/:podId/members/:userId',
+  requirePermission('pod:manage'),
+  async (request, response) => {
+    const params = podMemberParamsSchema.safeParse(request.params);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid member path', formatIssues(params.error));
+    }
+
+    const removed = await podRepository.removeMemberScoped(
+      scopeOf(request.organizationId),
+      params.data.podId,
+      params.data.userId,
+    );
+
+    if (!removed) {
+      throw ApiError.notFound('That person is not seated in this pod');
+    }
+
+    response.status(204).send();
+  },
+);
 
 /** POST /pods — stand up a pod and optionally seat its first members. */
 podsRouter.post('/', requirePermission('pod:manage'), async (request, response) => {

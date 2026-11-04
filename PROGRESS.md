@@ -29,6 +29,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 13 | Notifications · retry/backoff & delivery read API | `bf229cd`, `7b8f5ad` | ✅ delivered |
 | 14 | Notifications · deliverable-released & status-updated events | `b368a91`, `f3f99d1` | ✅ delivered |
 | 15 | Phase 3 · Operations console, pods & request routing | `9474ff4` | ✅ delivered |
+| 16 | Phase 3 · Pod membership & staffing management | `<pending>` | ✅ delivered |
 
 ---
 
@@ -840,7 +841,38 @@ routes a request to a pod.
 
 ---
 
-## Next up (not started)
+## Slice 16 — Phase 3 · Pod membership and staffing  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §5 (pod management, resource allocation), §12 (tenancy)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Seating | `POST /api/v1/pods/:podId/members` (`pod:manage`) — 201 with the updated roster, 409 if the person is already seated, 404 for a pod in another tenant or an unknown user |
+| Removal | `DELETE /api/v1/pods/:podId/members/:userId` (`pod:manage`) — 204, 404 when they were not seated, and a cross-tenant pod id removes nothing |
+| Staff roster | `GET /api/v1/pods/staff` (`request:assign`) — every ACTIVE staff account with the role and how many pods in this tenant they already sit in. Client accounts never appear |
+| Workload | Every pod read now returns its roster, and each seated person carries `openRequests` (open requests they own). `GET /pods` scopes that to the tenant; the ops view spans tenants |
+| UI | `/ops` pod cards expand into a roster: each member with role and load, a **Remove** control, and a **Seat** control fed by the staff list. Staffing controls appear only for pods in the active workspace, with a note explaining why |
+| Tests | 10 new: seating, duplicate, cross-tenant, permission gate, removal, removal 404, cross-tenant removal, per-person workload, staff list, client exclusion |
+
+### Evidence
+
+- `pnpm test` **251/251** across 21 files (was 241/20)
+- `pnpm -r typecheck` 5/5
+- Test detail: workload is asserted from the routing endpoint (`PATCH …/assign`), because request
+  creation never took an assignee — a fact this slice's first test run exposed.
+
+### Notes / limits
+
+- Seating checks that the user *exists*, not that they are staff. A pod can hold a client account, and
+  the test documents that: the seat grants no permission, so a seated client still gets 403 on
+  `/pods/staff` and on `assign`. If that should be refused outright, it is a one-line guard.
+- A pod's lead is not automatically seated on the roster — `leadId` and membership are separate.
+- Load counts open requests only; tasks join the count in the next slice.
+
+---
 
 | Step | Scope |
 |---|---|
