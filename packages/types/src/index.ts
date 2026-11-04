@@ -196,6 +196,7 @@ export type Permission =
   | 'category:manage'
   | 'deliverable:read'
   | 'deliverable:create'
+  | 'deliverable:update'
   | 'deliverable:review';
 
 /** The authenticated caller, resolved from a verified access token. */
@@ -356,9 +357,50 @@ export interface Deliverable extends Timestamps, TenantScoped, SoftDeletable {
   readonly description: string | null;
   readonly status: DeliverableStatus;
   readonly fileUrl: string | null;
+  /** Monotonic content version, starting at 1. Every edit bumps it. */
+  readonly version: number;
   /** Staff member who produced this deliverable; null for legacy rows. */
   readonly createdById: Uuid | null;
   readonly approvedById: Uuid | null;
   readonly approvedAt: IsoDateTime | null;
   readonly releasedAt: IsoDateTime | null;
+}
+
+/**
+ * An immutable snapshot of a deliverable at one version. Version 1 is written when
+ * the deliverable is created, and every subsequent edit appends a row — so the
+ * history survives even though the deliverable row only holds the current content.
+ */
+export interface DeliverableVersion extends TenantScoped {
+  readonly id: Uuid;
+  readonly deliverableId: Uuid;
+  readonly version: number;
+  readonly title: string;
+  readonly description: string | null;
+  readonly fileUrl: string | null;
+  readonly createdById: Uuid | null;
+  /** Why the version changed, when the editor said so. */
+  readonly changeNote: string | null;
+  readonly createdAt: IsoDateTime;
+}
+
+/** A released deliverable joined to its request — the client's receipt line. */
+export interface DeliveryHistoryEntry {
+  readonly deliverableId: Uuid;
+  readonly title: string;
+  readonly description: string | null;
+  readonly fileUrl: string | null;
+  readonly version: number;
+  readonly releasedAt: IsoDateTime | null;
+  readonly requestId: Uuid | null;
+  readonly requestReference: string | null;
+  readonly requestTitle: string | null;
+}
+
+/** Workspace-wide summary of what has actually been handed over. */
+export interface DeliveryHistory {
+  readonly releasedCount: number;
+  readonly requestCount: number;
+  readonly latestReleasedAt: IsoDateTime | null;
+  readonly entries: readonly DeliveryHistoryEntry[];
 }

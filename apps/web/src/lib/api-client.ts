@@ -9,6 +9,8 @@ import type {
   ServiceRequestPriority,
   ServiceRequestStatus,
   ServiceCategory,
+  DeliverableVersion,
+  DeliveryHistory,
 } from '@gc3/types';
 import { API_BASE_URL } from './config';
 
@@ -243,6 +245,54 @@ export async function updateDeliverableStatus(
     `/service-requests/${requestId}/deliverables/${deliverableId}/status`,
     { method: 'PATCH', token, organizationId, body: { status } },
   );
+}
+
+export interface UpdateDeliverableFields {
+  title?: string;
+  description?: string | null;
+  fileUrl?: string | null;
+  changeNote?: string;
+}
+
+/**
+ * Edits or replaces deliverable content. The API answers with the new deliverable
+ * plus `approvalReset`, which is true when a prior approval was invalidated.
+ */
+export async function updateDeliverable(
+  token: string,
+  organizationId: string,
+  requestId: string,
+  deliverableId: string,
+  input: UpdateDeliverableFields,
+): Promise<{ deliverable: Deliverable; approvalReset: boolean }> {
+  return request<{ deliverable: Deliverable; approvalReset: boolean }>(
+    `/service-requests/${requestId}/deliverables/${deliverableId}`,
+    { method: 'PATCH', token, organizationId, body: input },
+  );
+}
+
+export async function listDeliverableVersions(
+  token: string,
+  organizationId: string,
+  requestId: string,
+  deliverableId: string,
+): Promise<DeliverableVersion[]> {
+  return request<DeliverableVersion[]>(
+    `/service-requests/${requestId}/deliverables/${deliverableId}/versions`,
+    { token, organizationId },
+  );
+}
+
+/** Released assets across the workspace — the client-facing delivery history. */
+export async function fetchDeliveryHistory(
+  token: string,
+  organizationId: string,
+  limit = 25,
+): Promise<DeliveryHistory> {
+  return request<DeliveryHistory>(`/deliverables/history?limit=${limit}`, {
+    token,
+    organizationId,
+  });
 }
 
 export interface UpdateRequestInput {

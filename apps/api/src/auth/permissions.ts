@@ -26,6 +26,7 @@ const ALL_PERMISSIONS: readonly Permission[] = [
   'category:manage',
   'deliverable:read',
   'deliverable:create',
+  'deliverable:update',
   'deliverable:review',
 ];
 
@@ -53,6 +54,7 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'category:manage',
     'deliverable:read',
     'deliverable:create',
+    'deliverable:update',
     'deliverable:review',
   ],
   // Owns the client relationship; read-only over membership and delivery output.
@@ -76,6 +78,7 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'category:read',
     'deliverable:read',
     'deliverable:create',
+    'deliverable:update',
     'deliverable:review',
   ],
   // Production team member: does the work, cannot move the workflow alone.
@@ -87,6 +90,7 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'category:read',
     'deliverable:read',
     'deliverable:create',
+    'deliverable:update',
   ],
   FINANCE_MANAGER: [
     'organization:read',

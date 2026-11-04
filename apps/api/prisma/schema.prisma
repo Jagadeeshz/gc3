@@ -132,6 +132,7 @@ model Organization {
   serviceRequests ServiceRequest[]
   requestComments RequestComment[]
   deliverables Deliverable[]
+  deliverableVersions DeliverableVersion[]
 
   @@index([status])
   @@index([createdAt])
@@ -164,6 +165,7 @@ model User {
   requestComments    RequestComment[]  @relation("RequestCommentAuthor")
   deliverablesApproved Deliverable[]   @relation("DeliverableApprover")
   deliverablesCreated  Deliverable[]   @relation("DeliverableCreator")
+  deliverableVersions  DeliverableVersion[] @relation("DeliverableVersionAuthor")
 
   @@index([status])
   @@index([platformRole])
@@ -342,6 +344,7 @@ model Deliverable {
   title          String            @db.VarChar(200)
   description    String?           @db.VarChar(1000)
   status         DeliverableStatus @default(PENDING)
+  version        Int               @default(1)
   fileUrl        String?           @map("file_url") @db.VarChar(500)
   createdById    String?           @map("created_by_id") @db.Uuid
   approvedById   String?           @map("approved_by_id") @db.Uuid
@@ -355,10 +358,37 @@ model Deliverable {
   request      ServiceRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
   createdBy    User?           @relation("DeliverableCreator", fields: [createdById], references: [id], onDelete: SetNull)
   approvedBy   User?           @relation("DeliverableApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  versions     DeliverableVersion[]
 
   @@index([organizationId, status])
   @@index([organizationId, createdAt])
   @@index([requestId])
   @@index([createdById])
   @@map("deliverables")
+}
+
+/**
+ * Every version of a deliverable's content, append-only. The deliverable row
+ * carries the current snapshot; these rows are how "what did we actually hand
+ * over in v2" stays answerable after a replacement.
+ */
+model DeliverableVersion {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  deliverableId  String   @map("deliverable_id") @db.Uuid
+  version        Int
+  title          String   @db.VarChar(200)
+  description    String?  @db.VarChar(1000)
+  fileUrl        String?  @map("file_url") @db.VarChar(500)
+  createdById    String?  @map("created_by_id") @db.Uuid
+  changeNote     String?  @map("change_note") @db.VarChar(500)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deliverable  Deliverable  @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+  createdBy    User?        @relation("DeliverableVersionAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([deliverableId, version])
+  @@index([organizationId, createdAt])
+  @@map("deliverable_versions")
 }

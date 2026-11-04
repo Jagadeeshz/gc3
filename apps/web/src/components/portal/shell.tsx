@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { Building2, ClipboardList, LayoutDashboard, LogOut, Plus, Tags } from 'lucide-react';
+import { Building2, ClipboardList, LayoutDashboard, LogOut, Package, Plus, Tags } from 'lucide-react';
 import { activeRoles } from '../../lib/session';
 import { useSession } from '../../lib/session-context';
 
@@ -19,6 +19,7 @@ const NAV = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/requests', label: 'Service Requests', icon: ClipboardList },
   { href: '/requests/new', label: 'New Request', icon: Plus },
+  { href: '/deliveries', label: 'Deliveries', icon: Package },
   { href: '/categories', label: 'Categories', icon: Tags },
 ] as const;
 

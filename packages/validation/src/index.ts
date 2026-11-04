@@ -241,6 +241,28 @@ export const createDeliverableSchema = z.object({
   fileUrl: z.url().max(500).optional(),
 });
 
+/**
+ * Editing a deliverable always produces a new version. `changeNote` is the
+ * optional "why" that lands on the version row rather than on the deliverable.
+ */
+export const updateDeliverableSchema = z
+  .object({
+    title: z.string().trim().min(3).max(200).optional(),
+    description: z.string().trim().max(1_000).nullable().optional(),
+    fileUrl: z.url().max(500).nullable().optional(),
+    changeNote: z.string().trim().max(500).optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update',
+  });
+
+export type UpdateDeliverableInput = z.infer<typeof updateDeliverableSchema>;
+
+/** `GET /deliverables/history` — released assets across the workspace. */
+export const deliveryHistoryQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+});
+
 export const changeDeliverableStatusSchema = z.object({
   status: deliverableStatusSchema,
 });

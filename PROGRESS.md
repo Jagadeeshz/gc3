@@ -23,7 +23,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 7 | Phase 2 · Service request API | `eb3d433`, `41a1264` | ✅ delivered |
 | 8 | Phase 2 · Service request UI | `0bb6e7e` | ✅ delivered |
 | 9 | Phase 2 · Categories & request editing | `a119478`, `7a94ef8` | ✅ delivered |
-| 10 | Phase 2 · Staff deliverables & internal notes | `68ac590` | ✅ delivered |
+| 10 | Phase 2 · Staff deliverables & internal notes | `68ac590`, `1e5d813` | ✅ delivered |
+| 11 | Phase 2 · Deliverable versioning & delivery history | `<pending>` | ✅ delivered |
 
 ---
 
@@ -484,7 +485,8 @@ omitted), the form omits an empty description on create, and a test locks the be
 
 ## Slice 10 — Phase 2 · Staff deliverables & internal notes  ✅
 
-**Commit:** `68ac590` — feat(delivery): staff deliverable authoring and internal notes
+**Commits:** `68ac590` — feat(delivery): staff deliverable authoring and internal notes
+· `1e5d813` — docs(progress): pin slice 10 to 68ac590
 **Brief refs:** §5.4 (deliverables), §8.3 (human sign-off), §11 (API), §12 (tenancy, RBAC)
 
 ### What shipped
@@ -536,11 +538,61 @@ is not necessarily the actor who raised the request.
 
 ---
 
+## Slice 11 — Phase 2 · Deliverable versioning & delivery history  ✅
+
+**Brief refs:** §5.4 (deliverables), §8.3 (human sign-off survives content changes), §11 (API), §12 (tenancy)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Version model | `deliverables.version` counter plus an append-only `deliverable_versions` table (title, description, fileUrl, author, change note, timestamp). Migration `20261104130000_deliverable_versioning` **backfills v1 for every existing deliverable** |
+| Edit/replace API | `PATCH /service-requests/:requestId/deliverables/:deliverableId` — `deliverable:update`, always writes a new version, rejects a deliverable that does not belong to the request in the path |
+| Re-approval rule | Replacing content on an APPROVED or RELEASED deliverable clears `approvedById`/`approvedAt`/`releasedAt` and returns it to PENDING; the response carries `approvalReset: true` |
+| Version history API | `GET /service-requests/:requestId/deliverables/:deliverableId/versions` — newest first, `deliverable:read` |
+| Delivery history API | `GET /deliverables/history?limit=` — released assets across the workspace with the request each fulfils, plus `releasedCount`, `requestCount`, `latestReleasedAt` |
+| New permission | `deliverable:update` (PLATFORM_ADMIN, OPERATIONS_MANAGER, POD_MANAGER, SPECIALIST) |
+| UI | Version chip on each deliverable, "Edit content" form with a change note and an in-form warning when approval will be cleared, collapsible version list, and a new `/deliveries` page (nav: Deliveries) |
+| Tests | 12 new across versioning and history |
+
+### Evidence
+
+- `pnpm test` **185/185** across 15 files (was 173)
+- `pnpm -r typecheck` 5/5 · `next build` clean, 9 routes (`/deliveries` added)
+- Migration verified in Postgres: backfill produced **3 deliverables → 3 v1 rows**, each with
+  `change_note = 'Initial version'`
+- Browser, staff session:
+  - opened *Staging cluster runbook* history → `v1 · 04 Nov 2026 · Initial version`
+  - "Edit content" on that **released** deliverable showed the in-form warning ("Saving will clear the
+    approval and return it to Pending")
+  - saved a replacement file with the note "Corrected cluster sizing after review" → notice
+    *"Saved as version 2. The previous approval was cleared…"*, row became `v2 · PENDING ·
+    Awaiting approval`
+  - re-approved and released v2 → `APPROVED` → `RELEASED`
+  - `/deliveries` → *Released assets 1 · Requests covered 1 · Latest release 04 Nov 2026*, entry
+    `Staging cluster runbook v2`, `REQ-EA763D6B · released 04 Nov 2026`, with "View request →" and
+    "Open file ↗"
+- Browser, client session (`client.owner@helios.test`): the same history page shows the released v2
+  with no "Edit content" control anywhere; the still-pending deliverable is absent from the page
+
+### Notes / limits
+
+- Release is the only thing that counts as delivery: APPROVED-but-unreleased assets never appear in
+  the history, which is why the second deliverable (`PENDING`) is missing from it.
+- `approvalReset` is returned so the UI can explain itself rather than silently dropping a sign-off.
+- A deliverable edit is refused when the id does not belong to the requestId in the path — the same
+  404 as a wrong tenant, so nothing leaks.
+- Versions are immutable and never deleted individually; they follow the deliverable (cascade).
+- File content is still a URL reference: the versions record *which* URL was current, not the bytes,
+  so swapping the file behind an unchanged URL is invisible to this audit trail.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Phase 2 step 6 | Deliverable edit/replace + versioning, client-facing delivery history |
+| Phase 2 step 7 | Stored file uploads (bytes + checksum) so a released asset is verifiable |
 | Delivery retry & backoff | Retry FAILED deliveries; bounce/complaint suppression list |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |

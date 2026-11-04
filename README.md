@@ -156,7 +156,10 @@ Base URL: `http://localhost:3001/api/v1`
 | POST | `/service-requests/:requestId/comments` | bearer + scope | `request:comment` — `isInternal` honoured for staff only; a client's flag is downgraded to `false` |
 | GET | `/service-requests/:requestId/deliverables` | bearer + scope | `deliverable:read` |
 | POST | `/service-requests/:requestId/deliverables` | bearer + scope | `deliverable:create` — optional `fileUrl`; `createdById` is stamped from the actor |
+| PATCH | `/service-requests/:requestId/deliverables/:deliverableId` | bearer + scope | `deliverable:update` — always writes a new version; replacing approved/released content clears the approval (`approvalReset: true`) |
+| GET | `/service-requests/:requestId/deliverables/:deliverableId/versions` | bearer + scope | `deliverable:read` — newest version first |
 | PATCH | `/service-requests/:requestId/deliverables/:deliverableId/status` | bearer + scope | `deliverable:review` — release requires a prior human approval; AI actors blocked |
+| GET | `/deliverables/history` | bearer + scope | `deliverable:read` — released assets across the workspace with counts, `?limit=` |
 | GET | `/service-categories` | bearer + scope | `category:read` — active only, `?includeInactive=true` for the full catalogue |
 | POST | `/service-categories` | bearer + scope | `category:manage` — slug derived from the name when omitted, 409 on duplicate |
 | PATCH | `/service-categories/:categoryId` | bearer + scope | `category:manage` — rename, re-slug, re-describe, retire/reactivate |
@@ -213,6 +216,7 @@ permissions. `INVITED` and `REVOKED` memberships contribute nothing.
 | `request:comment` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `deliverable:read` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `deliverable:create` | — | — | — | ✅ | ✅ | ✅ | ✅ | — | — |
+| `deliverable:update` | — | — | — | ✅ | ✅ | ✅ | ✅ | — | — |
 | `deliverable:review` | ✅ | — | ✅ | ✅ | ✅ | ✅ | — | — | — |
 | `category:read` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `category:manage` | — | — | — | ✅ | ✅ | — | — | — | — |
@@ -393,6 +397,7 @@ its data through `apps/web/src/lib/api-client.ts`.
 | `/requests/new` | Create form (draft or submit) | `POST /service-requests` |
 | `/requests/[requestId]` | Detail: metadata, transitions, edit form, comments, deliverables | `GET /service-requests/:id` + `/comments` + `/deliverables`, `PATCH /:id`, `POST /:id/status`, `POST /:id/comments`, `PATCH …/deliverables/:did/status` |
 | `/categories` | Service catalogue: create, rename, retire, delete (read-only without `category:manage`) | `GET · POST /service-categories`, `PATCH · DELETE /service-categories/:id` |
+| `/deliveries` | Delivery history: released assets, newest first | `GET /deliverables/history` |
 
 ### Session and headers
 
@@ -438,6 +443,10 @@ API_INTERNAL_BASE_URL=http://localhost:3001/api/v1      # server-side health pro
   form shows the toggle only to staff, and the API downgrades the flag if a client sends it.
 - Deliverables carry `createdById` (stamped from the actor) alongside `approvedById`; the create form
   is staff-only and offers an optional file URL.
+- Deliverable files are URL references, not stored bytes — a version records which URL was current, so
+  swapping the file behind an unchanged URL is invisible to that audit trail.
+- Replacing content on an approved or released deliverable clears the approval (`approvalReset: true`);
+  it must be signed off again before it can be released.
 - Dashboard metrics are computed over the first 100 requests of the active tenant, not a SQL
   aggregate.
 - Request editing is refused once a request is `CLOSED` or `CANCELLED` — the record is history by
@@ -469,7 +478,8 @@ API_INTERNAL_BASE_URL=http://localhost:3001/api/v1      # server-side health pro
 | Phase 2 UI: login, dashboard, request list/create/detail with live API | done |
 | Phase 2 catalogue: `/service-categories` CRUD + category picker, request edit form | done |
 | Phase 2 delivery: staff deliverable form with file refs, internal-note toggle | done |
-| Integration test harness (Vitest + Supertest, 173 tests) | done |
+| Phase 2 versioning: deliverable versions, re-approval on replace, `/deliveries` history | done |
+| Integration test harness (Vitest + Supertest, 185 tests) | done |
 | Delivery retry/backoff, bounce handling, delivery read API | not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
@@ -495,7 +505,7 @@ the seven negative-authorization tests and nothing else.
 
 ### Immediate next steps
 
-1. Phase 2 step 6: deliverable editing/replacement, and a client-facing delivery history view.
+1. Phase 2 step 7: stored file uploads (bytes + checksum) so a released asset is verifiable.
 2. Delivery retry/backoff for FAILED rows, plus a `GET /organizations/:id/notifications` read API.
 3. Token lifecycle: refresh tokens, revocation, login rate limiting.
 4. Offboarding an ACTIVE member (session invalidation, retention rules).

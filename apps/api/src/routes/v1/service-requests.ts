@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type {
   ApiSuccess,
   Deliverable,
+  DeliverableVersion,
   Paginated,
   RequestComment,
   ServiceRequest,
@@ -17,6 +18,7 @@ import {
   formatIssues,
   listServiceRequestsQuerySchema,
   serviceRequestIdParamsSchema,
+  updateDeliverableSchema,
   updateServiceRequestSchema,
 } from '@gc3/validation';
 import { ApiError } from '../../lib/api-error';
@@ -383,6 +385,92 @@ serviceRequestsRouter.post(
 
     const payload: ApiSuccess<Deliverable> = { success: true, data: created };
     response.status(201).json(payload);
+  },
+);
+
+/**
+ * PATCH /service-requests/:requestId/deliverables/:deliverableId
+ *
+ * Edits or replaces content and always produces a new version. Replacing a
+ * deliverable that was already approved or released clears the approval and drops
+ * it back to PENDING — the sign-off applied to the old content, not the new.
+ */
+serviceRequestsRouter.patch(
+  '/:requestId/deliverables/:deliverableId',
+  forbidAgentCommercialAction,
+  requirePermission('deliverable:update'),
+  async (request, response) => {
+    const params = deliverableParamsSchema.safeParse(request.params);
+    const body = updateDeliverableSchema.safeParse(request.body);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid route parameters', formatIssues(params.error));
+    }
+
+    if (!body.success) {
+      throw ApiError.badRequest('Invalid deliverable payload', formatIssues(body.error));
+    }
+
+    const organizationId = scopeOf(request.organizationId);
+
+    // The deliverable must actually belong to the request in the path, otherwise a
+    // caller could reach the right row through the wrong URL.
+    const existing = await deliverableRepository.findByIdScoped(
+      organizationId,
+      params.data.deliverableId,
+    );
+
+    if (!existing || existing.requestId !== params.data.requestId) {
+      throw ApiError.notFound('Deliverable not found on this request');
+    }
+
+    const result = await deliverableRepository.patchScoped(
+      organizationId,
+      params.data.deliverableId,
+      body.data,
+      request.actor?.userId,
+    );
+
+    if (!result) {
+      throw ApiError.notFound('Deliverable not found');
+    }
+
+    const payload: ApiSuccess<{ deliverable: Deliverable; approvalReset: boolean }> = {
+      success: true,
+      data: result,
+    };
+    response.status(200).json(payload);
+  },
+);
+
+/** GET /service-requests/:requestId/deliverables/:deliverableId/versions */
+serviceRequestsRouter.get(
+  '/:requestId/deliverables/:deliverableId/versions',
+  requirePermission('deliverable:read'),
+  async (request, response) => {
+    const params = deliverableParamsSchema.safeParse(request.params);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid route parameters', formatIssues(params.error));
+    }
+
+    const organizationId = scopeOf(request.organizationId);
+    const existing = await deliverableRepository.findByIdScoped(
+      organizationId,
+      params.data.deliverableId,
+    );
+
+    if (!existing || existing.requestId !== params.data.requestId) {
+      throw ApiError.notFound('Deliverable not found on this request');
+    }
+
+    const versions = await deliverableRepository.listVersionsScoped(
+      organizationId,
+      params.data.deliverableId,
+    );
+
+    const payload: ApiSuccess<readonly DeliverableVersion[]> = { success: true, data: versions };
+    response.status(200).json(payload);
   },
 );
 

@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
   Deliverable,
+  DeliverableVersion,
   RequestComment,
   ServiceCategory,
   ServiceRequest,
@@ -22,6 +23,8 @@ import {
   listCategories,
   listComments,
   listDeliverables,
+  listDeliverableVersions,
+  updateDeliverable,
   updateDeliverableStatus,
   updateRequest,
 } from '@/lib/api-client';
@@ -56,6 +59,15 @@ export default function RequestDetailPage() {
     fileUrl: '',
   });
   const [showDeliverableForm, setShowDeliverableForm] = useState(false);
+  const [editingDeliverableId, setEditingDeliverableId] = useState<string | null>(null);
+  const [deliverableEditForm, setDeliverableEditForm] = useState({
+    title: '',
+    description: '',
+    fileUrl: '',
+    changeNote: '',
+  });
+  const [versions, setVersions] = useState<Record<string, DeliverableVersion[]>>({});
+  const [notice, setNotice] = useState<string | null>(null);
   const [categories, setCategories] = useState<readonly ServiceCategory[]>([]);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<{
@@ -280,6 +292,112 @@ export default function RequestDetailPage() {
     }
   }
 
+  function startDeliverableEdit(deliverable: Deliverable) {
+    setEditingDeliverableId(deliverable.id);
+    setDeliverableEditForm({
+      title: deliverable.title,
+      description: deliverable.description ?? '',
+      fileUrl: deliverable.fileUrl ?? '',
+      changeNote: '',
+    });
+    setActionError(null);
+    setNotice(null);
+  }
+
+  async function onSaveDeliverableEdit(
+    event: React.FormEvent<HTMLFormElement>,
+    deliverable: Deliverable,
+  ) {
+    event.preventDefault();
+
+    if (!token || !organizationId || !request) {
+      return;
+    }
+
+    setBusy(`deliverable:edit:${deliverable.id}`);
+    setActionError(null);
+    setNotice(null);
+
+    try {
+      const result = await updateDeliverable(
+        token,
+        organizationId,
+        request.id,
+        deliverable.id,
+        {
+          title: deliverableEditForm.title.trim(),
+          description: deliverableEditForm.description.trim() === ''
+            ? null
+            : deliverableEditForm.description.trim(),
+          fileUrl: deliverableEditForm.fileUrl.trim() === ''
+            ? null
+            : deliverableEditForm.fileUrl.trim(),
+          ...(deliverableEditForm.changeNote.trim()
+            ? { changeNote: deliverableEditForm.changeNote.trim() }
+            : {}),
+        },
+      );
+
+      setDeliverables((current) =>
+        current.map((item) => (item.id === deliverable.id ? result.deliverable : item)),
+      );
+      setEditingDeliverableId(null);
+
+      // Force a refetch of this deliverable's history if it is open.
+      setVersions((current) => {
+        const next = { ...current };
+        delete next[deliverable.id];
+        return next;
+      });
+
+      setNotice(
+        result.approvalReset
+          ? `Saved as version ${result.deliverable.version}. The previous approval was cleared — this deliverable is back to Pending and needs signing off again.`
+          : `Saved as version ${result.deliverable.version}.`,
+      );
+    } catch (caught) {
+      setActionError(
+        caught instanceof ApiClientError ? caught.message : 'Could not save the deliverable',
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function toggleVersions(deliverable: Deliverable) {
+    if (!token || !organizationId || !request) {
+      return;
+    }
+
+    if (versions[deliverable.id]) {
+      setVersions((current) => {
+        const next = { ...current };
+        delete next[deliverable.id];
+        return next;
+      });
+      return;
+    }
+
+    setBusy(`deliverable:versions:${deliverable.id}`);
+
+    try {
+      const loaded = await listDeliverableVersions(
+        token,
+        organizationId,
+        request.id,
+        deliverable.id,
+      );
+
+      setVersions((current) => ({ ...current, [deliverable.id]: loaded }));
+    } catch (caught) {
+      setActionError(
+        caught instanceof ApiClientError ? caught.message : 'Could not load version history',
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
   if (loading) {
     return <p className="text-sm text-muted">Loading request…</p>;
   }
@@ -449,6 +567,12 @@ export default function RequestDetailPage() {
           </p>
         </section>
       )}
+
+      {notice ? (
+        <p className="mt-4 rounded-lg border border-gold/30 bg-gold/10 px-3 py-2 text-xs text-gold-light">
+          {notice}
+        </p>
+      ) : null}
 
       {actionError ? (
         <p
@@ -622,7 +746,12 @@ export default function RequestDetailPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm text-warm">{deliverable.title}</p>
+                      <p className="truncate text-sm text-warm">
+                        {deliverable.title}
+                        <span className="ml-2 rounded border border-white/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
+                          v{deliverable.version}
+                        </span>
+                      </p>
                       <p className="mt-0.5 text-[11px] text-muted">
                         {deliverable.approvedAt
                           ? `Approved ${formatDate(deliverable.approvedAt)}`
@@ -643,6 +772,137 @@ export default function RequestDetailPage() {
                     >
                       Open attached file ↗
                     </a>
+                  ) : null}
+
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {canCreateDeliverable && editingDeliverableId !== deliverable.id ? (
+                      <button
+                        type="button"
+                        onClick={() => startDeliverableEdit(deliverable)}
+                        disabled={busy !== null}
+                        className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-warm hover:bg-white/10 disabled:opacity-50"
+                      >
+                        Edit content
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => void toggleVersions(deliverable)}
+                      disabled={busy !== null}
+                      className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-warm hover:bg-white/10 disabled:opacity-50"
+                    >
+                      {versions[deliverable.id]
+                        ? 'Hide history'
+                        : `History (v${deliverable.version})`}
+                    </button>
+                  </div>
+
+                  {editingDeliverableId === deliverable.id ? (
+                    <form
+                      className="mt-2.5 grid gap-2 rounded-lg border border-gold/30 bg-black/20 p-3"
+                      onSubmit={(event) => void onSaveDeliverableEdit(event, deliverable)}
+                    >
+                      <input
+                        required
+                        minLength={3}
+                        maxLength={200}
+                        value={deliverableEditForm.title}
+                        onChange={(event) =>
+                          setDeliverableEditForm({
+                            ...deliverableEditForm,
+                            title: event.target.value,
+                          })
+                        }
+                        placeholder="Title"
+                        className="rounded-md border border-white/12 bg-graphite-elevated px-2.5 py-1.5 text-xs text-warm focus:border-gold/60 focus:outline-none"
+                      />
+                      <input
+                        maxLength={1000}
+                        value={deliverableEditForm.description}
+                        onChange={(event) =>
+                          setDeliverableEditForm({
+                            ...deliverableEditForm,
+                            description: event.target.value,
+                          })
+                        }
+                        placeholder="Description"
+                        className="rounded-md border border-white/12 bg-graphite-elevated px-2.5 py-1.5 text-xs text-warm focus:border-gold/60 focus:outline-none"
+                      />
+                      <input
+                        type="url"
+                        maxLength={500}
+                        value={deliverableEditForm.fileUrl}
+                        onChange={(event) =>
+                          setDeliverableEditForm({
+                            ...deliverableEditForm,
+                            fileUrl: event.target.value,
+                          })
+                        }
+                        placeholder="https://files.example.com/replacement.pdf"
+                        className="rounded-md border border-white/12 bg-graphite-elevated px-2.5 py-1.5 font-mono text-[11px] text-warm focus:border-gold/60 focus:outline-none"
+                      />
+                      <input
+                        maxLength={500}
+                        value={deliverableEditForm.changeNote}
+                        onChange={(event) =>
+                          setDeliverableEditForm({
+                            ...deliverableEditForm,
+                            changeNote: event.target.value,
+                          })
+                        }
+                        placeholder="Why this changed (optional, recorded on the version)"
+                        className="rounded-md border border-white/12 bg-graphite-elevated px-2.5 py-1.5 text-xs text-warm focus:border-gold/60 focus:outline-none"
+                      />
+                      {deliverable.status === 'APPROVED' || deliverable.status === 'RELEASED' ? (
+                        <p className="text-[11px] text-gold-light">
+                          This deliverable is already {deliverable.status.toLowerCase()}. Saving will
+                          clear the approval and return it to Pending.
+                        </p>
+                      ) : null}
+                      <div className="flex gap-1.5">
+                        <button
+                          type="submit"
+                          disabled={busy !== null}
+                          className="rounded-md border border-gold-deep/40 bg-[linear-gradient(180deg,#E2C777_0%,#D9B65D_100%)] px-3 py-1.5 text-[11px] font-medium text-ink disabled:opacity-50"
+                        >
+                          {busy === `deliverable:edit:${deliverable.id}`
+                            ? 'Saving…'
+                            : 'Save new version'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingDeliverableId(null)}
+                          disabled={busy !== null}
+                          className="rounded-md border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-warm hover:bg-white/10 disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  ) : null}
+
+                  {versions[deliverable.id] ? (
+                    <ol className="mt-2.5 grid gap-1.5 border-l border-gold/25 pl-3">
+                      {versions[deliverable.id]!.map((version) => (
+                        <li key={version.id} className="text-[11px] text-muted">
+                          <span className="font-mono uppercase tracking-[0.08em] text-warm">
+                            v{version.version}
+                          </span>{' '}
+                          · {formatDate(version.createdAt)}
+                          {version.changeNote ? ` · ${version.changeNote}` : ''}
+                          {version.fileUrl ? (
+                            <a
+                              href={version.fileUrl}
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              className="ml-1 text-gold-light hover:underline"
+                            >
+                              file ↗
+                            </a>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ol>
                   ) : null}
 
                   {canReview ? (
