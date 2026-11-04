@@ -45,4 +45,14 @@ export class ApiError extends Error {
   static notImplemented(message = 'Not implemented yet') {
     return new ApiError(501, 'NOT_IMPLEMENTED', message);
   }
+
+  /** Invitation token unknown, already used, or belonging to a revoked membership. */
+  static inviteInvalid(message = 'This invitation is not valid') {
+    return new ApiError(400, 'INVITE_INVALID', message);
+  }
+
+  /** Invitation existed but its acceptance window has closed (410 Gone). */
+  static inviteExpired(message = 'This invitation has expired') {
+    return new ApiError(410, 'INVITE_EXPIRED', message);
+  }
 }

@@ -12,6 +12,7 @@ import { organizationRepository } from '../../repositories/organization.reposito
 import { membershipRepository } from '../../repositories/membership.repository';
 import { requireMatchingTenant, requireTenantScope } from '../../middleware/tenant-scope';
 import { requireAuth, requirePermission } from '../../middleware/auth';
+import { env } from '../../config/env';
 
 export const organizationsRouter: Router = Router();
 
@@ -120,9 +121,26 @@ organizationsRouter.post(
         parsed.data,
       );
 
-      const body: ApiSuccess<Membership & { user: { email: string; fullName: string } }> = {
+      // The plaintext invite token is a bearer credential. Outside production it
+      // is returned so the caller can complete the flow without an email
+      // service; in production it must travel by the notification channel only.
+      const exposeToken = env.NODE_ENV !== 'production';
+
+      const body: ApiSuccess<
+        Membership & {
+          user: { email: string; fullName: string };
+          inviteToken?: string;
+          inviteExpiresAt?: string;
+        }
+      > = {
         success: true,
-        data: { ...result.membership, user: result.user },
+        data: {
+          ...result.membership,
+          user: result.user,
+          ...(exposeToken
+            ? { inviteToken: result.inviteToken, inviteExpiresAt: result.inviteExpiresAt }
+            : {}),
+        },
       };
       response.status(201).json(body);
     } catch (error) {

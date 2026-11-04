@@ -20,6 +20,9 @@ const envSchema = z.object({
   /** Access-token lifetime in seconds (short by design; refresh lands later). */
   AUTH_TOKEN_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).default(900),
 
+  /** How long an invitation remains acceptable. Default 7 days. */
+  INVITE_TTL_HOURS: z.coerce.number().int().min(1).max(720).default(168),
+
   REDIS_URL: z.url().optional(),
 });
 

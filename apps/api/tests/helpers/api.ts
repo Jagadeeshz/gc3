@@ -167,3 +167,58 @@ export async function createOrganization(
 export function getScoped(path: string, organizationId: string) {
   return request(app).get(path).set(ORG_HEADER, organizationId);
 }
+
+// ---------------------------------------------------------------------------
+// Invitations
+// ---------------------------------------------------------------------------
+
+export interface InvitationFixture {
+  readonly membershipId: string;
+  readonly userId: string;
+  readonly email: string;
+  readonly inviteToken: string;
+  readonly inviteExpiresAt: string;
+}
+
+/** Invites a member through the API and returns the one-time invite token. */
+export async function inviteMember(params: {
+  organizationId: string;
+  adminToken: string;
+  email?: string;
+  fullName?: string;
+  roles?: readonly ClientRole[];
+}): Promise<InvitationFixture> {
+  const email = params.email ?? uniqueEmail('invitee');
+
+  const response = await authPost(
+    `${API}/organizations/${params.organizationId}/memberships`,
+    params.adminToken,
+    {
+      email,
+      fullName: params.fullName ?? 'Invited Person',
+      roles: params.roles ?? ['CLIENT_TEAM_MEMBER'],
+    },
+    params.organizationId,
+  ).expect(201);
+
+  const data = response.body.data as {
+    id: string;
+    userId: string;
+    inviteToken?: string;
+    inviteExpiresAt?: string;
+  };
+
+  if (!data.inviteToken) {
+    throw new Error(
+      'inviteToken missing from the membership response — the API only exposes it outside production',
+    );
+  }
+
+  return {
+    membershipId: data.id,
+    userId: data.userId,
+    email,
+    inviteToken: data.inviteToken,
+    inviteExpiresAt: data.inviteExpiresAt ?? '',
+  };
+}

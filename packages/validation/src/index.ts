@@ -76,6 +76,32 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
+/**
+ * Password policy for credential *creation* (invite acceptance, resets).
+ * Login stays permissive so policy changes never lock an existing user out.
+ */
+export const passwordPolicySchema = z
+  .string()
+  .min(12, 'Use at least 12 characters')
+  .max(200, 'Use at most 200 characters')
+  .refine((value) => /[A-Za-z]/.test(value), 'Include at least one letter')
+  .refine((value) => /[0-9]/.test(value), 'Include at least one number');
+
+/** Invite tokens are 32 random bytes, base64url encoded. */
+export const inviteTokenSchema = z
+  .string()
+  .trim()
+  .min(20, 'Invite token is too short')
+  .max(200, 'Invite token is too long')
+  .regex(/^[A-Za-z0-9_-]+$/, 'Invite token has an invalid format');
+
+export const acceptInviteSchema = z.object({
+  token: inviteTokenSchema,
+  password: passwordPolicySchema,
+});
+
+export type AcceptInviteInput = z.infer<typeof acceptInviteSchema>;
+
 export const createOrganizationSchema = z.object({
   name: z.string().trim().min(2).max(120),
   slug: organizationSlugSchema,

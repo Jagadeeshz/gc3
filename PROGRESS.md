@@ -8,7 +8,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 0 | Monorepo foundation | `3b19258` | ✅ delivered |
 | 1 | Database & Identity | `e4d8ae7` | ✅ delivered |
 | 2 | Auth & RBAC | `26f8a93` | ✅ delivered |
-| 3 | Invite acceptance | — | in progress |
+| 3 | Invite acceptance | — | ✅ delivered |
 
 ---
 
@@ -142,12 +142,52 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ---
 
+## Slice 3 — Invite acceptance  ✅
+
+**Brief refs:** §5.1 (client onboarding), §3 (roles), §12 (security)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Invite token | 32 random bytes (256-bit) base64url; only the SHA-256 is stored; 7-day TTL (`INVITE_TTL_HOURS`) |
+| Issue | `POST /organizations/:id/memberships` mints the token; plaintext returned outside production, emailed in production |
+| Preview | `GET /auth/invite/:token` — org name, roles, full name, **masked** email, expiry; 410 when expired |
+| Acceptance | `POST /auth/accept-invite` — sets the scrypt password, INVITED→ACTIVE on both user and membership, burns the token, issues a session |
+| Single use | Atomic claim: `updateMany` filtered on the live hash **and** INVITED status, so concurrent double-accept has exactly one winner |
+| Password policy | ≥ 12 chars with a letter and a digit (creation only — login stays permissive so policy changes never lock anyone out) |
+| Audit | `membership.invited`, `membership.invite_accepted` |
+| Tests | 66 total across 5 files (was 56) |
+
+### Evidence
+
+- `pnpm -r typecheck` 5/5 clean · `pnpm test` **66/66 passed** (5 files, ~19 s)
+- `prisma migrate status` up to date (4 migrations) · `migrate diff` empty
+- Live flow: invite → 201 with a 43-char token · preview → 200 with `k••••@inviteflow.example` ·
+  invited login → 401 · weak password → 400 (field-level detail) · accept → 200 + session ·
+  tenant route with that session → 200 · direct login → 200 · token replay → 400 INVITE_INVALID ·
+  preview after acceptance → 400
+- `psql`: user `ACTIVE` with `scrypt$16384…` digest, membership `ACTIVE`, `invite_token_hash` NULL,
+  `invite_accepted_at` stamped, audit rows show `membership.invited` + `membership.invite_accepted`
+- **Mutation check:** removing the token burn and the claim-count check failed exactly the three
+  single-use assertions (full-flow token-null, replay rejection, concurrent single-winner) while the
+  other seven invite tests stayed green. Reverted → 66/66.
+
+### Notes / limits
+
+- The plaintext token is only exposed by the membership endpoint when `NODE_ENV !== production`.
+  Production delivery needs the notification service, which is not built.
+- No resend/rotate-invite endpoint yet, and re-inviting an existing member still returns 409.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Invite acceptance | Set password, transition membership INVITED → ACTIVE (closes the "invited user can never log in" gap) |
+| Invite resend / revoke | Rotate the token, cancel a pending invite |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |
+| Email delivery | Notification service so production can actually send invites |
 | Phase 2 | Client portal foundation: authenticated dashboard reading tenant-scoped data |
 | Tooling | ESLint + Prettier, CI running typecheck/test/build |
-| Hardening | Password policy on set, audit events for login success/failure |
+| Hardening | Audit login success/failure; password-change flow |

@@ -110,7 +110,7 @@ model User {
 }
 
 /// Binds a user to exactly one organization with one or more client roles.
-/// This is the tenant boundary: no membership, no access.
+/// This is the tenant boundary: no ACTIVE membership, no tenant access.
 model Membership {
   id             String           @id @default(uuid()) @db.Uuid
   organizationId String           @map("organization_id") @db.Uuid
@@ -119,6 +119,12 @@ model Membership {
   status         MembershipStatus @default(INVITED)
   createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  /// SHA-256 of the one-time invite token. Only the hash is stored, so a
+  /// database leak does not yield a working invite link. Cleared on acceptance.
+  inviteTokenHash      String?   @unique @map("invite_token_hash") @db.VarChar(64)
+  inviteTokenExpiresAt DateTime? @map("invite_token_expires_at") @db.Timestamptz(3)
+  inviteAcceptedAt     DateTime? @map("invite_accepted_at") @db.Timestamptz(3)
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)

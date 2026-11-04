@@ -134,6 +134,8 @@ export type ApiErrorCode =
   | 'UNAUTHENTICATED'
   | 'FORBIDDEN'
   | 'TENANT_SCOPE_REQUIRED'
+  | 'INVITE_INVALID'
+  | 'INVITE_EXPIRED'
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'NOT_IMPLEMENTED'
@@ -210,4 +212,20 @@ export interface AuthProfile {
   readonly actor: AuthActor;
   /** Permissions the actor holds without any tenant scope applied. */
   readonly permissions: readonly Permission[];
+}
+
+/** Safe, pre-authentication view of an invitation (email is masked). */
+export interface InvitePreview {
+  readonly email: string;
+  readonly fullName: string;
+  readonly organizationName: string;
+  readonly roles: readonly ClientRole[];
+  readonly expiresAt: IsoDateTime;
+}
+
+/** Response body of `POST /api/v1/auth/accept-invite`. */
+export interface InviteAcceptance extends AuthSession {
+  readonly organizationId: Uuid;
+  readonly organizationName: string;
+  readonly roles: readonly ClientRole[];
 }

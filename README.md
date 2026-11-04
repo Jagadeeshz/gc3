@@ -4,9 +4,10 @@ Multi-tenant operating platform for **Global Cloud Capability & Consulting (GC³
 delivery operations, pod workspaces, finance, and AI-augmented workflows.
 
 Built to the **GC3 Development Brief v1.0** (`Development-Breif.md` in this folder). The repository is
-at **Phase 1, slices 1–2**: identity and tenancy are persisted in PostgreSQL, and every tenant route
-is authenticated and authorized through a role → permission map. Integration tests pin the API
-contract, the tenancy rules and the authorization matrix.
+at **Phase 1, slices 1–3**: identity and tenancy are persisted in PostgreSQL, every tenant route is
+authenticated and authorized through a role → permission map, and client users join through a hashed,
+single-use invitation. Integration tests pin the API contract, the tenancy rules, the authorization
+matrix and the invite flow.
 
 ---
 
@@ -129,6 +130,8 @@ Base URL: `http://localhost:3001/api/v1`
 | GET | `/health` | public | Liveness + version |
 | GET | `/meta` | public | Implemented vs planned endpoint inventory |
 | POST | `/auth/login` | public | Issues a bearer token; uniform 401 on failure |
+| POST | `/auth/accept-invite` | public | Consumes an invite token: sets password, activates, returns a session |
+| GET | `/auth/invite/:token` | public | Invitation preview (org, roles, masked email); 410 when expired |
 | GET | `/auth/me` | bearer | Actor + the permissions their staff role grants |
 | GET | `/auth/config` | public | Token type, TTL, issuer, audience |
 | GET | `/tenant-context` | bearer + scope | Echoes the resolved tenant scope |
@@ -185,8 +188,27 @@ ADMIN_EMAIL=admin@gc3.local ADMIN_PASSWORD='…' pnpm auth:bootstrap
 # optional: ADMIN_NAME, ADMIN_ROLE (defaults to PLATFORM_ADMIN)
 ```
 
-**Not yet implemented:** refresh tokens, revocation lists, login rate limiting/lockout, and the
-invite-acceptance flow (a user invited via the API cannot set a password yet).
+**Invite acceptance.** Client users join through an invitation, not sign-up:
+
+```text
+POST /organizations/:id/memberships   → 201 + inviteToken (dev only) + inviteExpiresAt
+GET  /auth/invite/:token              → preview: org, roles, masked email, expiry
+POST /auth/accept-invite              → { token, password } → session, user + membership ACTIVE
+```
+
+- The token is 32 random bytes; only its SHA-256 is persisted, so a database leak yields no working
+  invites. It is burned on first use — the claim is an atomic `updateMany` guarded on the live hash and
+  `INVITED` status, so two concurrent acceptances cannot both succeed.
+- TTL is `INVITE_TTL_HOURS` (default 168 = 7 days); an expired token returns **410 `INVITE_EXPIRED`**,
+  an unknown or already-used one returns **400 `INVITE_INVALID`**.
+- Acceptance issues a session, so the invitee is signed in without a second login.
+- Password policy at creation: ≥ 12 characters with a letter and a digit. Login itself stays
+  permissive so a policy change can never lock an existing user out.
+- In production the plaintext token is **not** returned by the API — it must travel over the
+  notification channel (not yet built).
+
+**Not yet implemented:** refresh tokens, revocation lists, login rate limiting/lockout, invite
+resend/rotate, and email delivery.
 
 ---
 
@@ -265,8 +287,9 @@ classes used by shared components.
 | Tenant-scoped repository layer | done |
 | Auth: JWT issuance, `requireAuth`, scrypt credentials, bootstrap script | done |
 | RBAC: ClientRole/StaffRole → permission map, platform-admin gate | done |
-| Integration test harness (Vitest + Supertest, 56 tests) | done |
-| Invite acceptance (set password, INVITED → ACTIVE) | not started — next |
+| Invite acceptance: hashed one-time token, password setup, activation | done |
+| Integration test harness (Vitest + Supertest, 66 tests) | done |
+| Invite resend / revoke, email delivery | not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
 
@@ -278,6 +301,7 @@ classes used by shared components.
 | `identity.test.ts` | persistence, validation detail, duplicate slug/membership, audit attribution, tenant isolation (HTTP and repository level) |
 | `auth.test.ts` | login success/failure, no account enumeration, invited-without-password, suspended account, `/auth/me`, tampered/expired tokens, `lastSeenAt` |
 | `rbac.test.ts` | route-level permission matrix, `PLATFORM_ADMIN` gate, INVITED/REVOKED membership denial, post-issuance suspension and revocation |
+| `invite.test.ts` | invite → preview → activate → login, single-use token, concurrent double-accept, expired/revoked/unknown tokens, password policy, no half-activated account |
 
 All suites run against a real PostgreSQL database (never a mock) with `TRUNCATE ... CASCADE` between
 cases. The permission guard was verified load-bearing: disabling `requirePermission` failed exactly
@@ -285,7 +309,8 @@ the seven negative-authorization tests and nothing else.
 
 ### Immediate next steps
 
-1. Invite acceptance: token link → set password → membership INVITED → ACTIVE.
+1. Invite resend/revoke: rotate a pending token, cancel an invitation.
 2. Token lifecycle: refresh tokens, revocation, login rate limiting.
-3. Phase 2 — client portal foundation: first authenticated dashboard reading tenant-scoped data.
-4. ESLint + Prettier and a CI workflow running `typecheck`, `test` and `build`.
+3. Email delivery so production can issue invitations without exposing the token in the API response.
+4. Phase 2 — client portal foundation: first authenticated dashboard reading tenant-scoped data.
+5. ESLint + Prettier and a CI workflow running `typecheck`, `test` and `build`.
