@@ -8,7 +8,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 0 | Monorepo foundation | `3b19258` | ✅ delivered |
 | 1 | Database & Identity | `e4d8ae7` | ✅ delivered |
 | 2 | Auth & RBAC | `26f8a93` | ✅ delivered |
-| 3 | Invite acceptance | `1aba41a` | ✅ delivered |
+| 3 | Invite acceptance | `1aba41a`, `74d0853` | ✅ delivered |
+| 4 | Invite lifecycle & email stub | — | in progress |
 
 ---
 
@@ -144,7 +145,8 @@ theirs on top. `INVITED` and `REVOKED` memberships grant nothing.
 
 ## Slice 3 — Invite acceptance  ✅
 
-**Commit:** `1aba41a` — feat(invite): token-based invite acceptance with password setup and activation
+**Commits:** `1aba41a` — feat(invite): token-based invite acceptance with password setup and activation
+· `74d0853` — docs(progress): pin slice 3 to 1aba41a
 **Brief refs:** §5.1 (client onboarding), §3 (roles), §12 (security)
 
 ### What shipped
