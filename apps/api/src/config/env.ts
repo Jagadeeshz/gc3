@@ -52,6 +52,14 @@ const envSchema = z.object({
   UPLOAD_DIR: z.string().min(1).default('storage'),
   /** Hard cap on a single uploaded file, in bytes. Default 10 MiB. */
   FILE_MAX_BYTES: z.coerce.number().int().min(1).max(104_857_600).default(10_485_760),
+
+  /** How many times a failed notification is retried before it is given up on. */
+  NOTIFICATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(5),
+  /**
+   * Seconds between automatic retry sweeps. 0 disables the worker entirely, which
+   * is what tests do — they call the sweep endpoint instead of waiting on a timer.
+   */
+  NOTIFICATION_RETRY_INTERVAL_SECONDS: z.coerce.number().int().min(0).max(86_400).default(300),
 });
 
 export type Env = z.infer<typeof envSchema>;

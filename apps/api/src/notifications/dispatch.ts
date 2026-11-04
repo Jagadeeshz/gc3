@@ -1,5 +1,6 @@
 import type { ClientRole } from '@gc3/types';
 import { buildInviteUrl, notifications } from './index';
+import { nextAttemptAfter } from './retry';
 import type { DeliveryReceipt } from './types';
 import { notificationRepository } from '../repositories/notification.repository';
 
@@ -67,6 +68,10 @@ export async function deliverInvite(input: DeliverInviteInput): Promise<Delivery
       recipient: input.to,
       ...(receipt.messageId ? { messageId: receipt.messageId } : {}),
       ...(receipt.error ? { error: receipt.error } : {}),
+      attempt: 1,
+      lastAttemptAt: new Date(),
+      // A failed first attempt enters the retry queue instead of dead-ending.
+      nextAttemptAt: receipt.status === 'failed' ? nextAttemptAfter(1) : null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

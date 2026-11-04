@@ -25,7 +25,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 9 | Phase 2 · Categories & request editing | `a119478`, `7a94ef8` | ✅ delivered |
 | 10 | Phase 2 · Staff deliverables & internal notes | `68ac590`, `1e5d813` | ✅ delivered |
 | 11 | Phase 2 · Deliverable versioning & delivery history | `351e1d4`, `be00a48` | ✅ delivered |
-| 12 | Phase 2 · Stored file uploads & checksums | `f02c970` | ✅ delivered |
+| 12 | Phase 2 · Stored file uploads & checksums | `f02c970`, `040eb38` | ✅ delivered |
+| 13 | Notifications · retry/backoff & delivery read API | `<pending>` | ✅ delivered |
 
 ---
 
@@ -593,7 +594,8 @@ is not necessarily the actor who raised the request.
 
 ## Slice 12 — Phase 2 · Stored file uploads & checksums  ✅
 
-**Commit:** `f02c970` — feat(delivery): stored file uploads with SHA-256 integrity
+**Commits:** `f02c970` — feat(delivery): stored file uploads with SHA-256 integrity
+· `040eb38` — docs(progress): pin slice 12 to f02c970
 **Brief refs:** §5.4 (deliverables), §8.3 (the sign-off must apply to the actual asset), §11 (API), §12 (tenancy)
 
 ### What shipped
@@ -647,12 +649,68 @@ cleared. Verified: `storage/test` holds 7 test uploads, the dev org holds the si
 
 ---
 
+## Slice 13 — Notifications · retry/backoff & delivery read API  ✅
+
+**Brief refs:** §7 (notifications), §11 (API), §12 (tenancy, RBAC)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Schema | `notification_deliveries` gains `attempt`, `next_attempt_at`, `last_attempt_at` + an index on `(status, next_attempt_at)` (migration `20261104150000_notification_retry`). Existing rows default to `attempt = 1` with no schedule, so deploying it cannot re-send historical failures |
+| Schedule | `60s → 5m → 15m → 1h → 6h`, capped by `NOTIFICATION_MAX_ATTEMPTS` (default 5) |
+| Sweep | `runRetrySweep()` claims each due row by clearing its schedule (so two workers cannot double-send), skips memberships that are no longer `INVITED`, rotates the invite token, re-sends, and records a new attempt row with its own schedule |
+| Worker | Started from the server bootstrap (`startRetryWorker`), every `NOTIFICATION_RETRY_INTERVAL_SECONDS` (default 300, `0` disables); skipped entirely under `NODE_ENV=test` |
+| Manual control | `POST /notifications/retry` — one sweep on demand, **scoped to the caller's tenant**, `notification:manage` |
+| Read API | `GET /notifications/deliveries` — filters (`status`, `kind`, `recipient`), pagination, and a status summary including `pendingRetry`; `notification:read` |
+| New permissions | `notification:read` (PLATFORM_ADMIN, OPERATIONS_MANAGER, ACCOUNT_MANAGER), `notification:manage` (PLATFORM_ADMIN, OPERATIONS_MANAGER) |
+| Tests | 11 new: queueing, no-op when not due, successful retry with token rotation, growing backoff, exhaustion, accepted-invite skip, permissions, read API filters/pagination/summary, tenant isolation |
+
+### Evidence
+
+- `pnpm test` **208/208** across 17 files (was 197)
+- `pnpm -r typecheck` 5/5
+- Migration applied; `attempt=1`, `next_attempt_at` null, `last_attempt_at` null on existing rows
+- Live run against real SMTP, with the relay deliberately taken down:
+  - `podman stop gc3-mailpit`, invite → `201` with `delivery.status = "failed"`,
+    `error: connect ECONNREFUSED 127.0.0.1:1025`
+  - `GET /notifications/deliveries?status=FAILED` → `total 1`,
+    `summary {sent:1, failed:1, skipped:0, pendingRetry:1}`, entry `attempt=1, nextRetryIn=60s`
+  - `podman start gc3-mailpit`, wait for the window, `POST /notifications/retry` →
+    `{processed:1, sent:1, failed:0, exhausted:0, skipped:0}`
+  - re-read → `summary {sent:2, failed:1, pendingRetry:0}`, rows `attempt=2 SENT` (with a real
+    `messageId`) **and** `attempt=1 FAILED` still present — the failed attempt is not erased
+  - Mailpit holds the message: `retry.demo…@helios.test | You have been invited to Helios Cloud on
+    GC³ Portal`
+- Boot log confirms the worker: `[gc3-api] notification retry worker every 300s (max 5 attempts)`
+
+### Bug found and fixed
+
+The sweep sent *before* checking the attempt budget, so a stale or hand-edited schedule could push a
+chain past the cap. It now checks `attempt >= NOTIFICATION_MAX_ATTEMPTS` immediately after claiming and
+abandons the chain with a note instead of sending. My own test for the exhausted case is what exposed
+it — the first version expected one row and got two.
+
+### Notes / limits
+
+- Retries **rotate the invite token** and resend, because only the token hash is stored — there is no
+  link to replay. Safe for the case this exists for (the previous attempt failed), but it does mean a
+  retry invalidates links from earlier attempts, including the ambiguous case where SMTP timed out
+  after accepting the message. A deliberate resend is the answer there, not this worker.
+- The manual endpoint sweeps only the caller's tenant; the background worker sweeps every tenant.
+- Only invitations exist today, so retry logic is written against that one payload shape. A second
+  notification kind will need its own rebuild path.
+- No bounce/complaint handling, no suppression list, no dead-letter queue — an exhausted chain leaves a
+  terminal `FAILED` row for an operator to read.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |
 |---|---|
-| Phase 2 step 8 | Upload progress + limits surfaced in the UI, orphan file GC |
-| Delivery retry & backoff | Retry FAILED deliveries; bounce/complaint suppression list |
+| Phase 2 step 9 | Upload progress + orphan file GC |
+| Notification kinds | Deliverable-released and request-updated emails, with their own retry payloads |
 | Delivery read API | `GET /organizations/:id/notifications` for account managers |
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |
 | Offboarding | Revoke an ACTIVE member: session invalidation, audit, retention rules |

@@ -238,6 +238,15 @@ export const listServiceRequestsQuerySchema = paginationSchema.extend({
 
 export type ListServiceRequestsQuery = z.infer<typeof listServiceRequestsQuerySchema>;
 
+/** `GET /notifications/deliveries` — filters over the delivery audit. */
+export const notificationQuerySchema = paginationSchema.extend({
+  status: z.enum(['SENT', 'FAILED', 'SKIPPED']).optional(),
+  kind: z.enum(['INVITATION', 'RESENT']).optional(),
+  recipient: z.string().trim().min(1).max(254).optional(),
+});
+
+export type NotificationQuery = z.infer<typeof notificationQuerySchema>;
+
 export const createDeliverableSchema = z.object({
   title: z.string().trim().min(3).max(200),
   description: z.string().trim().max(1_000).optional(),

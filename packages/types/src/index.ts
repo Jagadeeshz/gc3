@@ -198,7 +198,9 @@ export type Permission =
   | 'deliverable:read'
   | 'deliverable:create'
   | 'deliverable:update'
-  | 'deliverable:review';
+  | 'deliverable:review'
+  | 'notification:read'
+  | 'notification:manage';
 
 /** The authenticated caller, resolved from a verified access token. */
 export interface AuthActor {
@@ -416,8 +418,7 @@ export interface DeliveryHistory {
   readonly entries: readonly DeliveryHistoryEntry[];
 }
 
-/**
- * Result of re-reading a stored file from disk and comparing its digest with the
+/** Result of re-reading a stored file from disk and comparing its digest with the
  * one recorded when it was uploaded. `ok: false` means the bytes on disk no longer
  * match what was signed off.
  */
@@ -430,4 +431,54 @@ export interface FileIntegrityReport {
   readonly actualSha256: string;
   readonly sizeBytes: number;
   readonly recordedSizeBytes: number | null;
+}
+
+/** One row of the delivery audit, as the administrative API returns it. */
+export interface NotificationDeliveryRecord {
+  readonly id: Uuid;
+  readonly organizationId: Uuid;
+  readonly membershipId: Uuid;
+  readonly userId: Uuid;
+  readonly kind: 'INVITATION' | 'RESENT';
+  readonly channel: string;
+  readonly driver: string;
+  readonly status: 'SENT' | 'FAILED' | 'SKIPPED';
+  readonly recipient: string;
+  readonly messageId: string | null;
+  readonly error: string | null;
+  /** 1 for the original attempt, incrementing with each retry in the chain. */
+  readonly attempt: number;
+  /** Set on a failed attempt that is still scheduled for another try. */
+  readonly nextAttemptAt: IsoDateTime | null;
+  readonly lastAttemptAt: IsoDateTime | null;
+  readonly createdAt: IsoDateTime;
+}
+
+export interface NotificationDeliverySummary {
+  readonly sent: number;
+  readonly failed: number;
+  readonly skipped: number;
+  /** Failed rows currently waiting on a scheduled retry. */
+  readonly pendingRetry: number;
+}
+
+export interface NotificationDeliveryPage {
+  readonly items: readonly NotificationDeliveryRecord[];
+  readonly page: number;
+  readonly pageSize: number;
+  readonly total: number;
+  readonly summary: NotificationDeliverySummary;
+}
+
+/** Outcome of one retry sweep. */
+export interface RetrySweepReport {
+  /** Failed rows that were due and picked up. */
+  readonly processed: number;
+  readonly sent: number;
+  /** Retried again but still failing; they are back in the queue. */
+  readonly failed: number;
+  /** Failed and out of attempts — the chain is over. */
+  readonly exhausted: number;
+  /** Could not be retried because the invitation is no longer outstanding. */
+  readonly skipped: number;
 }

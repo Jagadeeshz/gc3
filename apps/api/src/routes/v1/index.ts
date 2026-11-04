@@ -5,6 +5,7 @@ import { requireTenantScope } from '../../middleware/tenant-scope';
 import { requireAuth, requirePermission } from '../../middleware/auth';
 import { authRouter } from './auth';
 import { deliverablesRouter } from './deliverables';
+import { notificationsRouter } from './notifications';
 import { organizationsRouter } from './organizations';
 import { serviceCategoriesRouter } from './service-categories';
 import { serviceRequestsRouter } from './service-requests';
@@ -49,6 +50,7 @@ v1Router.get('/meta', (_request, response) => {
         '/service-requests',
         '/service-categories',
         '/deliverables',
+        '/notifications',
       ],
       planned: [
         '/users',
@@ -117,3 +119,6 @@ v1Router.use('/service-categories', serviceCategoriesRouter);
 
 /** Phase 2: workspace-level delivery views (released assets across requests). */
 v1Router.use('/deliverables', deliverablesRouter);
+
+/** Phase 1: delivery audit and manual retry control. */
+v1Router.use('/notifications', notificationsRouter);

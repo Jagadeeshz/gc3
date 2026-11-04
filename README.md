@@ -163,6 +163,8 @@ Base URL: `http://localhost:3001/api/v1`
 | PUT | `/service-requests/:requestId/deliverables/:deliverableId/file` | bearer + scope | `deliverable:update` — raw bytes as the body; SHA-256 recorded; always a new version |
 | GET | `/deliverables/:deliverableId/file` | bearer + scope | `deliverable:read` — the stored bytes, with `x-checksum-sha256` |
 | GET | `/deliverables/:deliverableId/file/integrity` | bearer + scope | `deliverable:read` — re-reads the file and reports `ok` / expected / actual digest |
+| GET | `/notifications/deliveries` | bearer + scope | `notification:read` — delivery audit with `status` / `kind` / `recipient` filters, pagination and a status summary |
+| POST | `/notifications/retry` | bearer + scope | `notification:manage` — one retry sweep over the caller's tenant, returns the counts |
 | GET | `/service-categories` | bearer + scope | `category:read` — active only, `?includeInactive=true` for the full catalogue |
 | POST | `/service-categories` | bearer + scope | `category:manage` — slug derived from the name when omitted, 409 on duplicate |
 | PATCH | `/service-categories/:categoryId` | bearer + scope | `category:manage` — rename, re-slug, re-describe, retire/reactivate |
@@ -223,6 +225,8 @@ permissions. `INVITED` and `REVOKED` memberships contribute nothing.
 | `deliverable:review` | ✅ | — | ✅ | ✅ | ✅ | ✅ | — | — | — |
 | `category:read` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `category:manage` | — | — | — | ✅ | ✅ | — | — | — | — |
+| `notification:read` | — | — | — | ✅ | ✅ | — | — | ✅ | — |
+| `notification:manage` | — | — | — | ✅ | ✅ | — | — | — | — |
 
 **Bootstrapping.** There is no public registration. Provision staff out of band:
 
@@ -264,6 +268,20 @@ DELETE /organizations/:id/memberships/:userId/invite          → revoke (idempo
 - Both refuse an **ACTIVE** member with 409 — resending must never become a credential reset, and
   cancelling an active member is offboarding, not invitation management.
 - Resending a **REVOKED** invitation re-opens it (`reopened: true`) instead of dead-ending the user.
+
+### Notification retries
+
+A failed delivery is not a dead end. It enters a retry queue with an exponential schedule
+(`60s → 5m → 15m → 1h → 6h`), capped by `NOTIFICATION_MAX_ATTEMPTS` (default 5):
+
+- a background worker sweeps every `NOTIFICATION_RETRY_INTERVAL_SECONDS` (default 300, `0` disables it)
+- `POST /api/v1/notifications/retry` runs one sweep immediately, scoped to the caller's tenant
+- `GET /api/v1/notifications/deliveries` is the audit: every attempt, with `attempt`, `nextAttemptAt`,
+  the driver, the provider `messageId` and the truncated error
+
+Each retry **rotates the invite token**, because only the hash is stored — there is no link to replay.
+That is safe when the previous attempt failed, but it does invalidate links from earlier attempts, so a
+deliberate resend remains the right tool after an ambiguous SMTP timeout.
 
 ### Notification delivery
 
@@ -443,6 +461,13 @@ UPLOAD_DIR=storage        # relative to apps/api; where deliverable bytes are wr
 FILE_MAX_BYTES=10485760   # 10 MiB per file; larger uploads get 413 PAYLOAD_TOO_LARGE
 ```
 
+Notification retry settings (same file):
+
+```bash
+NOTIFICATION_MAX_ATTEMPTS=5              # attempts per delivery before giving up
+NOTIFICATION_RETRY_INTERVAL_SECONDS=300  # worker cadence; 0 disables the worker
+```
+
 ### Known limits
 
 - The organization switcher lists what `GET /auth/organizations` returns; staff see all tenants,
@@ -491,8 +516,9 @@ FILE_MAX_BYTES=10485760   # 10 MiB per file; larger uploads get 413 PAYLOAD_TOO_
 | Phase 2 delivery: staff deliverable form with file refs, internal-note toggle | done |
 | Phase 2 versioning: deliverable versions, re-approval on replace, `/deliveries` history | done |
 | Phase 2 files: stored uploads with SHA-256, download, integrity check | done |
-| Integration test harness (Vitest + Supertest, 197 tests) | done |
-| Delivery retry/backoff, bounce handling, delivery read API | not started |
+| Notifications: retry/backoff worker, manual sweep, delivery read API | done |
+| Integration test harness (Vitest + Supertest, 208 tests) | done |
+| Delivery retry/backoff, bounce handling, delivery read API | retry + read API done; bounce handling not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
 

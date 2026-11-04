@@ -240,6 +240,11 @@ model NotificationDelivery {
   messageId      String?            @map("message_id") @db.VarChar(120)
   /// Provider or transport error, truncated to keep the row compact.
   error          String?            @db.VarChar(500)
+  /// 1 for the original attempt, incrementing per retry in the chain.
+  attempt        Int                @default(1)
+  /// Set while a failed attempt is still scheduled for another try.
+  nextAttemptAt  DateTime?          @map("next_attempt_at") @db.Timestamptz(3)
+  lastAttemptAt  DateTime?          @map("last_attempt_at") @db.Timestamptz(3)
   createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -249,6 +254,7 @@ model NotificationDelivery {
   @@index([organizationId, createdAt])
   @@index([membershipId])
   @@index([status])
+  @@index([status, nextAttemptAt])
   @@map("notification_deliveries")
 }
 

@@ -28,6 +28,8 @@ const ALL_PERMISSIONS: readonly Permission[] = [
   'deliverable:create',
   'deliverable:update',
   'deliverable:review',
+  'notification:read',
+  'notification:manage',
 ];
 
 /**
@@ -56,6 +58,8 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'deliverable:create',
     'deliverable:update',
     'deliverable:review',
+    'notification:read',
+    'notification:manage',
   ],
   // Owns the client relationship; read-only over membership and delivery output.
   ACCOUNT_MANAGER: [
@@ -66,6 +70,7 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'request:comment',
     'category:read',
     'deliverable:read',
+    'notification:read',
   ],
   // Runs the pod: assigns and progresses work, produces deliverables.
   POD_MANAGER: [

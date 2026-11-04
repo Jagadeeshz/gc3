@@ -2,6 +2,7 @@
 import 'dotenv/config';
 import { createApp } from './app';
 import { env, SERVICE_NAME, SERVICE_VERSION } from './config/env';
+import { startRetryWorker } from './notifications/retry';
 
 const app = createApp();
 const server = app.listen(env.API_PORT, env.API_HOST, () => {
@@ -10,9 +11,23 @@ const server = app.listen(env.API_PORT, env.API_HOST, () => {
   );
 });
 
+// Failed notification deliveries are retried on a schedule. Disabled in tests (they
+// drive the endpoint) and when the interval is 0.
+const retryWorker = startRetryWorker();
+
+if (retryWorker) {
+  console.log(
+    `[${SERVICE_NAME}] notification retry worker every ${env.NOTIFICATION_RETRY_INTERVAL_SECONDS}s (max ${env.NOTIFICATION_MAX_ATTEMPTS} attempts)`,
+  );
+}
+
 /** Graceful shutdown so in-flight requests finish before the process exits. */
 function shutdown(signal: string): void {
   console.log(`[${SERVICE_NAME}] ${signal} received — draining connections`);
+  if (retryWorker) {
+    clearInterval(retryWorker);
+  }
+
   server.close(() => {
     console.log(`[${SERVICE_NAME}] closed`);
     process.exit(0);
