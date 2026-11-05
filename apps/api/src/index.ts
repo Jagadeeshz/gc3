@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { createApp } from './app';
 import { env, SERVICE_NAME, SERVICE_VERSION } from './config/env';
 import { startRetryWorker } from './notifications/retry';
+import { startHeartbeat, stopHeartbeat } from './observability/heartbeat';
 import { closeDurableQueue, durableDispatchEnabled } from './queue/client';
 import { startDurableWorkers, type DurableWorkers } from './queue/workers';
 import { startSlaWorker } from './sla/monitor';
@@ -52,6 +53,17 @@ if (durableDispatchEnabled()) {
   }
 }
 
+/**
+ * The heartbeat starts either way.
+ *
+ * It is what lets `/ops/queue/stats` distinguish "nothing to do" from "nothing is
+ * working": counts are identical in both cases, a beat is not.
+ */
+startHeartbeat();
+console.log(
+  `[${SERVICE_NAME}] worker heartbeat every ${env.WORKER_HEARTBEAT_INTERVAL_SECONDS}s (ttl ${env.WORKER_HEARTBEAT_TTL_SECONDS}s)`,
+);
+
 /** Graceful shutdown so in-flight requests finish before the process exits. */
 function shutdown(signal: string): void {
   console.log(`[${SERVICE_NAME}] ${signal} received — draining connections`);
@@ -71,6 +83,7 @@ function shutdown(signal: string): void {
     : Promise.resolve();
 
   void teardown
+    .then(() => stopHeartbeat())
     .catch((error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`[${SERVICE_NAME}] queue shutdown failed: ${message}`);

@@ -45,6 +45,11 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 28 files, migrations through `20261105000000_phase4_finance`, live-verified in the browser with a client
 owner, a platform admin, an operations manager and a finance manager.
 
+| 24 | Phase 5 · Queue & system observability | `<pending>` | ✅ delivered |
+| 25 | Phase 5 · Platform executive analytics & usage reporting | `<pending>` | ⏳ queued |
+| 26 | Phase 5 · Audit logging, security hardening & rate limiting | `<pending>` | ⏳ queued |
+| 27 | Phase 5 · Production build, verification & documentation | `<pending>` | ⏳ queued |
+
 ---
 
 ## Slice 0 — Monorepo foundation  ✅
@@ -1250,6 +1255,64 @@ and a real browser.
   bearer token on the request instead of leaking ids into a query string.
 - **Buttons disappear, they do not merely disable.** A read-only viewer never sees an action they cannot
   take; the server is still the boundary.
+
+---
+
+## Slice 24 — Phase 5 · Queue and system observability  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §14 (operational visibility), §16 (monitoring)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Endpoint | `GET /api/v1/ops/queue/stats` (`ops:read`) — driver, queue name, waiting/active/delayed/failed/completed, paused flag, registered schedulers with next run, worker heartbeat and alert flags |
+| Heartbeat | `observability/heartbeat.ts` — a beat every `WORKER_HEARTBEAT_INTERVAL_SECONDS` (15s) written to Redis with a **TTL** of `WORKER_HEARTBEAT_TTL_SECONDS` (60s), so a dead worker's claim expires instead of lingering; falls back to memory when Redis is not configured |
+| Alert engine | `observability/queue-health.ts` — `buildQueueReport()` is pure: `DURABLE_DISPATCH_DISABLED` (INFO), `WORKER_HEARTBEAT_MISSING` / `_STALE` (CRITICAL), `QUEUE_PAUSED` (CRITICAL), `QUEUE_BACKLOG` (WARNING), `JOBS_FAILING` (CRITICAL), `SCHEDULER_MISSING` (WARNING) |
+| Queue introspection | `durable-queue.ts` gained `schedulers()` and `paused()` alongside the existing `counts()` |
+| Console | `/ops` shows a **Background dispatch** card: driver badge, worker pill, five counters (failed turns red when non-zero), last-beat age with pid and host, the scheduler rows with their next run, and the alert list — or "No alerts: the queue is draining and the worker is beating." |
+| Tests | 12: ten report-builder cases (every alert branch, the twice-the-interval staleness boundary, threshold edges) plus auth (401/403) and the live report shape |
+
+### Live evidence
+
+```text
+GET /api/v1/ops/queue/stats  (PLATFORM_ADMIN)
+{
+ "driver": "redis", "queueName": "gc3-work",
+ "counts": { "waiting": 0, "active": 0, "delayed": 2, "failed": 0, "completed": 11 },
+ "paused": false,
+ "schedulers": [
+   { "id": "retry-sweep", "everyMs": 300000, "nextRunAt": 1793868333447 },
+   { "id": "sla-sweep",   "everyMs": 300000, "nextRunAt": 1793868333453 }
+ ],
+ "worker": { "status": "UP", "lastSeenAt": "2026-11-05T08:42:38.804Z", "ageSeconds": 3,
+             "pid": 1312, "hostname": "STARK", "intervalSeconds": 15 },
+ "alerts": [], "checkedAt": "2026-11-05T08:42:41.787Z"
+}
+```
+
+```text
+redis-cli get gc3:heartbeat:worker
+{"pid":1312,"hostname":"STARK","startedAt":"2026-11-05T08:39:38.706Z",
+ "lastSeenAt":"2026-11-05T08:42:38.804Z","intervalSeconds":15,"driver":"redis"}
+redis-cli ttl gc3:heartbeat:worker  → 50   (counting down from 60)
+```
+
+Browser `/ops`: *BACKGROUND DISPATCH · DURABLE · REDIS · WORKER UP · WAITING 0 · ACTIVE 0 ·
+DELAYED 2 · FAILED 0 · COMPLETED 11 · last beat 11s ago (pid 1312 on STARK) ·
+RETRY-SWEEP EVERY 300S · NEXT 2:15:33 PM · SLA-SWEEP EVERY 300S · NEXT 2:15:33 PM ·
+No alerts: the queue is draining and the worker is beating.*
+
+### Decisions worth naming
+
+- **Counts alone cannot detect a dead worker.** A queue with 0 waiting and a queue nobody is
+  draining look identical; only the heartbeat separates them, which is why a missing beat is
+  CRITICAL and a deep backlog is only WARNING.
+- **The beat has a TTL, not a timestamp.** A crashed process cannot leave a stale "I am fine"
+  behind — the key disappears on its own.
+- **The health check never 500s.** If Redis is unreachable, the report says the worker is ABSENT,
+  because that is the finding an operator needs.
 
 ---
 

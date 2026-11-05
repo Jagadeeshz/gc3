@@ -78,6 +78,17 @@ const envSchema = z.object({
 
   /** Namespacing prefix so several environments can share one Redis instance. */
   QUEUE_PREFIX: z.string().trim().min(1).max(40).default('gc3'),
+
+  /**
+   * How often the background worker says it is alive, and how long that claim
+   * survives. The TTL is what turns a dead process into an expired key instead of
+   * a stale "all fine" that nobody notices.
+   */
+  WORKER_HEARTBEAT_INTERVAL_SECONDS: z.coerce.number().int().min(5).max(300).default(15),
+  WORKER_HEARTBEAT_TTL_SECONDS: z.coerce.number().int().min(15).max(900).default(60),
+
+  /** Waiting jobs above this count raise a backlog alert on the operations console. */
+  QUEUE_BACKLOG_THRESHOLD: z.coerce.number().int().min(1).max(100_000).default(50),
 });
 
 export type Env = z.infer<typeof envSchema>;

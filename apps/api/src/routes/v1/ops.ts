@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import type { ApiSuccess, FinanceOverview, OpsDashboard, SlaSweepReport } from '@gc3/types';
+import type { ApiSuccess, FinanceOverview, OpsDashboard, QueueHealth, SlaSweepReport } from '@gc3/types';
 import { formatIssues, opsDashboardQuerySchema } from '@gc3/validation';
 import { ApiError } from '../../lib/api-error';
 import { requireAuth, requirePermission } from '../../middleware/auth';
+import { queueHealth } from '../../observability/queue-health';
 import { invoiceRepository } from '../../repositories/invoice.repository';
 import { opsRepository } from '../../repositories/ops.repository';
 import { runSlaSweep } from '../../sla/monitor';
@@ -34,6 +35,20 @@ opsRouter.get('/dashboard', requirePermission('ops:read'), async (request, respo
   });
 
   const payload: ApiSuccess<OpsDashboard> = { success: true, data: dashboard };
+  response.status(200).json(payload);
+});
+
+/**
+ * GET /ops/queue/stats — is the background work actually running?
+ *
+ * Counts alone cannot answer that: a worker that died leaves jobs in `waiting`
+ * and looks busy. The heartbeat is the part that tells the truth, which is why a
+ * missing beat is CRITICAL and a deep backlog is only WARNING.
+ */
+opsRouter.get('/queue/stats', requirePermission('ops:read'), async (_request, response) => {
+  const health = await queueHealth();
+
+  const payload: ApiSuccess<QueueHealth> = { success: true, data: health };
   response.status(200).json(payload);
 });
 

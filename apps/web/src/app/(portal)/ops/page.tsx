@@ -1,13 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { OpsDashboard, PodSummary, StaffCandidate } from '@gc3/types';
+import { Activity } from 'lucide-react';
+import type { OpsDashboard, PodSummary, QueueHealth, StaffCandidate } from '@gc3/types';
 import {
   ApiClientError,
   addPodMember,
   assignRequest,
   createPod,
   fetchOpsDashboard,
+  fetchQueueHealth,
   fetchStaffCandidates,
   removePodMember,
   runSlaSweep,
@@ -42,6 +44,7 @@ const PRIORITY_TONE: Record<string, string> = {
 export default function OpsConsolePage() {
   const { session } = useSession();
   const [dashboard, setDashboard] = useState<OpsDashboard | null>(null);
+  const [queue, setQueue] = useState<QueueHealth | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -69,6 +72,15 @@ export default function OpsConsolePage() {
 
     try {
       setDashboard(await fetchOpsDashboard(token, { queueLimit: 25 }));
+
+      // Queue health is independent: a Redis hiccup must not blank the console,
+      // and the operator is better served by the rest of the page plus whatever
+      // the health check managed to say.
+      try {
+        setQueue(await fetchQueueHealth(token));
+      } catch {
+        setQueue(null);
+      }
 
       // Staffing is tenant-scoped even though the dashboard is not, so the roster
       // is loaded for the active workspace only.
@@ -296,6 +308,101 @@ export default function OpsConsolePage() {
               </div>
             ))}
           </div>
+
+          {/*
+            Background dispatch. Counts say what is pending; the heartbeat says
+            whether anything is draining it — the two failure modes look identical
+            from the queue depth alone.
+          */}
+          {queue ? (
+            <section className="mt-8 rounded-[12px] border border-white/10 bg-graphite/85 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <Activity aria-hidden className="size-4 text-gold-light" strokeWidth={1.75} />
+                  <h2 className="font-display text-sm font-semibold text-warm">
+                    Background dispatch
+                  </h2>
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+                    {queue.driver === 'redis' ? 'durable · redis' : 'in-process'}
+                  </span>
+                </div>
+                <span
+                  className={`rounded-full border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${
+                    queue.worker.status === 'UP' || queue.worker.status === 'INLINE'
+                      ? 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300'
+                      : 'border-red-400/35 bg-red-400/10 text-red-300'
+                  }`}
+                >
+                  worker {queue.worker.status.toLowerCase()}
+                </span>
+              </div>
+
+              <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                {[
+                  { label: 'Waiting', value: queue.counts.waiting },
+                  { label: 'Active', value: queue.counts.active },
+                  { label: 'Delayed', value: queue.counts.delayed },
+                  { label: 'Failed', value: queue.counts.failed },
+                  { label: 'Completed', value: queue.counts.completed },
+                ].map((metric) => (
+                  <div key={metric.label} className="rounded-lg border border-white/8 px-3 py-2">
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-muted">
+                      {metric.label}
+                    </p>
+                    <strong
+                      className={`mt-0.5 block font-mono text-lg ${
+                        metric.label === 'Failed' && metric.value > 0 ? 'text-red-300' : 'text-warm'
+                      }`}
+                    >
+                      {metric.value}
+                    </strong>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] text-muted">
+                <span>
+                  last beat{' '}
+                  {queue.worker.lastSeenAt
+                    ? `${queue.worker.ageSeconds ?? 0}s ago (pid ${queue.worker.pid ?? '?'} on ${queue.worker.hostname ?? '?'})`
+                    : 'never'}
+                </span>
+                {queue.schedulers.map((scheduler) => (
+                  <span key={scheduler.id} className="font-mono text-[10px] uppercase">
+                    {scheduler.id}
+                    {scheduler.everyMs ? ` every ${Math.round(scheduler.everyMs / 1_000)}s` : ''}
+                    {scheduler.nextRunAt
+                      ? ` · next ${new Date(scheduler.nextRunAt).toLocaleTimeString()}`
+                      : ''}
+                  </span>
+                ))}
+              </div>
+
+              {queue.alerts.length > 0 ? (
+                <ul className="mt-3 grid gap-1.5">
+                  {queue.alerts.map((alert) => (
+                    <li
+                      key={alert.code}
+                      className={`rounded-lg border px-3 py-2 text-[11px] ${
+                        alert.level === 'CRITICAL'
+                          ? 'border-red-400/35 bg-red-400/10 text-red-200'
+                          : alert.level === 'WARNING'
+                            ? 'border-gold/35 bg-gold/10 text-gold-light'
+                            : 'border-white/12 bg-white/5 text-muted'
+                      }`}
+                    >
+                      <span className="font-mono uppercase tracking-[0.1em]">{alert.code}</span> —{' '}
+                      {alert.message}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-[11px] text-emerald-300/80">
+                  No alerts: the queue is draining and the worker is beating.
+                </p>
+              )}
+            </section>
+          ) : null}
 
           <section className="mt-8">
             <h2 className="text-sm font-semibold text-warm">Tenants</h2>

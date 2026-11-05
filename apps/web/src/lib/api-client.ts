@@ -14,6 +14,7 @@ import type {
   FileIntegrityReport,
   OpsDashboard,
   PodSummary,
+  QueueHealth,
   StaffCandidate,
   SlaSweepReport,
   TaskListItem,
@@ -769,4 +770,18 @@ export async function downloadInvoice(
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
+}
+
+// ---------------------------------------------------------------------------
+// Operational observability (Phase 5)
+// ---------------------------------------------------------------------------
+
+/**
+ * Queue depth, worker heartbeat and alert flags.
+ *
+ * Read on the operations console because a queue that has stopped working looks
+ * exactly like a queue with nothing to do — until you ask for the heartbeat.
+ */
+export async function fetchQueueHealth(token: string): Promise<QueueHealth> {
+  return request<QueueHealth>('/ops/queue/stats', { token });
 }

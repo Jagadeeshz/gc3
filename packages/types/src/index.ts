@@ -800,3 +800,64 @@ export interface FinanceOverview {
     readonly storageMbThisPeriod: number;
   }[];
 }
+
+// ---------------------------------------------------------------------------
+// Phase 5 — Operational observability
+// ---------------------------------------------------------------------------
+
+export type QueueAlertLevel = 'INFO' | 'WARNING' | 'CRITICAL';
+
+/** Why a queue is flagged. Each code maps to one operational action. */
+export type QueueAlertCode =
+  | 'DURABLE_DISPATCH_DISABLED'
+  | 'WORKER_HEARTBEAT_MISSING'
+  | 'WORKER_HEARTBEAT_STALE'
+  | 'QUEUE_PAUSED'
+  | 'QUEUE_BACKLOG'
+  | 'JOBS_FAILING'
+  | 'SCHEDULER_MISSING';
+
+export interface QueueAlert {
+  readonly code: QueueAlertCode;
+  readonly level: QueueAlertLevel;
+  /** What is wrong, in one sentence an operator can act on. */
+  readonly message: string;
+}
+
+export interface QueueSchedulerInfo {
+  readonly id: string;
+  readonly everyMs: number | null;
+  /** Epoch ms of the next scheduled run, when the driver knows it. */
+  readonly nextRunAt: number | null;
+}
+
+export type WorkerStatus = 'UP' | 'STALE' | 'ABSENT' | 'INLINE';
+
+export interface WorkerHeartbeatInfo {
+  /** UP = beats in time, STALE = missed its window, ABSENT = never beat, INLINE = in-process timers. */
+  readonly status: WorkerStatus;
+  readonly lastSeenAt: IsoDateTime | null;
+  readonly ageSeconds: number | null;
+  readonly pid: number | null;
+  readonly hostname: string | null;
+  readonly startedAt: IsoDateTime | null;
+  readonly intervalSeconds: number;
+}
+
+export interface QueueHealth {
+  /** Which driver is actually running: the durable queue or in-process timers. */
+  readonly driver: 'redis' | 'memory';
+  readonly queueName: string;
+  readonly counts: {
+    readonly waiting: number;
+    readonly active: number;
+    readonly delayed: number;
+    readonly failed: number;
+    readonly completed: number;
+  };
+  readonly paused: boolean;
+  readonly schedulers: readonly QueueSchedulerInfo[];
+  readonly worker: WorkerHeartbeatInfo;
+  readonly alerts: readonly QueueAlert[];
+  readonly checkedAt: IsoDateTime;
+}

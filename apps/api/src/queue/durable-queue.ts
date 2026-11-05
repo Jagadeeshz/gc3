@@ -1,5 +1,6 @@
 import { Queue, Worker, type Job } from 'bullmq';
 import IORedis from 'ioredis';
+import type { QueueSchedulerInfo } from '@gc3/types';
 
 /**
  * Durable queue primitive.
@@ -33,6 +34,9 @@ export interface DurableQueue {
   /** Registers (idempotently) a job that repeats on a schedule. */
   scheduleEvery(schedulerId: string, name: string, everyMs: number): Promise<void>;
   counts(): Promise<QueueCounts>;
+  /** Repeatable jobs currently registered, for the health report. */
+  schedulers(): Promise<QueueSchedulerInfo[]>;
+  paused(): Promise<boolean>;
   /** Removes everything this prefix owns — used by tests, never by the app. */
   obliterate(): Promise<void>;
   close(): Promise<void>;
@@ -139,6 +143,20 @@ export function createDurableQueue(options: DurableQueueOptions): DurableQueue {
         failed: counts.failed ?? 0,
         completed: counts.completed ?? 0,
       };
+    },
+
+    async schedulers() {
+      const registered = await queue.getJobSchedulers(0, 50, true);
+
+      return registered.map((scheduler) => ({
+        id: scheduler.id ?? scheduler.key,
+        everyMs: scheduler.every ?? null,
+        nextRunAt: scheduler.next ?? null,
+      }));
+    },
+
+    async paused() {
+      return queue.isPaused();
     },
 
     async obliterate() {
