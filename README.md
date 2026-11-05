@@ -719,7 +719,7 @@ drain in another), `enqueue-live-event.ts` (queue an event while the API is stop
 | Phase 5: audit trail, security headers and rate limiting | done |
 | Phase 5: production build, full suite, documentation | done |
 | Delivery retry/backoff, bounce handling, delivery read API | retry + read API done; bounce handling not started |
-| Token refresh / revocation, login rate limiting | not started |
+| Token refresh / revocation, revocation list | not started (login rate limiting is done) |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
 
 ### Test coverage

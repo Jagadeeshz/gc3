@@ -47,8 +47,8 @@ owner, a platform admin, an operations manager and a finance manager.
 
 | 24 | Phase 5 · Queue & system observability | `d93c948` | ✅ delivered |
 | 25 | Phase 5 · Platform executive analytics & usage reporting | `f9acf97` | ✅ delivered |
-| 26 | Phase 5 · Audit logging, security hardening & rate limiting | `<pending>` | ✅ delivered |
-| 27 | Phase 5 · Production build, verification & documentation | `<pending>` | ✅ delivered |
+| 26 | Phase 5 · Audit logging, security hardening & rate limiting | `1ce7d1a` | ✅ delivered |
+| 27 | Phase 5 · Production build, verification & documentation | `b2fab9e` | ✅ delivered |
 
 **Phase 5 — System Hardening, Analytics & Production Readiness — is complete** (slices 24–27).
 
@@ -1372,7 +1372,7 @@ table (*Cloud Delivery · 0 · 1 · — · 0.0%*) and *Nov 26 +7*.
 
 ## Slice 26 — Phase 5 · Audit logging, security hardening and rate limiting  ✅
 
-**Commit:** `<pending>`
+**Commit:** `1ce7d1a`
 **Brief refs:** §12 (auditability), §14 (security), §17 (operational readiness)
 
 ### What shipped
@@ -1460,7 +1460,7 @@ tenant's region restored to `apac`. Slice 27's build then proved the fix under t
 
 ## Slice 27 — Phase 5 · Production build, verification and documentation  ✅
 
-**Commit:** `<pending>`
+**Commit:** `b2fab9e`
 **Brief refs:** §19 (build and run), §20 (definition of done)
 
 ### Production build
@@ -1532,7 +1532,7 @@ subsequent run was 362/362.
 | 24 · Queue & system observability | queue stats endpoint, TTL heartbeat, alert engine, console card | `d93c948` |
 | 25 · Platform executive analytics | turnaround/throughput/pod-efficiency/growth queries and `/ops/analytics` | `f9acf97` |
 | 26 · Audit, hardening, rate limiting | audit context + reader, tenant/role edit endpoints, security headers, two limiters | `1ce7d1a` |
-| 27 · Build, verification, docs | production build served, 362/362, typecheck 5/5, this record | `<pending>` |
+| 27 · Build, verification, docs | production build served, 362/362, typecheck 5/5, this record | `b2fab9e` |
 
 **What is built and proven:** multi-tenant identity and RBAC with invites and SMTP delivery; service
 requests, catalogue, comments, deliverables with versions, stored files and SHA-256 integrity; a staff
