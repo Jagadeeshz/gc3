@@ -1,5 +1,6 @@
 import type {
   AccessibleOrganization,
+  AnalyticsReport,
   ApiErrorBody,
   AuthSession,
   Deliverable,
@@ -784,4 +785,16 @@ export async function downloadInvoice(
  */
 export async function fetchQueueHealth(token: string): Promise<QueueHealth> {
   return request<QueueHealth>('/ops/queue/stats', { token });
+}
+
+/**
+ * The executive report: turnaround, throughput, pod efficiency, tenant growth.
+ *
+ * `windowDays` bounds the flow figures (7–365). Totals are current, not windowed.
+ */
+export async function fetchAnalytics(
+  token: string,
+  windowDays = 90,
+): Promise<AnalyticsReport> {
+  return request<AnalyticsReport>(`/ops/analytics?windowDays=${windowDays}`, { token });
 }

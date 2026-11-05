@@ -1,9 +1,17 @@
 import { Router } from 'express';
-import type { ApiSuccess, FinanceOverview, OpsDashboard, QueueHealth, SlaSweepReport } from '@gc3/types';
-import { formatIssues, opsDashboardQuerySchema } from '@gc3/validation';
+import type {
+  AnalyticsReport,
+  ApiSuccess,
+  FinanceOverview,
+  OpsDashboard,
+  QueueHealth,
+  SlaSweepReport,
+} from '@gc3/types';
+import { analyticsQuerySchema, formatIssues, opsDashboardQuerySchema } from '@gc3/validation';
 import { ApiError } from '../../lib/api-error';
 import { requireAuth, requirePermission } from '../../middleware/auth';
 import { queueHealth } from '../../observability/queue-health';
+import { analyticsRepository } from '../../repositories/analytics.repository';
 import { invoiceRepository } from '../../repositories/invoice.repository';
 import { opsRepository } from '../../repositories/ops.repository';
 import { runSlaSweep } from '../../sla/monitor';
@@ -35,6 +43,26 @@ opsRouter.get('/dashboard', requirePermission('ops:read'), async (request, respo
   });
 
   const payload: ApiSuccess<OpsDashboard> = { success: true, data: dashboard };
+  response.status(200).json(payload);
+});
+
+/**
+ * GET /ops/analytics — the platform report: turnaround, throughput, pod
+ * efficiency and tenant growth.
+ *
+ * `?windowDays=` bounds the flow figures (7–365, default 90); totals describe the
+ * platform as it stands, which is not a time-boxed question.
+ */
+opsRouter.get('/analytics', requirePermission('ops:read'), async (request, response) => {
+  const query = analyticsQuerySchema.safeParse(request.query);
+
+  if (!query.success) {
+    throw ApiError.badRequest('Invalid analytics query', formatIssues(query.error));
+  }
+
+  const report = await analyticsRepository.report({ windowDays: query.data.windowDays });
+
+  const payload: ApiSuccess<AnalyticsReport> = { success: true, data: report };
   response.status(200).json(payload);
 });
 

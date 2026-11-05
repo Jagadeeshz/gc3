@@ -45,8 +45,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 28 files, migrations through `20261105000000_phase4_finance`, live-verified in the browser with a client
 owner, a platform admin, an operations manager and a finance manager.
 
-| 24 | Phase 5 · Queue & system observability | `<pending>` | ✅ delivered |
-| 25 | Phase 5 · Platform executive analytics & usage reporting | `<pending>` | ⏳ queued |
+| 24 | Phase 5 · Queue & system observability | `d93c948` | ✅ delivered |
+| 25 | Phase 5 · Platform executive analytics & usage reporting | `<pending>` | ✅ delivered |
 | 26 | Phase 5 · Audit logging, security hardening & rate limiting | `<pending>` | ⏳ queued |
 | 27 | Phase 5 · Production build, verification & documentation | `<pending>` | ⏳ queued |
 
@@ -1260,7 +1260,7 @@ and a real browser.
 
 ## Slice 24 — Phase 5 · Queue and system observability  ✅
 
-**Commit:** `<pending>`
+**Commit:** `d93c948`
 **Brief refs:** §14 (operational visibility), §16 (monitoring)
 
 ### What shipped
@@ -1313,6 +1313,54 @@ No alerts: the queue is draining and the worker is beating.*
   behind — the key disappears on its own.
 - **The health check never 500s.** If Redis is unreachable, the report says the worker is ABSENT,
   because that is the finding an operator needs.
+
+---
+
+## Slice 25 — Phase 5 · Platform executive analytics  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §8 (platform reporting), §15 (executive visibility)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Endpoint | `GET /api/v1/ops/analytics` (`ops:read`, no tenant scope) — `?windowDays=` 7–365, default 90 |
+| Turnaround | one Postgres pass: `AVG`, `PERCENTILE_CONT(0.5)` and `(0.9)` over creation→closure for requests closed inside the window, plus on-time/late counted against `sla_target_at` — **not** the requested due date |
+| Throughput | eight weekly buckets for both directions: created bucketed by `created_at`, closed bucketed by `closed_at`, so a backlog clearing shows up in the week it cleared |
+| Pod efficiency | per pod: open, closed, mean age of open work, on-time and late counts, and an on-time rate that is `null` when nothing measurable has closed |
+| Tenant growth | six monthly cohorts with a running cumulative, ending at the current tenant total; active tenants are those that have raised at least one request |
+| Dashboard | `/ops/analytics` — window switch (7/30/90/180/365), four headline cards, an eight-week two-series throughput chart, a pod table with colour-coded punctuality and a monthly growth list |
+| Tests | 7: turnaround sample and duration, punctuality vs the SLA target (not the due date), throughput bucketing, pod efficiency including open-work age, growth cumulative arithmetic, window validation, and platform-only access |
+
+### Live evidence
+
+```text
+GET /api/v1/ops/analytics?windowDays=90
+totals:     { requests: 3, openRequests: 2, closedRequests: 1, tenants: 7, activeTenants: 2, pods: 1 }
+turnaround: { sampled: 1, avgHours: 89.8, medianHours: 89.8, p90Hours: 89.8,
+              onTime: 0, late: 1, onTimeRate: 0 }
+pods:       [{ podName: "Cloud Delivery", openRequests: 0, closedRequests: 1,
+               avgOpenAgeHours: null, onTime: 0, late: 1, onTimeRate: 0 }]
+throughput: 14 Sept 0/0 · 21 Sept 0/0 · 28 Sept 0/0 · 05 Oct 0/0 · 12 Oct 0/0 ·
+            19 Oct 0/0 · 26 Oct 2/0 · 02 Nov 1/1
+growth:     Jun 0 · Jul 0 · Aug 0 · Sept 0 · Oct 0 · Nov +7 (cumulative 7)
+```
+
+Browser `/ops/analytics`: *Avg turnaround 3.7d (1 closed in window) · Median turnaround 3.7d (p90 3.7d) ·
+On-time delivery 0.0% (0 met · 1 missed) · Tenants 7 (2 active · 1 pods)*, the eight-week chart, the pod
+table (*Cloud Delivery · 0 · 1 · — · 0.0%*) and *Nov 26 +7*.
+
+### Decisions worth naming
+
+- **Null is not zero.** "Nothing has closed" renders as `—`, never as `0.0h` or `0%`; a dashboard that
+  conflates the two quietly lies.
+- **Buckets are computed in Postgres.** `date_trunc` and `percentile_cont` keep month-end reporting from
+  pulling the whole table into Node.
+- **Punctuality uses the SLA commitment, not the due date.** The due date is a request field a client can
+  set; the commitment is what the platform promised.
+- **One documented closure on dev data:** `REQ-EA763D6B` was moved IN_REVIEW → DELIVERED → CLOSED through
+  the normal status route so the report had a real sample rather than an empty state.
 
 ---
 

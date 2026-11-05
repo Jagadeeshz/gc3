@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { Building2, ClipboardList, Gauge, LayoutDashboard, LogOut, Package, Plus, Receipt, Tags } from 'lucide-react';
+import { BarChart3, Building2, ClipboardList, Gauge, LayoutDashboard, LogOut, Package, Plus, Receipt, Tags } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { activeRoles } from '../../lib/session';
 import { useSession } from '../../lib/session-context';
@@ -192,6 +192,21 @@ export function PortalShell({ children }: { readonly children: ReactNode }) {
               >
                 <Receipt aria-hidden className="size-4" strokeWidth={1.75} />
                 Finance
+              </Link>
+            ) : null}
+            {session.actor.platformRole === 'PLATFORM_ADMIN' ||
+            session.actor.platformRole === 'OPERATIONS_MANAGER' ? (
+              <Link
+                href="/ops/analytics"
+                className={[
+                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
+                  pathname === '/ops/analytics'
+                    ? 'bg-white/8 text-warm'
+                    : 'text-muted hover:bg-white/5 hover:text-warm',
+                ].join(' ')}
+              >
+                <BarChart3 aria-hidden className="size-4" strokeWidth={1.75} />
+                Analytics
               </Link>
             ) : null}
           </nav>

@@ -378,6 +378,16 @@ export const opsDashboardQuerySchema = z.object({
 
 export type OpsDashboardQuery = z.infer<typeof opsDashboardQuerySchema>;
 
+/**
+ * `GET /ops/analytics` — the reporting window, in days.
+ *
+ * Bounded on purpose: an unbounded window would let a caller ask Postgres to
+ * aggregate every row the platform has ever written.
+ */
+export const analyticsQuerySchema = z.object({
+  windowDays: z.coerce.number().int().min(7).max(365).default(90),
+});
+
 export const createDeliverableSchema = z.object({
   title: z.string().trim().min(3).max(200),
   description: z.string().trim().max(1_000).optional(),

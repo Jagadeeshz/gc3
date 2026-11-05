@@ -861,3 +861,70 @@ export interface QueueHealth {
   readonly alerts: readonly QueueAlert[];
   readonly checkedAt: IsoDateTime;
 }
+
+// ---------------------------------------------------------------------------
+// Phase 5 — Executive analytics
+// ---------------------------------------------------------------------------
+
+/** One time bucket of request flow: what came in, what went out. */
+export interface ThroughputBucket {
+  /** ISO date (or YYYY-MM-DD) the bucket starts on. */
+  readonly bucket: string;
+  /** Short human label: "03 Nov" or "Nov". */
+  readonly label: string;
+  readonly created: number;
+  readonly closed: number;
+}
+
+/** How well one pod is turning work around. */
+export interface PodEfficiencyRow {
+  readonly podId: Uuid;
+  readonly podName: string;
+  readonly openRequests: number;
+  readonly closedRequests: number;
+  /** Mean age of the work still open, in hours. Null when nothing is open. */
+  readonly avgOpenAgeHours: number | null;
+  /** Closed inside its SLA commitment. Only counted where a target exists. */
+  readonly onTime: number;
+  readonly late: number;
+  /** onTime / (onTime + late), or null when nothing measurable has closed. */
+  readonly onTimeRate: number | null;
+}
+
+export interface TenantGrowthRow {
+  /** YYYY-MM. */
+  readonly month: string;
+  readonly label: string;
+  readonly newTenants: number;
+  /** Tenants on the platform by the end of that month. */
+  readonly cumulative: number;
+}
+
+export interface AnalyticsReport {
+  readonly generatedAt: IsoDateTime;
+  readonly windowDays: number;
+  readonly windowStart: IsoDateTime;
+  readonly totals: {
+    readonly requests: number;
+    readonly openRequests: number;
+    readonly closedRequests: number;
+    readonly tenants: number;
+    /** Tenants that have raised at least one request. */
+    readonly activeTenants: number;
+    readonly pods: number;
+  };
+  readonly turnaround: {
+    /** Requests that closed inside the window — the sample the numbers come from. */
+    readonly sampled: number;
+    readonly avgHours: number | null;
+    readonly medianHours: number | null;
+    readonly p90Hours: number | null;
+    readonly onTime: number;
+    readonly late: number;
+    /** Of the closed requests with an SLA target. Null when none had one. */
+    readonly onTimeRate: number | null;
+  };
+  readonly throughput: readonly ThroughputBucket[];
+  readonly pods: readonly PodEfficiencyRow[];
+  readonly tenantGrowth: readonly TenantGrowthRow[];
+}
