@@ -36,10 +36,14 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 
 **Phase 3 — Delivery Operations, Pod Workspaces & SLA Tracking — is complete** (slices 15–19).
 
-| 20 | Phase 4 · Subscription tiers & billing data layer | `<pending>` | ✅ delivered |
-| 21 | Phase 4 · Invoicing & line-item generation engine | `<pending>` | ✅ delivered |
-| 22 | Phase 4 · Usage tracking & subscription metering | `<pending>` | ✅ delivered |
-| 23 | Phase 4 · Client & admin financial dashboards | `<pending>` | ⏳ next |
+| 20 | Phase 4 · Subscription tiers & billing data layer | `d2ada56` | ✅ delivered |
+| 21 | Phase 4 · Invoicing & line-item generation engine | `a4f816f` | ✅ delivered |
+| 22 | Phase 4 · Usage tracking & subscription metering | `e3174a1` | ✅ delivered |
+| 23 | Phase 4 · Client & admin financial dashboards | `<pending>` | ✅ delivered |
+
+**Phase 4 — Finance, Invoicing & Subscription Billing — is complete** (slices 20–23). 328 tests across
+28 files, migrations through `20261105000000_phase4_finance`, live-verified in the browser with a client
+owner, a platform admin, an operations manager and a finance manager.
 
 ---
 
@@ -1180,6 +1184,72 @@ and a real browser.
   that is what a real onboarding would have done.
 - **Known limit, stated:** the API-call meter writes one row-increment per authenticated request. That is
   a deliberate honesty-over-throughput trade for this build; batching would be the next step.
+
+---
+
+## Slice 23 — Phase 4 · Client and platform financial dashboards  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §7 (client portal), §8 (operations console), §13 (UI standards)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Client billing | `apps/web/src/app/(portal)/billing` — plan card (name, price, status, period, renewal date), three usage meters with `OK`/`WARNING`/`EXCEEDED` states and progress bars, invoice table with status badges and due dates, expandable line items, and a Download control |
+| Platform finance | `apps/web/src/app/(portal)/ops/billing` — MRR, outstanding vs settled, draft count, tier mix, a tenant ledger (plan, status, requests, storage, MRR) with a per-tenant **Bill <period>** action, and a recent-invoices table with Issue / Mark paid / Void |
+| Nav | Billing appears in the workspace nav for roles holding `finance:read`; the Platform group gains **Finance** for admins, ops managers and finance managers |
+| Client docs | `lib/api-client.ts` gained the finance calls; the invoice download is **fetched with the bearer token** and handed to the browser as a Blob, because an `<a href>` cannot send an Authorization header |
+| Money formatting | `formatMoney` renders integer paise as `₹25,100.00` with `en-IN` grouping; `formatPeriodKey` / `previousPeriodKey` keep the month maths out of components |
+| API | `GET /ops/billing` gained `tenants[]` (id, name, plan, status, MRR contribution, requests and storage this period) so finance can bill from one screen |
+| Tests | `finance-overview.test.ts` — 4: MRR follows tier changes, outstanding vs settled after issuing and settling, the tenant ledger reflects live usage, and finance can read while a client cannot |
+
+### Live browser evidence (2026-11-05, real Next.js + real Postgres)
+
+**Client owner** (`client.owner@helios.test`, Helios Cloud):
+- `/billing` → *Starter · ₹25,000.00 / month · November 2026 · renews 01 Dec 2026 · ACTIVE*
+- meters: *17 / 20 requests — approaching limit · 85% used*; *640 / 5,120 MB — within plan · 13% used*;
+  *51,407 / 50,000 calls — limit reached · 103% used · overage billed*
+- invoice `INV-2026-11-0001` listed as **PAID**, ₹25,100.00, due 05 Dec 2026; expanding it showed
+  *Starter plan — November 2026 · 1 × ₹25,000.00* and *Additional API calls (51404 used, 50000 included,
+  billed per 1,000) · 2 × ₹50.00*, subtotal ₹25,100.00, tax ₹0.00, total ₹25,100.00
+- **Download** → "INV-2026-11-0001 downloaded."; the endpoint returned
+  `content-type: text/plain`, `content-disposition: attachment; filename="INV-2026-11-0001.txt"` and a
+  702-byte document carrying the same lines
+
+**Platform admin** (`portal.verify@gc3.local`):
+- `/ops/billing` → MRR ₹25,000.00 (1 active subscription), outstanding ₹0.00, settled ₹0.00, drafts 0
+- clicked **Bill 2026-11** on Helios → *INV-2026-11-0001 generated for Helios Cloud — ₹25,100.00*
+- **Issue** → status ISSUED, due 05 Dec 2026 (net 30); **Mark paid** → *INV-2026-11-0001 is now PAID*,
+  settled ₹25,100.00, outstanding ₹0.00, status chips updated, and the action buttons disappeared
+
+**Operations manager** (`ops.manager@gc3.local`, `finance:read` but not `finance:manage`):
+- same console, every action column rendered **read only** — no Bill/Issue/Mark paid/Void buttons
+
+**Plan guard, live** (after winding the demo tenant to its limits):
+- with API calls at 51,415: submitting a request in the UI returned
+  *"The STARTER plan allows 50,000 API calls — 51,415 used. Upgrade the plan to continue."*
+- with requests at 20/20: *"The STARTER plan allows 20 service requests — 20 used. Upgrade the plan to
+  continue."* — and Postgres confirmed the request count never moved
+
+### Evidence
+
+- Full suite: **328 / 328 across 28 files** (includes the 12 subscription, 19 invoice, 10 metering and
+  4 finance-overview tests); `pnpm typecheck` clean for both apps
+- **Mutation check:** commenting out `assertWithinLimit(…,'REQUESTS')` failed 3 metering tests; restoring
+  it returned 10/10 — the guard assertions are load-bearing, not decorative
+
+### Decisions worth naming
+
+- **The client sees the bill but cannot touch it.** `/billing` is read-only for every client role; plan
+  changes and settlement are staff actions with `finance:manage`, and the API enforces that regardless of
+  what a UI renders.
+- **`/ops/billing` is gated on `finance:read`, not `ops:read`.** It is a revenue report: finance managers
+  need it and do not need the operations console.
+- **Downloads carry the token.** Fetching the document and handing over a Blob keeps the tenant header and
+  bearer token on the request instead of leaking ids into a query string.
+- **Buttons disappear, they do not merely disable.** A read-only viewer never sees an action they cannot
+  take; the server is still the boundary.
 
 ---
 

@@ -1,4 +1,9 @@
-import type { DeliverableStatus, ServiceRequestPriority, ServiceRequestStatus } from '@gc3/types';
+import type {
+  DeliverableStatus,
+  InvoiceStatus,
+  ServiceRequestPriority,
+  ServiceRequestStatus,
+} from '@gc3/types';
 import type { BadgeTone } from '@gc3/ui';
 
 /** Status → label + tone. Kept in one place so every list and detail agrees. */
@@ -103,4 +108,72 @@ export function formatDate(value: string | null): string {
     month: 'short',
     year: 'numeric',
   });
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4 — money and invoices
+// ---------------------------------------------------------------------------
+
+const INVOICE_LABELS: Record<InvoiceStatus, string> = {
+  DRAFT: 'Draft',
+  ISSUED: 'Issued',
+  PAID: 'Paid',
+  OVERDUE: 'Overdue',
+  VOID: 'Void',
+};
+
+const INVOICE_TONES: Record<InvoiceStatus, BadgeTone> = {
+  DRAFT: 'neutral',
+  ISSUED: 'gold',
+  PAID: 'positive',
+  OVERDUE: 'critical',
+  VOID: 'neutral',
+};
+
+export function invoiceStatusLabel(status: InvoiceStatus): string {
+  return INVOICE_LABELS[status];
+}
+
+export function invoiceStatusTone(status: InvoiceStatus): BadgeTone {
+  return INVOICE_TONES[status];
+}
+
+/**
+ * Money for humans, from integer minor units.
+ *
+ * en-IN grouping, because the tenants and the price list are in rupees: 2500000
+ * paise reads as ₹25,000.00, not ₹2,500,000.00.
+ */
+export function formatMoney(minorUnits: number, currency = 'INR'): string {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+  }).format(minorUnits / 100);
+}
+
+/** A calendar month key ("2026-11") as a readable label, without a date library. */
+export function formatPeriodKey(period: string): string {
+  const year = Number(period.slice(0, 4));
+  const month = Number(period.slice(5, 7));
+
+  if (!Number.isFinite(year) || !Number.isFinite(month)) {
+    return period;
+  }
+
+  return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString('en-GB', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
+/** The last complete month, which is what billing defaults to. */
+export function previousPeriodKey(now: Date = new Date()): string {
+  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+  return `${date.getUTCFullYear()}-${`${date.getUTCMonth() + 1}`.padStart(2, '0')}`;
+}
+
+export function currentPeriodKey(now: Date = new Date()): string {
+  return `${now.getUTCFullYear()}-${`${now.getUTCMonth() + 1}`.padStart(2, '0')}`;
 }

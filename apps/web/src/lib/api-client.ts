@@ -18,6 +18,12 @@ import type {
   SlaSweepReport,
   TaskListItem,
   TaskStatus,
+  FinanceOverview,
+  Invoice,
+  InvoiceDetail,
+  InvoiceStatus,
+  SubscriptionOverview,
+  SubscriptionTier,
 } from '@gc3/types';
 import { API_BASE_URL } from './config';
 
@@ -646,4 +652,121 @@ export async function runSlaSweep(
 ): Promise<SlaSweepReport> {
   const suffix = organizationId ? `?organizationId=${organizationId}` : '';
   return request<SlaSweepReport>(`/ops/sla/sweep${suffix}`, { method: 'POST', token });
+}
+
+// ---------------------------------------------------------------------------
+// Finance (Phase 4)
+// ---------------------------------------------------------------------------
+
+/** The tenant's plan, allowances and this period's metered usage. */
+export async function fetchSubscription(
+  token: string,
+  organizationId: string,
+): Promise<SubscriptionOverview> {
+  return request<SubscriptionOverview>('/subscription', { token, organizationId });
+}
+
+export async function fetchTiers(token: string, organizationId: string): Promise<SubscriptionTier[]> {
+  return request<SubscriptionTier[]>('/subscription/tiers', { token, organizationId });
+}
+
+export async function listInvoices(
+  token: string,
+  organizationId: string,
+  params: { status?: InvoiceStatus; page?: number; pageSize?: number } = {},
+): Promise<Paginated<Invoice>> {
+  const query = new URLSearchParams();
+
+  if (params.status) {
+    query.set('status', params.status);
+  }
+
+  if (params.page) {
+    query.set('page', String(params.page));
+  }
+
+  if (params.pageSize) {
+    query.set('pageSize', String(params.pageSize));
+  }
+
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  return request<Paginated<Invoice>>(`/invoices${suffix}`, { token, organizationId });
+}
+
+export async function fetchInvoice(
+  token: string,
+  organizationId: string,
+  invoiceId: string,
+): Promise<InvoiceDetail> {
+  return request<InvoiceDetail>(`/invoices/${invoiceId}`, { token, organizationId });
+}
+
+export async function generateInvoice(
+  token: string,
+  organizationId: string,
+  body: { period?: string; notes?: string | null } = {},
+): Promise<InvoiceDetail> {
+  return request<InvoiceDetail>('/invoices/generate', {
+    method: 'POST',
+    body,
+    token,
+    organizationId,
+  });
+}
+
+export async function changeInvoiceStatus(
+  token: string,
+  organizationId: string,
+  invoiceId: string,
+  status: 'ISSUED' | 'PAID' | 'VOID',
+  note?: string,
+): Promise<InvoiceDetail> {
+  return request<InvoiceDetail>(`/invoices/${invoiceId}/status`, {
+    method: 'PATCH',
+    body: note ? { status, note } : { status },
+    token,
+    organizationId,
+  });
+}
+
+/** Platform money view: MRR, tier mix, invoice counts, recent bills. */
+export async function fetchFinanceOverview(token: string): Promise<FinanceOverview> {
+  return request<FinanceOverview>('/ops/billing', { token });
+}
+
+/**
+ * Downloads the printable invoice.
+ *
+ * Fetched rather than linked: the endpoint needs the bearer token, and a plain
+ * `<a href>` cannot send one. The bytes come back as text, become a Blob, and are
+ * handed to the browser as a file so the user gets the same document the API
+ * renders.
+ */
+export async function downloadInvoice(
+  token: string,
+  organizationId: string,
+  invoice: { id: string; number: string },
+): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/invoices/${invoice.id}/download`, {
+    headers: { authorization: `Bearer ${token}`, 'x-organization-id': organizationId },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new ApiClientError(response.status, {
+      code: 'INTERNAL_ERROR',
+      message: `Could not download ${invoice.number}`,
+      requestId: 'client',
+    });
+  }
+
+  const text = await response.text();
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `${invoice.number}.txt`;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
 }

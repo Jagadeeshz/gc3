@@ -180,6 +180,15 @@ Base URL: `http://localhost:3001/api/v1`
 | POST | `/service-requests/:requestId/tasks` | bearer + scope | `task:manage` — carve out a work item; inherits the request's pod |
 | PATCH | `/tasks/:taskId` | bearer + scope | `task:manage` — status, assignee, title, description, due date |
 | POST | `/ops/sla/sweep` | bearer only | `ops:read` — run the SLA risk engine now, returns scanned / at risk / breached / alerted / skipped |
+| GET | `/subscription` | bearer + scope | `finance:read` — plan, allowances, period and live usage with `OK · WARNING · EXCEEDED`; provisions the entry tier on first read and audits it |
+| GET | `/subscription/tiers` | bearer + scope | `finance:read` — the platform price list |
+| PATCH | `/subscription` | bearer + scope | `finance:manage` — move the tenant to another tier; audited with both codes, never touches invoices |
+| GET | `/invoices` | bearer + scope | `finance:read` — paged, `?status=` filter, newest period first; ISSUED past its due date reads OVERDUE |
+| POST | `/invoices/generate` | bearer + scope | `finance:manage` — bill one month (defaults to the last complete month); 409 if that month is already billed |
+| GET | `/invoices/:invoiceId` | bearer + scope | `finance:read` — the bill with its line items |
+| PATCH | `/invoices/:invoiceId/status` | bearer + scope | `finance:manage` — `ISSUED` (net 30), `PAID` (records the actor), `VOID`; every other move is 409 |
+| GET | `/invoices/:invoiceId/download` | bearer + scope | `finance:read` — printable text document as an attachment |
+| GET | `/ops/billing` | bearer only | `finance:read` — MRR, tier mix, invoice counts, outstanding vs settled, recent bills and the per-tenant ledger |
 
 `bearer + scope` means: `Authorization: Bearer <token>` **and** `x-organization-id: <uuid>`.
 
@@ -243,6 +252,8 @@ permissions. `INVITED` and `REVOKED` memberships contribute nothing.
 | `task:read` | — | — | — | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `task:manage` | — | — | — | ✅ | ✅ | ✅ | ✅ | — | — |
 | `ops:read` | — | — | — | ✅ | ✅ | — | — | — | — |
+| `finance:read` | ✅ | — | — | ✅ | ✅ | — | — | ✅ | ✅ |
+| `finance:manage` | — | — | — | ✅ | — | — | — | — | ✅ |
 
 **Bootstrapping.** There is no public registration. Provision staff out of band:
 
@@ -440,12 +451,40 @@ All four tables carry a **required, indexed `organization_id`**, and are only re
 scope-first repository methods. There is no global row for a tenant query to blend in, and no unscoped
 read method exists — a handler cannot forget the tenant because it must supply one.
 
+### Phase 4 tables
+
+```text
+SubscriptionTier (global price list)
+        │
+Organization 1 ──1 OrganizationSubscription ──> 1 SubscriptionTier
+             │
+             ├──< Invoice ──< InvoiceLineItem
+             └──< UsageMeter            (unique on organization_id + key + period)
+```
+
+`SubscriptionTier` is the one deliberately **global** table: it is the platform's price list, identical
+for every tenant, so it carries no `organization_id` and is written only by `db:seed:tiers`. Everything
+else in finance is tenant-owned and cascades with the organization.
+
+Money is stored as **integer minor units (paise)** in every column — `monthly_price_cents`,
+`unit_amount_cents`, `subtotal_cents`, `total_cents` — because an invoice that rounds differently on two
+machines is not an invoice. There is no `numeric`, no `float`, and no string money anywhere.
+
+`UsageMeter` is unique on `(organization_id, key, period)` and incremented through an atomic upsert, so
+two concurrent requests cannot lose a count. `period` is a `YYYY-MM` string, which is what makes a month
+a first-class bucket rather than a date range every caller has to reconstruct.
+
 | Table | Notes |
 |---|---|
 | `service_categories` | per-tenant catalogue; slug unique **per tenant** |
 | `service_requests` | `reference` unique per tenant, status/priority enums, requester + assignee, soft delete |
 | `request_comments` | `is_internal` notes are excluded from client-facing reads by default |
 | `deliverables` | `RELEASED` is refused by the repository until a named human has approved |
+| `subscription_tiers` | global price list: monthly price, request/storage/call/seat allowances, overage unit prices |
+| `organization_subscriptions` | one per tenant, unique on `organization_id`; plan changes audited |
+| `invoices` | per-tenant `number` (`INV-YYYY-MM-NNNN`), status enum, integer totals, `issued_at`/`due_at`/`paid_at`/`paid_by_id` |
+| `invoice_line_items` | `TIER_FEE` / `USAGE` / `ADJUSTMENT`; carries the `meter_key` that produced it |
+| `usage_meters` | counters per tenant + meter + period; storage in KB, money never stored here |
 
 ---
 
@@ -481,6 +520,8 @@ its data through `apps/web/src/lib/api-client.ts`.
 | `/requests/[requestId]` | Detail: metadata, transitions, edit form, comments, deliverables | `GET /service-requests/:id` + `/comments` + `/deliverables`, `PATCH /:id`, `POST /:id/status`, `POST /:id/comments`, `PATCH …/deliverables/:did/status` |
 | `/categories` | Service catalogue: create, rename, retire, delete (read-only without `category:manage`) | `GET · POST /service-categories`, `PATCH · DELETE /service-categories/:id` |
 | `/ops` | Operations console: cross-tenant totals, tenant table, pod load, routing queue, create pod. Restricted panel without `ops:read` | `GET /ops/dashboard`, `GET · POST /pods`, `PATCH /service-requests/:id/assign` |
+| `/billing` | Tenant billing: plan, period, three usage meters with warning/exceeded states, invoice table, expandable line items, download. Owners read it; no client can change it | `GET /subscription`, `GET /invoices`, `GET /invoices/:id`, `GET /invoices/:id/download` |
+| `/ops/billing` | Finance console: MRR, tier mix, invoice counts, outstanding vs settled, tenant ledger with per-tenant billing, and issue/settle/void actions for `finance:manage` holders | `GET /ops/billing`, `POST /invoices/generate`, `PATCH /invoices/:id/status` |
 | `/deliveries` | Delivery history: released assets, newest first | `GET /deliverables/history` |
 
 ### Session and headers
@@ -609,6 +650,10 @@ drain in another), `enqueue-live-event.ts` (queue an event while the API is stop
 | Phase 3: task breakdown and work allocation | done |
 | Phase 3: internal SLA monitoring and risk alerts | done |
 | Phase 3 polish: durable dispatch on Redis (events, retries, SLA) | done |
+| Phase 4: subscription tiers, billing data layer, tier seeds | done |
+| Phase 4: invoice generation engine, line items, status lifecycle | done |
+| Phase 4: usage metering and hard plan guards | done |
+| Phase 4: client billing page and platform finance console | done |
 | Delivery retry/backoff, bounce handling, delivery read API | retry + read API done; bounce handling not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |

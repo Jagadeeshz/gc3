@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { Building2, ClipboardList, Gauge, LayoutDashboard, LogOut, Package, Plus, Tags } from 'lucide-react';
+import { Building2, ClipboardList, Gauge, LayoutDashboard, LogOut, Package, Plus, Receipt, Tags } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { activeRoles } from '../../lib/session';
 import { useSession } from '../../lib/session-context';
 
@@ -22,6 +23,28 @@ const NAV = [
   { href: '/deliveries', label: 'Deliveries', icon: Package },
   { href: '/categories', label: 'Categories', icon: Tags },
 ] as const;
+
+/**
+ * Roles that may see the workspace's bill.
+ *
+ * Mirrors `finance:read` on the server: a client owner sees their own invoice, a
+ * team member and an approver do not. The nav is a courtesy — the API refuses the
+ * endpoint regardless.
+ */
+const BILLING_ROLES: readonly string[] = [
+  'CLIENT_OWNER',
+  'ACCOUNT_MANAGER',
+  'FINANCE_MANAGER',
+  'PLATFORM_ADMIN',
+  'OPERATIONS_MANAGER',
+];
+
+/** Roles that may open the platform finance console. */
+const PLATFORM_FINANCE_ROLES: readonly string[] = [
+  'PLATFORM_ADMIN',
+  'OPERATIONS_MANAGER',
+  'FINANCE_MANAGER',
+];
 
 export function PortalShell({ children }: { readonly children: ReactNode }) {
   const { session, ready, signOut, setActiveOrganization } = useSession();
@@ -47,6 +70,15 @@ export function PortalShell({ children }: { readonly children: ReactNode }) {
   const organization =
     session.organizations.find((org) => org.id === session.activeOrganizationId) ?? null;
   const roles = activeRoles(session);
+  const canReadBilling =
+    roles.some((role) => BILLING_ROLES.includes(role)) ||
+    (session.actor.platformRole !== null && BILLING_ROLES.includes(session.actor.platformRole));
+  const canOpenFinanceConsole =
+    session.actor.platformRole !== null && PLATFORM_FINANCE_ROLES.includes(session.actor.platformRole);
+
+  const navItems: readonly { href: string; label: string; icon: LucideIcon }[] = canReadBilling
+    ? [...NAV, { href: '/billing', label: 'Billing', icon: Receipt }]
+    : NAV;
   const roleLabel = session.actor.platformRole
     ? session.actor.platformRole.replace(/_/g, ' ')
     : roles.length > 0
@@ -99,7 +131,7 @@ export function PortalShell({ children }: { readonly children: ReactNode }) {
           <span className="px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
             Workspace
           </span>
-          {NAV.map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href;
 
@@ -127,23 +159,41 @@ export function PortalShell({ children }: { readonly children: ReactNode }) {
           `/ops/dashboard` without `ops:read`.
         */}
         {session.actor.platformRole === 'PLATFORM_ADMIN' ||
-        session.actor.platformRole === 'OPERATIONS_MANAGER' ? (
+        session.actor.platformRole === 'OPERATIONS_MANAGER' ||
+        canOpenFinanceConsole ? (
           <nav className="grid gap-1">
             <span className="px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
               Platform
             </span>
-            <Link
-              href="/ops"
-              className={[
-                'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
-                pathname === '/ops'
-                  ? 'bg-white/8 text-warm'
-                  : 'text-muted hover:bg-white/5 hover:text-warm',
-              ].join(' ')}
-            >
-              <Gauge aria-hidden className="size-4" strokeWidth={1.75} />
-              Operations
-            </Link>
+            {session.actor.platformRole === 'PLATFORM_ADMIN' ||
+            session.actor.platformRole === 'OPERATIONS_MANAGER' ? (
+              <Link
+                href="/ops"
+                className={[
+                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
+                  pathname === '/ops'
+                    ? 'bg-white/8 text-warm'
+                    : 'text-muted hover:bg-white/5 hover:text-warm',
+                ].join(' ')}
+              >
+                <Gauge aria-hidden className="size-4" strokeWidth={1.75} />
+                Operations
+              </Link>
+            ) : null}
+            {canOpenFinanceConsole ? (
+              <Link
+                href="/ops/billing"
+                className={[
+                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
+                  pathname === '/ops/billing'
+                    ? 'bg-white/8 text-warm'
+                    : 'text-muted hover:bg-white/5 hover:text-warm',
+                ].join(' ')}
+              >
+                <Receipt aria-hidden className="size-4" strokeWidth={1.75} />
+                Finance
+              </Link>
+            ) : null}
           </nav>
         ) : null}
 
