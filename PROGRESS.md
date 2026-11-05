@@ -1718,3 +1718,12 @@ hours, so the Services grid shows the brief's capabilities as real rows.
 3. **My Pod shows routing, not people.** Pod composition, workloads and internal tasks are staff
    data (`ops:read`, `task:read`); no client endpoint exposes them. The page reports whether each
    open request has been routed to a pod — a real signal — rather than inventing a roster.
+
+## Root entry point
+
+`/` was still serving the Phase-0 scaffold, so the portal opened on a development
+page rather than the front door. It is now a decision, not a destination: a client
+lands on `/overview`, staff on `/ops`, everyone else on `/login` (verified for all
+four cases). The scaffold itself is preserved at `/foundation` — it is the only
+public page in the app and it does expose API health, so gate or delete it before
+production.
