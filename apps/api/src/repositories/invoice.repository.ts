@@ -312,24 +312,43 @@ export const invoiceRepository = {
   async overview(): Promise<FinanceOverview> {
     await this.syncOverdue();
 
-    const [subscriptions, tiers, counts, money, recent] = await Promise.all([
-      prisma.organizationSubscription.findMany({
-        where: { status: 'ACTIVE' },
-        select: { organizationId: true, tierId: true },
-      }),
-      prisma.subscriptionTier.findMany({ select: { id: true, code: true, name: true, monthlyPriceCents: true } }),
-      financeRepository.countByStatus(),
-      prisma.invoice.groupBy({
-        by: ['status'],
-        _sum: { totalCents: true },
-        _count: { _all: true },
-      }),
-      prisma.invoice.findMany({
-        orderBy: [{ createdAt: 'desc' }],
-        take: 10,
-        include: { organization: { select: { name: true } } },
-      }),
-    ]);
+    const [subscriptions, tiers, counts, money, recent, organizations, usageThisPeriod] =
+      await Promise.all([
+        prisma.organizationSubscription.findMany({
+          where: { status: 'ACTIVE' },
+          select: { organizationId: true, tierId: true },
+        }),
+        prisma.subscriptionTier.findMany({ select: { id: true, code: true, name: true, monthlyPriceCents: true } }),
+        financeRepository.countByStatus(),
+        prisma.invoice.groupBy({
+          by: ['status'],
+          _sum: { totalCents: true },
+          _count: { _all: true },
+        }),
+        prisma.invoice.findMany({
+          orderBy: [{ createdAt: 'desc' }],
+          take: 10,
+          include: { organization: { select: { name: true } } },
+        }),
+        prisma.organization.findMany({
+          where: { deletedAt: null },
+          orderBy: { name: 'asc' },
+          select: {
+            id: true,
+            name: true,
+            subscription: {
+              select: {
+                status: true,
+                tier: { select: { code: true, name: true, monthlyPriceCents: true } },
+              },
+            },
+          },
+        }),
+        prisma.usageMeter.findMany({
+          where: { period: periodFor().key, key: { in: ['REQUESTS', 'STORAGE_KB'] } },
+          select: { organizationId: true, key: true, quantity: true },
+        }),
+      ]);
 
     const tierById = new Map(tiers.map((tier) => [tier.id, tier]));
 
@@ -370,6 +389,28 @@ export const invoiceRepository = {
         paidCents: sumFor('PAID'),
       },
       recent: recent.map((row) => ({ ...toInvoice(row), organizationName: row.organization.name })),
+      tenants: organizations.map((organization) => {
+        const requests = usageThisPeriod.find(
+          (meter) => meter.organizationId === organization.id && meter.key === 'REQUESTS',
+        );
+        const storage = usageThisPeriod.find(
+          (meter) => meter.organizationId === organization.id && meter.key === 'STORAGE_KB',
+        );
+
+        return {
+          id: organization.id,
+          name: organization.name,
+          tierCode: organization.subscription?.tier.code ?? null,
+          tierName: organization.subscription?.tier.name ?? null,
+          status: organization.subscription?.status ?? null,
+          mrrCents:
+            organization.subscription?.status === 'ACTIVE'
+              ? (organization.subscription?.tier.monthlyPriceCents ?? 0)
+              : 0,
+          requestsThisPeriod: requests?.quantity ?? 0,
+          storageMbThisPeriod: Math.floor((storage?.quantity ?? 0) / 1_024),
+        };
+      }),
     };
   },
 };

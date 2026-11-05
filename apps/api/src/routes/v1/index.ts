@@ -3,6 +3,7 @@ import type { ApiSuccess, HealthReport } from '@gc3/types';
 import { SERVICE_NAME, SERVICE_VERSION, env } from '../../config/env';
 import { requireTenantScope } from '../../middleware/tenant-scope';
 import { requireAuth, requirePermission } from '../../middleware/auth';
+import { meterApiCall } from '../../metering/api-calls';
 import { authRouter } from './auth';
 import { deliverablesRouter } from './deliverables';
 import { invoicesRouter } from './invoices';
@@ -104,6 +105,9 @@ v1Router.get(
     });
   },
 );
+
+/** Meter / block / count API calls against the tenant's plan. */
+v1Router.use(meterApiCall);
 
 /**
  * Public: /health and /meta. Everything else needs a verified access token.

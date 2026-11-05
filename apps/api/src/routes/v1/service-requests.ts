@@ -36,6 +36,7 @@ import {
 } from '../../storage/local-storage';
 import { requireAuth, requirePermission } from '../../middleware/auth';
 import { forbidAgentCommercialAction, requireTenantScope } from '../../middleware/tenant-scope';
+import { assertWithinLimit, bytesToKb, consume } from '../../metering/limits';
 import { deliverableRepository } from '../../repositories/deliverable.repository';
 import { requestCommentRepository } from '../../repositories/request-comment.repository';
 import { serviceRequestRepository } from '../../repositories/service-request.repository';
@@ -79,7 +80,13 @@ serviceRequestsRouter.post(
       throw ApiError.unauthenticated();
     }
 
-    const created = await serviceRequestRepository.createScoped(scopeOf(request.organizationId), {
+    const organizationId = scopeOf(request.organizationId);
+
+    // The plan is a hard limit, not a soft one: no allowance, no request. Checked
+    // before the write so a rejected call leaves the meter untouched.
+    await assertWithinLimit(organizationId, 'REQUESTS');
+
+    const created = await serviceRequestRepository.createScoped(organizationId, {
       title: parsed.data.title,
       description: parsed.data.description,
       requesterId: actor.userId,
@@ -88,6 +95,8 @@ serviceRequestsRouter.post(
       ...(parsed.data.dueAt ? { dueAt: parsed.data.dueAt } : {}),
       status: parsed.data.status,
     });
+
+    await consume(organizationId, 'REQUESTS');
 
     const body: ApiSuccess<ServiceRequest> = { success: true, data: created };
     response.status(201).json(body);
@@ -631,6 +640,11 @@ serviceRequestsRouter.put(
       );
     }
 
+    // Storage is a metered allowance: refuse the upload before writing bytes we
+    // would then have to charge for.
+    const sizeKb = bytesToKb(bytes.length);
+    await assertWithinLimit(organizationId, 'STORAGE_KB', sizeKb);
+
     const existing = await deliverableRepository.findByIdScoped(
       organizationId,
       params.data.deliverableId,
@@ -669,6 +683,9 @@ serviceRequestsRouter.put(
     if (!result) {
       throw ApiError.notFound('Deliverable not found');
     }
+
+    // Only now does the stored file count against the plan's storage allowance.
+    await consume(organizationId, 'STORAGE_KB', sizeKb);
 
     const payload: ApiSuccess<{
       deliverable: Deliverable;

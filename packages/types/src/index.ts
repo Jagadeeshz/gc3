@@ -141,6 +141,7 @@ export type ApiErrorCode =
   | 'NOT_IMPLEMENTED'
   | 'PAYLOAD_TOO_LARGE'
   | 'RATE_LIMITED'
+  | 'LIMIT_EXCEEDED'
   | 'INTERNAL_ERROR';
 
 export interface ApiErrorBody {
@@ -787,4 +788,15 @@ export interface FinanceOverview {
     readonly paidCents: number;
   };
   readonly recent: readonly (Invoice & { readonly organizationName: string })[];
+  /** Every tenant with its plan, so finance can bill from one screen. */
+  readonly tenants: readonly {
+    readonly id: Uuid;
+    readonly name: string;
+    readonly tierCode: string | null;
+    readonly tierName: string | null;
+    readonly status: SubscriptionStatus | null;
+    readonly mrrCents: number;
+    readonly requestsThisPeriod: number;
+    readonly storageMbThisPeriod: number;
+  }[];
 }

@@ -38,7 +38,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 
 | 20 | Phase 4 · Subscription tiers & billing data layer | `<pending>` | ✅ delivered |
 | 21 | Phase 4 · Invoicing & line-item generation engine | `<pending>` | ✅ delivered |
-| 22 | Phase 4 · Usage tracking & subscription metering | `<pending>` | ⏳ next |
+| 22 | Phase 4 · Usage tracking & subscription metering | `<pending>` | ✅ delivered |
+| 23 | Phase 4 · Client & admin financial dashboards | `<pending>` | ⏳ next |
 
 ---
 
@@ -1141,6 +1142,44 @@ and a real browser.
   document that may already be in a client's inbox.
 - **Zero tax is stated, not implied.** No jurisdiction rules are configured, so the field exists, is
   reported, and is honestly zero.
+
+---
+
+## Slice 22 — Phase 4 · Usage tracking, metering and plan guards  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §5 (plan limits), §12 (tenant isolation), §14 (platform behaviour under load)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Guard engine | `metering/limits.ts` — `assertWithinLimit(tenant, meter, required)` reads the plan and throws a typed **403 `LIMIT_EXCEEDED`** naming the meter, what is used, what the plan includes and which tier, so the client can render an upgrade prompt instead of a mystery failure |
+| Requests | `POST /service-requests` guards **before** the write and consumes **after** it: a rejected create leaves the meter untouched, and a validation failure never burns quota |
+| Storage | the deliverable upload route converts bytes→KB (rounded **up**) and checks the remaining allowance before a single byte is written; only a stored file is charged |
+| API calls | `metering/api-calls.ts` mounted on `/api/v1`: the counter is written on response `finish` (work that never happened is not billed), enforcement runs only for identified callers, and anonymous calls never move a tenant's meter |
+| Exemptions | `/subscription`, `/invoices`, `/organizations`, `/notifications`, `/auth` stay reachable when a meter is exhausted — otherwise the block hides the very page that explains it |
+| Platform view | `GET /ops/billing` extended with a per-tenant ledger (`tenants[]`: plan, status, MRR contribution, requests and storage this period) so finance can see and bill every tenant from one screen |
+| Tests | 14: request counting, over-limit 403 with tier in the message, client blocked identically, upgrade lifts the limit, storage refusal leaves no file and no charge, KB rounding up, exactly-filling upload allowed, API calls counted, anonymous calls uncounted, work blocked / billing still readable, MRR follows tier changes, outstanding vs settled, tenant ledger, and the finance-vs-client permission split |
+
+### Evidence
+
+- `tests/metering.test.ts` **10/10**, `tests/finance-overview.test.ts` **4/4**
+- full suite after the middleware landed: **324/324 across 27 files** (the per-request meter touches every
+  route, so this was the real regression check)
+- `pnpm --filter @gc3/api typecheck` clean
+
+### Decisions worth naming
+
+- **Hard, not soft.** An exhausted allowance refuses the work rather than overcharging for it. The brief
+  asks for blocking, and a surprise invoice is a worse product than a clear refusal.
+- **Bytes are charged only once they are stored**, and only the successful write is billed — the guard is a
+  prediction, the consume is a fact.
+- **Enforcement follows the plan.** A tenant with no subscription has no allowance to exceed, so the
+  per-request meter never invents a plan; the request and storage guards provision the entry tier because
+  that is what a real onboarding would have done.
+- **Known limit, stated:** the API-call meter writes one row-increment per authenticated request. That is
+  a deliberate honesty-over-throughput trade for this build; batching would be the next step.
 
 ---
 

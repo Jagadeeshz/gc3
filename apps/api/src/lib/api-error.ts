@@ -60,4 +60,32 @@ export class ApiError extends Error {
   static inviteExpired(message = 'This invitation has expired') {
     return new ApiError(410, 'INVITE_EXPIRED', message);
   }
+
+  /**
+   * The tenant's plan does not allow any more of this resource (403).
+   *
+   * Not a payment error and not a permission error: the caller is allowed to do
+   * this in principle, but the subscription has no allowance left. The details
+   * name the meter, what is used and what the plan includes, so the client can
+   * show an upgrade prompt instead of a mystery failure.
+   */
+  static limitExceeded(input: {
+    meter: string;
+    used: number;
+    limit: number;
+    unit: string;
+    tierCode: string;
+  }) {
+    return new ApiError(
+      403,
+      'LIMIT_EXCEEDED',
+      `The ${input.tierCode} plan allows ${input.limit.toLocaleString('en-IN')} ${input.unit} — ${input.used.toLocaleString('en-IN')} used. Upgrade the plan to continue.`,
+      [
+        { path: 'meter', message: input.meter },
+        { path: 'used', message: String(input.used) },
+        { path: 'limit', message: String(input.limit) },
+        { path: 'tier', message: input.tierCode },
+      ],
+    );
+  }
 }
