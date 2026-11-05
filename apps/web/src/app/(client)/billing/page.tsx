@@ -130,7 +130,7 @@ export default function BillingPage() {
   }
 
   if (loading && !plan) {
-    return <p className="text-sm text-muted">Loading billing…</p>;
+    return <p className="text-sm text-slate-400">Loading billing…</p>;
   }
 
   if (error && !plan) {
@@ -143,7 +143,7 @@ export default function BillingPage() {
   }
 
   if (!plan) {
-    return <p className="text-sm text-muted">No plan is attached to this workspace yet.</p>;
+    return <p className="text-sm text-slate-400">No plan is attached to this workspace yet.</p>;
   }
 
   const { tier, subscription, period, usage } = plan;
@@ -151,27 +151,27 @@ export default function BillingPage() {
   return (
     <div className="grid gap-7">
       <header className="grid gap-1">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Finance</p>
-        <h1 className="font-display text-2xl font-semibold text-warm">Billing &amp; plan</h1>
-        <p className="text-sm text-muted">
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">Finance</p>
+        <h1 className="font-display text-2xl font-semibold text-slate-100">Billing &amp; plan</h1>
+        <p className="text-sm text-slate-400">
           What this workspace is subscribed to, how much of the allowance it has used, and every
           invoice issued to it.
         </p>
       </header>
 
       {notice ? (
-        <div className="rounded-xl border border-gold/30 bg-gold/5 px-4 py-2.5 text-xs text-gold-light">
+        <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.07] px-4 py-2.5 text-xs text-amber-200">
           {notice}
         </div>
       ) : null}
 
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <article className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+        <article className="rounded-2xl border border-[#1E293B] bg-[#0B1220]/60 p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">Plan</p>
-              <h2 className="mt-1 font-display text-xl font-semibold text-warm">{tier.name}</h2>
-              <p className="mt-1 text-xs text-muted">
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">Plan</p>
+              <h2 className="mt-1 font-display text-xl font-semibold text-slate-100">{tier.name}</h2>
+              <p className="mt-1 text-xs text-slate-400">
                 {tier.description ?? 'Monthly subscription, billed per calendar month.'}
               </p>
             </div>
@@ -181,30 +181,30 @@ export default function BillingPage() {
           </div>
 
           <div className="mt-5 flex flex-wrap items-end gap-x-6 gap-y-2">
-            <p className="font-display text-2xl font-semibold text-warm">
+            <p className="font-display text-2xl font-semibold text-slate-100">
               {formatMoney(tier.monthlyPriceCents, tier.currency)}
-              <span className="ml-1 font-sans text-xs font-normal text-muted">/ month</span>
+              <span className="ml-1 font-sans text-xs font-normal text-slate-400">/ month</span>
             </p>
-            <p className="text-xs text-muted">
+            <p className="text-xs text-slate-400">
               {period.label} · renews {formatDate(subscription.currentPeriodEnd)}
             </p>
           </div>
 
-          <p className="mt-4 flex items-center gap-2 text-xs text-muted">
+          <p className="mt-4 flex items-center gap-2 text-xs text-slate-400">
             <BadgeIndianRupee aria-hidden className="size-3.5 text-gold-light" strokeWidth={1.75} />
             Overages are billed at the end of the month and appear as separate lines on the invoice.
           </p>
         </article>
 
-        <article className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+        <article className="rounded-2xl border border-[#1E293B] bg-[#0B1220]/60 p-5">
+          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">
             Change your plan
           </p>
-          <p className="mt-2 text-sm text-muted">
+          <p className="mt-2 text-sm text-slate-400">
             Upgrades and downgrades are handled by your account manager, so pricing changes always
             have a person behind them.
           </p>
-          <p className="mt-4 text-xs text-muted">
+          <p className="mt-4 text-xs text-slate-400">
             Included: {tier.requestsIncluded} requests · {tier.storageMbIncluded.toLocaleString('en-IN')} MB
             storage · {tier.apiCallsIncluded.toLocaleString('en-IN')} API calls · {tier.seatsIncluded} seats.
           </p>
@@ -212,7 +212,7 @@ export default function BillingPage() {
       </section>
 
       <section className="grid gap-3">
-        <h2 className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+        <h2 className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">
           Usage this period
         </h2>
         <div className="grid gap-3 sm:grid-cols-3">
@@ -223,18 +223,18 @@ export default function BillingPage() {
             return (
               <article
                 key={meter.key}
-                className="rounded-xl border border-white/10 bg-white/[0.02] p-4"
+                className="rounded-xl border border-[#1E293B] bg-[#0B1220]/60 p-4"
               >
-                <p className="text-xs text-muted">
+                <p className="text-xs text-slate-400">
                   {meter.key === 'REQUESTS'
                     ? 'Service requests'
                     : meter.key === 'STORAGE_KB'
                       ? 'Storage'
                       : 'API calls'}
                 </p>
-                <p className="mt-1 font-display text-lg font-semibold text-warm">
+                <p className="mt-1 font-display text-lg font-semibold text-slate-100">
                   {meter.quantity.toLocaleString('en-IN')}
-                  <span className="ml-1 text-xs font-normal text-muted">
+                  <span className="ml-1 text-xs font-normal text-slate-400">
                     / {meter.included.toLocaleString('en-IN')} {meter.unit}
                   </span>
                 </p>
@@ -253,14 +253,14 @@ export default function BillingPage() {
 
       <section className="grid gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">Invoices</h2>
-          <span className="text-xs text-muted">{invoices?.total ?? 0} on file</span>
+          <h2 className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">Invoices</h2>
+          <span className="text-xs text-slate-400">{invoices?.total ?? 0} on file</span>
         </div>
 
         {invoices && invoices.items.length > 0 ? (
-          <div className="overflow-hidden rounded-2xl border border-white/10">
+          <div className="overflow-hidden rounded-2xl border border-[#1E293B]">
             <table className="w-full text-left text-sm">
-              <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.14em] text-muted">
+              <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.14em] text-slate-400">
                 <tr>
                   <th className="px-4 py-2.5 font-medium">Invoice</th>
                   <th className="px-4 py-2.5 font-medium">Period</th>
@@ -272,18 +272,18 @@ export default function BillingPage() {
               </thead>
               <tbody>
                 {invoices.items.map((invoice) => (
-                  <tr key={invoice.id} className="border-t border-white/8">
+                  <tr key={invoice.id} className="border-t border-[#1E293B]">
                     <td className="px-4 py-3">
                       <button
                         type="button"
                         onClick={() => void open(invoice.id)}
                         disabled={busy === invoice.id}
-                        className="font-mono text-xs text-warm underline-offset-4 hover:underline disabled:opacity-50"
+                        className="font-mono text-xs text-slate-100 underline-offset-4 hover:underline disabled:opacity-50"
                       >
                         {invoice.number}
                       </button>
                     </td>
-                    <td className="px-4 py-3 text-xs text-muted">
+                    <td className="px-4 py-3 text-xs text-slate-400">
                       {invoice.periodStart.slice(0, 10)}
                     </td>
                     <td className="px-4 py-3">
@@ -295,17 +295,17 @@ export default function BillingPage() {
                             : invoiceStatusTone(invoice.status) === 'critical'
                               ? 'border-red-400/35 bg-red-400/10 text-red-300'
                               : invoiceStatusTone(invoice.status) === 'gold'
-                                ? 'border-gold/35 bg-gold/10 text-gold-light'
-                                : 'border-white/15 bg-white/5 text-muted',
+                                ? 'border-emerald-400/35 bg-emerald-400/10 text-emerald-200'
+                                : 'border-white/15 bg-white/5 text-slate-400',
                         ].join(' ')}
                       >
                         {invoiceStatusLabel(invoice.status)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-xs text-warm">
+                    <td className="px-4 py-3 text-right font-mono text-xs text-slate-100">
                       {formatMoney(invoice.totalCents, invoice.currency)}
                     </td>
-                    <td className="px-4 py-3 text-xs text-muted">
+                    <td className="px-4 py-3 text-xs text-slate-400">
                       {invoice.dueAt ? formatDate(invoice.dueAt) : '—'}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -313,7 +313,7 @@ export default function BillingPage() {
                         type="button"
                         onClick={() => void save(invoice)}
                         disabled={busy === invoice.id}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-2.5 py-1 text-[11px] text-warm transition-colors hover:border-gold/50 hover:text-gold-light disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-2.5 py-1 text-[11px] text-slate-100 transition-colors hover:border-emerald-400/40 hover:text-emerald-200 disabled:opacity-50"
                       >
                         <ArrowDownToLine aria-hidden className="size-3" strokeWidth={1.9} />
                         Download
@@ -325,7 +325,7 @@ export default function BillingPage() {
             </table>
           </div>
         ) : (
-          <div className="flex items-center gap-3 rounded-2xl border border-dashed border-white/15 px-4 py-6 text-sm text-muted">
+          <div className="flex items-center gap-3 rounded-2xl border border-dashed border-white/15 px-4 py-6 text-sm text-slate-400">
             <Receipt aria-hidden className="size-4 text-gold-light" strokeWidth={1.75} />
             No invoices yet. Your first bill is generated at the end of the month.
           </div>
@@ -333,16 +333,16 @@ export default function BillingPage() {
       </section>
 
       {openInvoice ? (
-        <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+        <section className="rounded-2xl border border-[#1E293B] bg-[#0B1220]/60 p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">
                 Invoice detail
               </p>
-              <h3 className="mt-1 font-display text-lg font-semibold text-warm">
+              <h3 className="mt-1 font-display text-lg font-semibold text-slate-100">
                 {openInvoice.number}
               </h3>
-              <p className="text-xs text-muted">
+              <p className="text-xs text-slate-400">
                 {formatDate(openInvoice.periodStart)} — {formatDate(openInvoice.periodEnd)} ·{' '}
                 {invoiceStatusLabel(openInvoice.status)}
               </p>
@@ -350,14 +350,14 @@ export default function BillingPage() {
             <button
               type="button"
               onClick={() => setOpenInvoice(null)}
-              className="text-xs text-muted underline-offset-4 hover:text-warm hover:underline"
+              className="text-xs text-slate-400 underline-offset-4 hover:text-slate-100 hover:underline"
             >
               Close
             </button>
           </div>
 
           <table className="mt-4 w-full text-left text-xs">
-            <thead className="text-[10px] uppercase tracking-[0.14em] text-muted">
+            <thead className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
               <tr>
                 <th className="py-2 font-medium">Line</th>
                 <th className="py-2 text-right font-medium">Qty</th>
@@ -367,19 +367,19 @@ export default function BillingPage() {
             </thead>
             <tbody>
               {openInvoice.lineItems.map((line) => (
-                <tr key={line.id} className="border-t border-white/8">
-                  <td className="py-2 pr-3 text-warm">{line.description}</td>
-                  <td className="py-2 text-right font-mono text-muted">{line.quantity}</td>
-                  <td className="py-2 text-right font-mono text-muted">
+                <tr key={line.id} className="border-t border-[#1E293B]">
+                  <td className="py-2 pr-3 text-slate-100">{line.description}</td>
+                  <td className="py-2 text-right font-mono text-slate-400">{line.quantity}</td>
+                  <td className="py-2 text-right font-mono text-slate-400">
                     {formatMoney(line.unitAmountCents, openInvoice.currency)}
                   </td>
-                  <td className="py-2 text-right font-mono text-warm">
+                  <td className="py-2 text-right font-mono text-slate-100">
                     {formatMoney(line.amountCents, openInvoice.currency)}
                   </td>
                 </tr>
               ))}
             </tbody>
-            <tfoot className="border-t border-white/10 text-warm">
+            <tfoot className="border-t border-[#1E293B] text-slate-100">
               <tr>
                 <td className="py-2" colSpan={3}>
                   Subtotal
@@ -408,12 +408,12 @@ export default function BillingPage() {
           </table>
 
           {openInvoice.notes ? (
-            <p className="mt-3 text-xs text-muted">{openInvoice.notes}</p>
+            <p className="mt-3 text-xs text-slate-400">{openInvoice.notes}</p>
           ) : null}
         </section>
       ) : null}
 
-      <p className="flex items-center gap-2 text-[11px] text-muted">
+      <p className="flex items-center gap-2 text-[11px] text-slate-400">
         <TrendingUp aria-hidden className="size-3.5 text-gold-light" strokeWidth={1.75} />
         Usage counters reset on the first of each month.
       </p>

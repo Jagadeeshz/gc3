@@ -8,6 +8,7 @@ import { BarChart3, Building2, ClipboardList, Gauge, LayoutDashboard, LogOut, Re
 import type { LucideIcon } from 'lucide-react';
 import { activeRoles } from '../../lib/session';
 import { useSession } from '../../lib/session-context';
+import { clientNavFor } from '../../lib/client-nav';
 
 /**
  * Portal shell: persistent sidebar + topbar around every authenticated screen.
@@ -103,7 +104,7 @@ export function PortalShell({
    */
   useEffect(() => {
     if (isOps && ready && session && !isStaff) {
-      router.replace('/dashboard');
+      router.replace('/overview');
     }
   }, [isOps, ready, session, isStaff, router]);
 
@@ -150,15 +151,15 @@ export function PortalShell({
   const navItems = (isOps ? OPS_NAV : CLIENT_NAV).filter(canSee);
 
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[248px_1fr]">
-      <aside className="flex flex-col gap-6 border-r border-white/10 bg-void-secondary px-4 py-5">
+    <div className={`grid min-h-dvh lg:grid-cols-[248px_1fr] ${isOps ? 'bg-void' : 'bg-[#090D16]'} `}>
+      <aside className={`flex flex-col gap-6 px-4 py-5 ${isOps ? 'border-r border-white/10 bg-void-secondary' : 'border-r border-[#1E293B] bg-[#0B1120]'}`}>
         {/*
           The brand leads home: clients to their dashboard, staff back to the
           console. Client users never see an /ops href here — for them this
           resolves to /dashboard — but a staff member who stepped into the tenant
           workspace (request detail lives under (client)) is not stranded there.
         */}
-        <Link href={isStaff ? '/ops' : '/dashboard'} className="flex items-center gap-3">
+        <Link href={isStaff ? '/ops' : '/overview'} className="flex items-center gap-3">
           <span className="grid size-10 place-items-center rounded-[10px] border border-gold/35 bg-gold/10 font-display text-lg font-semibold text-gold-light">
             G
           </span>
@@ -197,31 +198,71 @@ export function PortalShell({
           </div>
         )}
 
-        <nav className="grid gap-1">
-          <span className="px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-            {isOps ? 'Platform' : 'Workspace'}
-          </span>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.href;
+        {isOps ? (
+          <nav className="grid gap-1">
+            <span className="px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+              Platform
+            </span>
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const active = pathname === item.href;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={[
-                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
-                  active
-                    ? 'bg-white/8 text-warm'
-                    : 'text-muted hover:bg-white/5 hover:text-warm',
-                ].join(' ')}
-              >
-                <Icon aria-hidden className="size-4" strokeWidth={1.75} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={[
+                    'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
+                    active
+                      ? 'bg-white/8 text-warm'
+                      : 'text-muted hover:bg-white/5 hover:text-warm',
+                  ].join(' ')}
+                >
+                  <Icon aria-hidden className="size-4" strokeWidth={1.75} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        ) : (
+          /*
+            Client navigation is grouped and role-derived: an owner gets the full
+            thirteen entries, a member gets the nine that belong to their work.
+            The billing section simply does not exist for a member — nothing is
+            rendered disabled, because a disabled link still advertises a screen.
+          */
+          clientNavFor(roles.includes('CLIENT_OWNER')).map((section) => (
+            <nav key={section.title} className="grid gap-0.5">
+              <span className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                {section.title}
+              </span>
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const active = pathname === item.href;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={[
+                      'group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] transition-colors',
+                      active
+                        ? 'border border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-200'
+                        : 'border border-transparent text-slate-400 hover:bg-white/[0.04] hover:text-slate-100',
+                    ].join(' ')}
+                  >
+                    <Icon
+                      aria-hidden
+                      className={`size-4 ${active ? 'text-emerald-300' : 'text-slate-500 group-hover:text-slate-300'}`}
+                      strokeWidth={1.75}
+                    />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          ))
+        )}
 
         {/*
           Staff can step into the tenant workspace — request detail lives under
@@ -234,10 +275,10 @@ export function PortalShell({
               Tenant workspace
             </span>
             <Link
-              href="/dashboard"
+              href="/overview"
               className={[
                 'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
-                pathname === '/dashboard'
+                pathname === '/overview'
                   ? 'bg-white/8 text-warm'
                   : 'text-muted hover:bg-white/5 hover:text-warm',
               ].join(' ')}
@@ -268,7 +309,7 @@ export function PortalShell({
       </aside>
 
       <div className="min-w-0">
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-white/10 bg-void/85 px-6 backdrop-blur">
+        <header className={`sticky top-0 z-10 flex h-16 items-center justify-between border-b px-6 backdrop-blur ${isOps ? 'border-white/10 bg-void/85' : 'border-[#1E293B] bg-[#090D16]/85'}`}>
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
             {isOps ? 'Platform operations' : (organization?.name ?? 'No tenant selected')}
           </span>

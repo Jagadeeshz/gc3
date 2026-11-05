@@ -183,8 +183,8 @@ export default function CategoriesPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl tracking-[-0.01em] text-warm">Service categories</h1>
-      <p className="mt-1 text-sm text-muted">
+      <h1 className="font-display text-3xl tracking-[-0.01em] text-slate-100">Service categories</h1>
+      <p className="mt-1 text-sm text-slate-400">
         The catalogue of services this organization can raise requests against.
       </p>
 
@@ -198,23 +198,23 @@ export default function CategoriesPage() {
       ) : null}
 
       {notice ? (
-        <p className="mt-4 rounded-lg border border-gold/30 bg-gold/10 px-3 py-2 text-xs text-gold-light">
+        <p className="mt-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
           {notice}
         </p>
       ) : null}
 
       {canManage ? (
         <form
-          className="mt-5 rounded-[14px] border border-white/10 bg-graphite/85 p-5"
+          className="mt-5 rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-5"
           onSubmit={onSubmit}
         >
-          <h2 className="text-sm font-semibold text-warm">
+          <h2 className="text-sm font-semibold text-slate-100">
             {editingId ? 'Edit category' : 'New category'}
           </h2>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <label className="grid gap-1.5">
-              <span className="text-xs font-medium text-muted">Name</span>
+              <span className="text-xs font-medium text-slate-400">Name</span>
               <input
                 required
                 minLength={2}
@@ -222,41 +222,41 @@ export default function CategoriesPage() {
                 value={form.name}
                 onChange={(event) => setForm({ ...form, name: event.target.value })}
                 placeholder="Cloud Migration"
-                className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+                className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
               />
             </label>
 
             <label className="grid gap-1.5">
-              <span className="text-xs font-medium text-muted">
-                Slug <span className="text-muted/70">(optional, derived from the name)</span>
+              <span className="text-xs font-medium text-slate-400">
+                Slug <span className="text-slate-400/70">(optional, derived from the name)</span>
               </span>
               <input
                 value={form.slug}
                 onChange={(event) => setForm({ ...form, slug: event.target.value })}
                 placeholder="cloud-migration"
                 pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 font-mono text-xs text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+                className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 font-mono text-xs text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
               />
             </label>
           </div>
 
           <label className="mt-3 grid gap-1.5">
-            <span className="text-xs font-medium text-muted">Description</span>
+            <span className="text-xs font-medium text-slate-400">Description</span>
             <input
               maxLength={500}
               value={form.description}
               onChange={(event) => setForm({ ...form, description: event.target.value })}
               placeholder="What kind of work belongs here?"
-              className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+              className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
             />
           </label>
 
-          <label className="mt-3 flex items-center gap-2 text-xs text-muted">
+          <label className="mt-3 flex items-center gap-2 text-xs text-slate-400">
             <input
               type="checkbox"
               checked={form.isActive}
               onChange={(event) => setForm({ ...form, isActive: event.target.checked })}
-              className="size-4 rounded border-white/20 bg-graphite-elevated accent-gold"
+              className="size-4 rounded border-white/20 bg-[#0B1220] accent-gold"
             />
             Active — offered when raising a request
           </label>
@@ -265,7 +265,7 @@ export default function CategoriesPage() {
             <button
               type="submit"
               disabled={busy}
-              className="min-h-10 rounded-[10px] border border-gold-deep/40 bg-[linear-gradient(180deg,#E2C777_0%,#D9B65D_100%)] px-4 py-2 text-sm font-medium text-ink disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-10 rounded-[10px] border border-emerald-500/45 bg-[linear-gradient(180deg,#34D399_0%,#10B981_100%)] px-4 py-2 text-sm font-medium text-[#04140D] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {busy ? 'Saving…' : editingId ? 'Save changes' : 'Create category'}
             </button>
@@ -274,7 +274,7 @@ export default function CategoriesPage() {
                 type="button"
                 onClick={resetForm}
                 disabled={busy}
-                className="min-h-10 rounded-[10px] border border-white/15 bg-white/5 px-4 py-2 text-sm text-warm hover:bg-white/10 disabled:opacity-60"
+                className="min-h-10 rounded-[10px] border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-100 hover:bg-white/10 disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -282,16 +282,16 @@ export default function CategoriesPage() {
           </div>
         </form>
       ) : (
-        <p className="mt-5 rounded-[12px] border border-white/10 bg-graphite/85 px-4 py-3 text-xs text-muted">
+        <p className="mt-5 rounded-[12px] border border-[#1E293B] bg-[#0B1220] px-4 py-3 text-xs text-slate-400">
           You can use the catalogue when raising requests. Managing it is limited to platform admins
           and operations managers.
         </p>
       )}
 
       {loading ? (
-        <p className="mt-6 text-sm text-muted">Loading categories…</p>
+        <p className="mt-6 text-sm text-slate-400">Loading categories…</p>
       ) : categories.length === 0 ? (
-        <p className="mt-6 rounded-[14px] border border-white/10 bg-graphite/85 p-5 text-sm text-muted">
+        <p className="mt-6 rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-5 text-sm text-slate-400">
           No categories yet{canManage ? ' — create the first one above.' : '.'}
         </p>
       ) : (
@@ -299,21 +299,21 @@ export default function CategoriesPage() {
           {categories.map((category) => (
             <li
               key={category.id}
-              className="rounded-[12px] border border-white/10 bg-graphite/85 p-4"
+              className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-medium text-warm">{category.name}</span>
+                    <span className="text-sm font-medium text-slate-100">{category.name}</span>
                     <Badge tone={category.isActive ? 'positive' : 'neutral'}>
                       {category.isActive ? 'Active' : 'Retired'}
                     </Badge>
                   </div>
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
                     {category.slug} · added {formatDate(category.createdAt)}
                   </p>
                   {category.description ? (
-                    <p className="mt-1.5 text-xs text-muted">{category.description}</p>
+                    <p className="mt-1.5 text-xs text-slate-400">{category.description}</p>
                   ) : null}
                 </div>
 
@@ -323,7 +323,7 @@ export default function CategoriesPage() {
                       type="button"
                       onClick={() => startEditing(category)}
                       disabled={busy}
-                      className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-warm hover:bg-white/10 disabled:opacity-50"
+                      className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-slate-100 hover:bg-white/10 disabled:opacity-50"
                     >
                       Edit
                     </button>
@@ -331,7 +331,7 @@ export default function CategoriesPage() {
                       type="button"
                       onClick={() => void onToggleActive(category)}
                       disabled={busy}
-                      className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-warm hover:bg-white/10 disabled:opacity-50"
+                      className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-slate-100 hover:bg-white/10 disabled:opacity-50"
                     >
                       {category.isActive ? 'Retire' : 'Reactivate'}
                     </button>

@@ -47,8 +47,8 @@ export default function DeliveriesPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl tracking-[-0.01em] text-warm">Delivery history</h1>
-      <p className="mt-1 text-sm text-muted">
+      <h1 className="font-display text-3xl tracking-[-0.01em] text-slate-100">Delivery history</h1>
+      <p className="mt-1 text-sm text-slate-400">
         Everything released to this workspace, newest first. Only released assets appear here.
       </p>
 
@@ -61,9 +61,9 @@ export default function DeliveriesPage() {
             value: history?.latestReleasedAt ? formatDate(history.latestReleasedAt) : '—',
           },
         ].map((metric) => (
-          <div key={metric.label} className="rounded-[12px] border border-white/10 bg-graphite/85 p-4">
-            <p className="text-xs text-muted">{metric.label}</p>
-            <strong className="mt-2 block font-display text-2xl text-warm">{metric.value}</strong>
+          <div key={metric.label} className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4">
+            <p className="text-xs text-slate-400">{metric.label}</p>
+            <strong className="mt-2 block font-display text-2xl text-slate-100">{metric.value}</strong>
           </div>
         ))}
       </div>
@@ -78,11 +78,11 @@ export default function DeliveriesPage() {
       ) : null}
 
       {loading ? (
-        <p className="mt-6 text-sm text-muted">Loading delivery history…</p>
+        <p className="mt-6 text-sm text-slate-400">Loading delivery history…</p>
       ) : !history || history.entries.length === 0 ? (
-        <div className="mt-6 rounded-[14px] border border-white/10 bg-graphite/85 p-6">
-          <p className="text-sm text-warm">Nothing has been released yet.</p>
-          <p className="mt-1 text-sm text-muted">
+        <div className="mt-6 rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-6">
+          <p className="text-sm text-slate-100">Nothing has been released yet.</p>
+          <p className="mt-1 text-sm text-slate-400">
             Deliverables appear here once the GC3 team releases them after sign-off.
           </p>
         </div>
@@ -91,22 +91,22 @@ export default function DeliveriesPage() {
           {history.entries.map((entry) => (
             <li
               key={entry.deliverableId}
-              className="rounded-[12px] border border-white/10 bg-graphite/85 p-4"
+              className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-warm">
+                  <p className="text-sm font-medium text-slate-100">
                     {entry.title}
-                    <span className="ml-2 rounded border border-white/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
+                    <span className="ml-2 rounded border border-white/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-slate-400">
                       v{entry.version}
                     </span>
                   </p>
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
                     {entry.requestReference ?? 'Unattached'} · released{' '}
                     {formatDate(entry.releasedAt)}
                   </p>
                   {entry.description ? (
-                    <p className="mt-1.5 text-xs text-muted">{entry.description}</p>
+                    <p className="mt-1.5 text-xs text-slate-400">{entry.description}</p>
                   ) : null}
                 </div>
 
@@ -133,7 +133,7 @@ export default function DeliveriesPage() {
               </div>
 
               {entry.requestTitle ? (
-                <p className="mt-2 truncate text-[11px] text-muted">
+                <p className="mt-2 truncate text-[11px] text-slate-400">
                   Against: {entry.requestTitle}
                 </p>
               ) : null}

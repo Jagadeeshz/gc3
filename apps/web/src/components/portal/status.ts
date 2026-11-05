@@ -21,7 +21,7 @@ const REQUEST_LABELS: Record<ServiceRequestStatus, string> = {
 
 const REQUEST_TONES: Record<ServiceRequestStatus, BadgeTone> = {
   DRAFT: 'neutral',
-  SUBMITTED: 'gold',
+  SUBMITTED: 'positive',
   TRIAGE: 'gold',
   IN_PROGRESS: 'positive',
   BLOCKED: 'critical',

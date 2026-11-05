@@ -1,6 +1,8 @@
 import type {
   AccessibleOrganization,
   AnalyticsReport,
+  AuthActor,
+  Membership,
   ApiErrorBody,
   AuthSession,
   Deliverable,
@@ -797,4 +799,35 @@ export async function fetchAnalytics(
   windowDays = 90,
 ): Promise<AnalyticsReport> {
   return request<AnalyticsReport>(`/ops/analytics?windowDays=${windowDays}`, { token });
+}
+
+// ---------------------------------------------------------------------------
+// Client workspace (Phase 6 — client owner & member surfaces)
+// ---------------------------------------------------------------------------
+
+/** The authenticated actor, as the API sees it. Used by Profile / Settings. */
+export async function fetchMe(token: string): Promise<AuthActor> {
+  return request<AuthActor>('/auth/me', { token });
+}
+
+/**
+ * A roster row as the API returns it: the membership flattened, with the person's
+ * email and name alongside. The endpoint wraps these in a `Paginated` envelope,
+ * so `listMemberships` unwraps that and callers get an array they can map.
+ */
+export type MembershipListItem = Membership & {
+  readonly user: { readonly email: string; readonly fullName: string };
+};
+
+/** Team roster for one tenant. Requires `membership:read` (client owners hold it). */
+export async function listMemberships(
+  token: string,
+  organizationId: string,
+): Promise<readonly MembershipListItem[]> {
+  const page = await request<Paginated<MembershipListItem>>(
+    `/organizations/${organizationId}/memberships`,
+    { token, organizationId },
+  );
+
+  return page.items;
 }

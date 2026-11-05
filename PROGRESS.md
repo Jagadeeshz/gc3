@@ -1638,3 +1638,83 @@ apps/api Done`. The API was not touched, so the 362-test suite and its 31 files 
 | Token lifecycle | Refresh tokens, revocation list, rate limiting / lockout on login |
 | Offboarding | Revoke an ACTIVE member: session invalidation, audit, retention rules |
 | Tooling | ESLint + Prettier, CI running typecheck/test/build |
+
+
+---
+
+# Phase 6 — Client Owner & Client Member Interfaces
+
+Slice 28. The client workspace, end to end: an `(auth)` group for sign-in, a role-derived
+navigation, and eleven screens behind it. Every screen reads from the live API against the
+`helios-cloud` tenant — there is no mock data anywhere in `(client)`.
+
+## What was built
+
+| Area | File | Notes |
+|---|---|---|
+| Auth layout | `apps/web/src/app/(auth)/layout.tsx` | Chrome-free shell; `/login` keeps its URL |
+| Login | `apps/web/src/app/(auth)/login/page.tsx` | Moves out of `app/login`; `homePathFor()` decides the landing screen |
+| Shared atoms | `apps/web/src/components/portal/kit.tsx` | `PageHeader`, `Panel`, `StatCard`, `Meter`, `EmptyState`, `ErrorNote`, `Loading`, `RestrictedPanel`, `timeAgo` |
+| Role nav | `apps/web/src/lib/client-nav.ts` | Owner 13 entries, member 9; `ownerOnly` / `memberOnly` filtered before render |
+| Overview | `(client)/overview/page.tsx` | 4 KPIs, live tracker grid, action hub, retainer meter |
+| Alias | `(client)/dashboard/page.tsx` | `redirect('/overview')` — old links still work |
+| Subscription | `(client)/subscription/page.tsx` | Plan card, allowance meters, owner only |
+| Billing | `(client)/billing/page.tsx` | Invoice ledger, line items, Blob download |
+| Services | `(client)/services/page.tsx` | Capability grid + request modal (creates a real request) |
+| Requests | `(client)/requests/page.tsx`, `requests/new/page.tsx`, `requests/[requestId]/page.tsx` | Filters, creation, detail with thread |
+| Projects / Deliverables | `(client)/projects/page.tsx`, `(client)/deliverables/page.tsx` | Tracker + review surface with download |
+| Messages / Support | `(client)/messages/page.tsx`, `(client)/support/page.tsx` | Threads; support raises a request |
+| Team | `(client)/team/page.tsx` | Roster with roles, statuses, seat counts (owner) |
+| Pod | `(client)/pod/page.tsx` | Routing status per open request (owner) |
+| Knowledge | `(client)/knowledge/page.tsx` | Navigation guide (owner+member) |
+| Settings / Profile | `(client)/settings/page.tsx`, `(client)/profile/page.tsx` | Tenant record (owner) / identity (`GET /auth/me`) |
+
+## The palette
+
+Obsidian `#090D16` canvas, `#1E293B` hairlines, `#0B1220` cards, emerald for interactive and
+positive, amber for warning, tabular figures on every number. Applied at the two places that
+matter — the shell (frame, sidebar, active route) and the kit (panels, tiles, meters) — so all
+eleven screens inherit one surface instead of drifting.
+
+## Credentials that actually work
+
+Set by `apps/api/scripts/dev-client-portal-fixtures.ts` (dev only, never run in production):
+
+| Account | Password | Role |
+|---|---|---|
+| `client.owner@helios.test` | `Password123!` | CLIENT_OWNER in Helios Cloud |
+| `client.member@helios.test` | `Password123!` | CLIENT_TEAM_MEMBER in Helios Cloud |
+| `admin@gc3.local` | `Password123!` | PLATFORM_ADMIN |
+
+The same script seeds the eight capability categories — Creative, Digital, Interactive,
+Development, Strategy, Learning, Automation, Back Office — into the tenant catalogue with SLA
+hours, so the Services grid shows the brief's capabilities as real rows.
+
+## Verification (live, not asserted)
+
+- `POST /api/v1/auth/login` → **200** for all three accounts above.
+- Owner: `/login` → `/overview`; sidebar **13 links** (Delivery 7 · Engagement 4 · Billing 1 · Account 1).
+- Member: `/login` → `/overview`; sidebar **9 links**; **zero** occurrences of "Billing" or
+  "Subscription" in the sidebar; `/subscription`, `/billing`, `/team`, `/settings` each render a
+  restriction panel.
+- Staff: `/login` → `/ops`.
+- Overview KPIs from live data: Active projects **1**, Open requests **1**, Retainer **17/20
+  requests** (resets 01 Dec 2026), Pending deliverables **1**.
+- Request created through the services modal: **REQ-38150B94** "Quarterly brand refresh concept",
+  High priority → appears at the top of `/requests` as *Submitted*, and the retainer meter moved
+  **17 → 18 / 20**.
+- `tsc --noEmit` clean; `next build` compiled with 26 routes.
+
+## Three deviations, stated rather than papered over
+
+1. **No retainer hours.** The brief asks for "Retainer Hours Available/Utilized". This plan model
+   is metered in **requests, storage (MB) and API calls** — there is no hours bucket in the schema
+   or the API. The third KPI reports the retainer that exists, labelled with its unit
+   (`Retainer — requests`, 17/20) and a footnote saying so. Inventing an hours figure would put a
+   comfortable fiction on the most-read screen in the product.
+2. **Knowledge Centre has no article library.** The page is an honest map of where each answer
+   lives, with a "Not here yet" panel, because a search box over empty content is worse than an
+   index. A CMS-backed library is its own slice.
+3. **My Pod shows routing, not people.** Pod composition, workloads and internal tasks are staff
+   data (`ops:read`, `task:read`); no client endpoint exposes them. The page reports whether each
+   open request has been routed to a pod — a real signal — rather than inventing a roster.

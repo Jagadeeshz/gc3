@@ -70,14 +70,14 @@ export default function RequestsPage() {
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl tracking-[-0.01em] text-warm">Service Requests</h1>
-          <p className="mt-1 text-sm text-muted">
+          <h1 className="font-display text-3xl tracking-[-0.01em] text-slate-100">Service Requests</h1>
+          <p className="mt-1 text-sm text-slate-400">
             {total} {total === 1 ? 'request' : 'requests'} in this workspace
           </p>
         </div>
         <Link
           href="/requests/new"
-          className="inline-flex min-h-11 items-center gap-2 rounded-[10px] border border-gold-deep/40 bg-[linear-gradient(180deg,#E2C777_0%,#D9B65D_100%)] px-4 py-2.5 text-sm font-medium text-ink transition-[filter] hover:brightness-105"
+          className="inline-flex min-h-11 items-center gap-2 rounded-[10px] border border-emerald-500/45 bg-[linear-gradient(180deg,#34D399_0%,#10B981_100%)] px-4 py-2.5 text-sm font-medium text-ink transition-[filter] hover:brightness-105"
         >
           ＋ Create new
         </Link>
@@ -92,8 +92,8 @@ export default function RequestsPage() {
             className={[
               'min-h-9 rounded-lg border px-3 py-1.5 text-xs transition-colors',
               filter === tab.key
-                ? 'border-gold/45 bg-gold/12 text-gold-light'
-                : 'border-white/10 bg-white/[0.03] text-muted hover:text-warm',
+                ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200'
+                : 'border-[#1E293B] bg-white/[0.03] text-slate-400 hover:text-slate-100',
             ].join(' ')}
           >
             {tab.label}
@@ -111,11 +111,11 @@ export default function RequestsPage() {
       ) : null}
 
       {loading ? (
-        <p className="mt-6 text-sm text-muted">Loading requests…</p>
+        <p className="mt-6 text-sm text-slate-400">Loading requests…</p>
       ) : items.length === 0 ? (
-        <div className="mt-6 rounded-[14px] border border-white/10 bg-graphite/85 p-6">
-          <p className="text-sm text-warm">Nothing here yet.</p>
-          <p className="mt-1 text-sm text-muted">
+        <div className="mt-6 rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-6">
+          <p className="text-sm text-slate-100">Nothing here yet.</p>
+          <p className="mt-1 text-sm text-slate-400">
             {filter === 'ALL'
               ? 'Raise the first service request to start tracking work.'
               : 'No requests with this status in the current workspace.'}
@@ -127,19 +127,19 @@ export default function RequestsPage() {
             <li key={item.id}>
               <Link
                 href={`/requests/${item.id}`}
-                className="block rounded-[12px] border border-white/10 bg-graphite/85 p-4 transition-colors hover:border-gold/35"
+                className="block rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4 transition-colors hover:border-emerald-400/30"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
                     {item.reference}
                   </span>
                   <Badge tone={requestStatusTone(item.status)}>
                     {requestStatusLabel(item.status)}
                   </Badge>
                 </div>
-                <h2 className="mt-2 text-sm font-medium text-warm">{item.title}</h2>
-                <p className="mt-1 line-clamp-2 text-xs text-muted">{item.description}</p>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted">
+                <h2 className="mt-2 text-sm font-medium text-slate-100">{item.title}</h2>
+                <p className="mt-1 line-clamp-2 text-xs text-slate-400">{item.description}</p>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
                   <span className="font-mono uppercase tracking-[0.1em]">
                     {priorityLabel(item.priority)} priority
                   </span>

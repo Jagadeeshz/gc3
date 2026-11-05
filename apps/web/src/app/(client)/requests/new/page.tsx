@@ -79,20 +79,20 @@ export default function NewRequestPage() {
 
   return (
     <div className="max-w-[680px]">
-      <h1 className="font-display text-3xl tracking-[-0.01em] text-warm">New service request</h1>
-      <p className="mt-1 text-sm text-muted">
+      <h1 className="font-display text-3xl tracking-[-0.01em] text-slate-100">New service request</h1>
+      <p className="mt-1 text-sm text-slate-400">
         Describe the outcome you need. Drafts stay private until you submit them.
       </p>
 
       <form
-        className="mt-6 grid gap-4 rounded-[14px] border border-white/10 bg-graphite/85 p-6"
+        className="mt-6 grid gap-4 rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-6"
         onSubmit={(event) => {
           event.preventDefault();
           void submit('SUBMITTED');
         }}
       >
         <label className="grid gap-1.5">
-          <span className="text-xs font-medium text-muted">Title</span>
+          <span className="text-xs font-medium text-slate-400">Title</span>
           <input
             required
             minLength={3}
@@ -100,12 +100,12 @@ export default function NewRequestPage() {
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="e.g. Provision a staging cluster"
-            className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+            className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
           />
         </label>
 
         <label className="grid gap-1.5">
-          <span className="text-xs font-medium text-muted">Description</span>
+          <span className="text-xs font-medium text-slate-400">Description</span>
           <textarea
             required
             minLength={10}
@@ -114,16 +114,16 @@ export default function NewRequestPage() {
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             placeholder="What needs to happen, for whom, and by when?"
-            className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+            className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
           />
         </label>
 
         <label className="grid gap-1.5">
-          <span className="text-xs font-medium text-muted">Priority</span>
+          <span className="text-xs font-medium text-slate-400">Priority</span>
           <select
             value={priority}
             onChange={(event) => setPriority(event.target.value as ServiceRequestPriority)}
-            className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm focus:border-gold/60 focus:outline-none"
+            className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
           >
             {PRIORITIES.map((value) => (
               <option key={value} value={value}>
@@ -134,11 +134,11 @@ export default function NewRequestPage() {
         </label>
 
         <label className="grid gap-1.5">
-          <span className="text-xs font-medium text-muted">Category</span>
+          <span className="text-xs font-medium text-slate-400">Category</span>
           <select
             value={categoryId}
             onChange={(event) => setCategoryId(event.target.value)}
-            className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm focus:border-gold/60 focus:outline-none"
+            className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
           >
             <option value="">No category</option>
             {categories.map((category) => (
@@ -148,7 +148,7 @@ export default function NewRequestPage() {
             ))}
           </select>
           {categories.length === 0 ? (
-            <span className="text-[11px] text-muted">
+            <span className="text-[11px] text-slate-400">
               No active categories in this workspace yet.
             </span>
           ) : null}
@@ -167,7 +167,7 @@ export default function NewRequestPage() {
           <button
             type="submit"
             disabled={saving !== null}
-            className="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-gold-deep/40 bg-[linear-gradient(180deg,#E2C777_0%,#D9B65D_100%)] px-4 py-3 text-sm font-medium text-ink transition-[filter] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-emerald-500/45 bg-[linear-gradient(180deg,#34D399_0%,#10B981_100%)] px-4 py-3 text-sm font-medium text-ink transition-[filter] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving === 'SUBMITTED' ? 'Submitting…' : 'Submit request'}
           </button>
@@ -175,7 +175,7 @@ export default function NewRequestPage() {
             type="button"
             onClick={() => void submit('DRAFT')}
             disabled={saving !== null}
-            className="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-white/15 bg-white/5 px-4 py-3 text-sm text-warm transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving === 'DRAFT' ? 'Saving…' : 'Save as draft'}
           </button>

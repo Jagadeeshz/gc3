@@ -88,10 +88,10 @@ export function activeRoles(session: PortalSession): readonly string[] {
  * Where a signed-in user belongs.
  *
  * Staff (anyone with a platform role) work in the operations console; a client
- * works in their tenant workspace. One predicate, used by the post-login
+ * lands on the executive overview of their tenant workspace. One predicate, used by the post-login
  * redirect and by anything else that needs the same answer — so there is no
  * second place to forget to update.
  */
-export function homePathFor(session: PortalSession): '/ops' | '/dashboard' {
-  return session.actor.platformRole !== null ? '/ops' : '/dashboard';
+export function homePathFor(session: PortalSession): '/ops' | '/overview' {
+  return session.actor.platformRole !== null ? '/ops' : '/overview';
 }
