@@ -5,6 +5,7 @@ import { requireTenantScope } from '../../middleware/tenant-scope';
 import { requireAuth, requirePermission } from '../../middleware/auth';
 import { authRouter } from './auth';
 import { deliverablesRouter } from './deliverables';
+import { invoicesRouter } from './invoices';
 import { notificationsRouter } from './notifications';
 import { opsRouter } from './ops';
 import { organizationsRouter } from './organizations';
@@ -141,3 +142,6 @@ v1Router.use('/tasks', tasksRouter);
 
 /** Phase 4: the tenant's plan, allowances and metered usage. */
 v1Router.use('/subscription', subscriptionsRouter);
+
+/** Phase 4: invoices — generation, reads, status transitions and the document. */
+v1Router.use('/invoices', invoicesRouter);

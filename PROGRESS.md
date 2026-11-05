@@ -37,7 +37,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 **Phase 3 — Delivery Operations, Pod Workspaces & SLA Tracking — is complete** (slices 15–19).
 
 | 20 | Phase 4 · Subscription tiers & billing data layer | `<pending>` | ✅ delivered |
-| 21 | Phase 4 · Invoicing & line-item generation engine | `<pending>` | ⏳ next |
+| 21 | Phase 4 · Invoicing & line-item generation engine | `<pending>` | ✅ delivered |
+| 22 | Phase 4 · Usage tracking & subscription metering | `<pending>` | ⏳ next |
 
 ---
 
@@ -1100,6 +1101,46 @@ and a real browser.
   client owner can read the plan but cannot upgrade itself.
 - **Allowances are per calendar month**, matching the meter period key. Proration for mid-cycle changes
   is deliberately not implemented — that is a commercial rule, not a technical default.
+
+---
+
+## Slice 21 — Phase 4 · Invoicing and line-item generation  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §5 (billing), §7 (invoices generated), §12 (audit)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Calculator | `lib/billing.ts` — pure `computeBill(tier, usage, periodLabel)`: one `TIER_FEE` line, then a `USAGE` line per meter that exceeded its allowance. Requests per unit, storage per MB (KB→MB **rounded down**), API calls in 1,000-call blocks with a part block billed as a block. Tax is explicitly zero because no rate table exists in this deployment |
+| Generation | `POST /invoices/generate` (`finance:manage`) — defaults to the **last complete month**, numbers bills `INV-YYYY-MM-NNNN` per tenant, writes the header and lines in one create, status `DRAFT` |
+| Idempotency | a second generation for the same month is a 409 naming the existing invoice. A bill a client may already hold must not silently change; corrections are `ADJUSTMENT` lines on a later invoice |
+| Reads | `GET /invoices` (pagination + status filter), `GET /invoices/:id` (with lines), `GET /invoices/:id/download` (printable text document, `content-disposition` attachment) |
+| Transitions | `PATCH /invoices/:id/status` — DRAFT→ISSUED (sets `issuedAt`, `dueAt` = +30 days), ISSUED/OVERDUE→PAID (records `paidAt` **and which user said so**), anything unpaid→VOID. Everything else is a 409 |
+| Overdue | ISSUED invoices past their due date flip to OVERDUE lazily on read, so the badge and the filter agree without a scheduler |
+| Platform view | `GET /ops/billing` (`finance:read`) — MRR from active subscriptions, tier mix, invoice counts by status, outstanding vs settled money, ten most recent bills |
+
+### Evidence
+
+- `pnpm test` **19/19** in `invoices.test.ts`:
+  - arithmetic: plan-only bill, request overage, KB→MB rounding, 1,000-call blocks, exact totals, numbering
+  - generation: 4 lines for over-limit usage totalling ₹27,555.00, duplicate month 409, default period is
+    last month, malformed period 400, client 403
+  - reads: tenant isolation, status filter, detail + cross-tenant 404, downloadable document
+  - status: issue + net-30, settle with the actor recorded, DRAFT→PAID refused, double-issue refused,
+    voiding a paid invoice refused, overdue flip
+  - permissions: client and account manager cannot move status, client owner can still read
+
+### Decisions worth naming
+
+- **No payment processor.** Settling an invoice is a human bookkeeping act: the API records who marked it
+  paid and when, and nothing in the system ever sets `PAID` on its own. There is no card data, no gateway
+  call, and no invoice is ever auto-settled.
+- **Immutable bills.** Generation is idempotent per period rather than an upsert, because an invoice is a
+  document that may already be in a client's inbox.
+- **Zero tax is stated, not implied.** No jurisdiction rules are configured, so the field exists, is
+  reported, and is honestly zero.
 
 ---
 

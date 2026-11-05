@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import type { ApiSuccess, OpsDashboard, SlaSweepReport } from '@gc3/types';
+import type { ApiSuccess, FinanceOverview, OpsDashboard, SlaSweepReport } from '@gc3/types';
 import { formatIssues, opsDashboardQuerySchema } from '@gc3/validation';
 import { ApiError } from '../../lib/api-error';
 import { requireAuth, requirePermission } from '../../middleware/auth';
+import { invoiceRepository } from '../../repositories/invoice.repository';
 import { opsRepository } from '../../repositories/ops.repository';
 import { runSlaSweep } from '../../sla/monitor';
 
@@ -33,6 +34,19 @@ opsRouter.get('/dashboard', requirePermission('ops:read'), async (request, respo
   });
 
   const payload: ApiSuccess<OpsDashboard> = { success: true, data: dashboard };
+  response.status(200).json(payload);
+});
+
+/**
+ * GET /ops/billing — platform money view: MRR, tier mix, invoice counts.
+ *
+ * Gated on `finance:read` rather than `ops:read`: it is a revenue report, and the
+ * roles that may see money should be the ones that may see this.
+ */
+opsRouter.get('/billing', requirePermission('finance:read'), async (_request, response) => {
+  const overview = await invoiceRepository.overview();
+
+  const payload: ApiSuccess<FinanceOverview> = { success: true, data: overview };
   response.status(200).json(payload);
 });
 
