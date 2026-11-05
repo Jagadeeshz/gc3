@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { ArrowDownToLine, BadgeIndianRupee, CircleAlert, Receipt, TrendingUp } from 'lucide-react';
 import type { Invoice, InvoiceDetail, Paginated, SubscriptionOverview } from '@gc3/types';
 import {
@@ -417,11 +416,6 @@ export default function BillingPage() {
       <p className="flex items-center gap-2 text-[11px] text-muted">
         <TrendingUp aria-hidden className="size-3.5 text-gold-light" strokeWidth={1.75} />
         Usage counters reset on the first of each month.
-        {session?.actor.platformRole === 'PLATFORM_ADMIN' ? (
-          <Link href="/ops/billing" className="ml-1 text-gold-light underline-offset-4 hover:underline">
-            Open the platform finance console
-          </Link>
-        ) : null}
       </p>
     </div>
   );

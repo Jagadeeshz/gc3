@@ -1549,6 +1549,86 @@ known boundary with a described upgrade path, not a surprise.
 
 ---
 
+## Post-roadmap refactor — route groups `(client)` / `(ops)`  ✅
+
+**Scope:** reorganise the existing `apps/web` routes so client and internal-staff surfaces own their own
+layouts. No page was created, no page was rewritten, and **no URL changed**.
+
+### What moved
+
+| Route group | Pages | Layout |
+|---|---|---|
+| `apps/web/src/app/(client)` | `/dashboard`, `/requests`, `/requests/new`, `/requests/[requestId]`, `/billing`, `/deliveries`, `/categories` | `variant="client"` — reading column (`max-w-[1080px]`), nav is exactly **Dashboard · Requests · Billing** |
+| `apps/web/src/app/(ops)` | `/ops`, `/ops/analytics`, `/ops/billing` | `variant="ops"` — high-density column (`max-w-[1440px]`), nav is **Operations · Analytics · Finance** plus a *Tenant workspace → Open client view* link |
+
+`PortalShell` gained a `variant` prop instead of a second copy: the chrome was already shared, only the
+navigation and the column width differ. The parenthesised group name is stripped from the URL, so
+`(client)/dashboard` still serves `/dashboard` and `(ops)/ops/analytics` still serves `/ops/analytics`.
+
+### Client nav has no /ops — verified, not assumed
+
+```text
+CLIENT NAV LINKS:  /dashboard :: Dashboard   /requests :: Requests   /billing :: Billing
+sidebar mentions /ops: False
+body mentions Operations: False
+brand subtitle: CLIENT WORKSPACE
+```
+
+### Post-login routing
+
+`homePathFor(session)` in `lib/session.ts` is the single predicate: any session with a `platformRole` is
+staff and goes to `/ops`; a session without one is a client and goes to `/dashboard`. Both redirects in
+the login page (fresh sign-in, and "already signed in") use it.
+
+```text
+staff hitting /login while signed in  → /ops
+client hitting /login while signed in → /dashboard
+```
+
+### The /ops guard
+
+```text
+client asks for /ops  → location.pathname = /dashboard
+```
+
+The ops layout redirects a non-staff session (`platformRole === null`) to `/dashboard` before rendering,
+and shows "This console is for platform operations. Redirecting…" for the frame in between. This is the
+UX half of the rule; the API still answers 403 to every ops endpoint for a client token, which is the real
+boundary and is already covered by the integration suite.
+
+### Nothing lost — every route exercised as both roles
+
+| Route | Client | Staff |
+|---|---|---|
+| `/dashboard` | ✅ Overview | ✅ Overview (brand returns to `/ops`) |
+| `/requests` | ✅ Service Requests | ✅ Service Requests |
+| `/requests/new` | ✅ New service request | — |
+| `/billing` | ✅ Billing & plan | — |
+| `/deliveries` | ✅ Delivery history | — |
+| `/categories` | ✅ Service categories | — |
+| `/ops` | ⛔ redirected to `/dashboard` | ✅ Operations console |
+| `/ops/analytics` | ⛔ | ✅ Executive analytics (dense) |
+| `/ops/billing` | ⛔ | ✅ Billing operations (dense) |
+
+`pnpm -r typecheck` → `packages/types Done · packages/ui Done · packages/validation Done · apps/web Done ·
+apps/api Done`. The API was not touched, so the 362-test suite and its 31 files are unaffected.
+
+### Three things stated plainly
+
+1. **`/ops/audit` has no page.** It was named in the brief as an existing page to move; it is an API
+   endpoint only (`GET /api/v1/ops/audit`, slice 26). Since the instruction was "do not create new pages",
+   none was created — the route group has three pages, not four. Say the word and the audit screen is a
+   small slice on its own.
+2. **`/deliveries` and `/categories` stay in `(client)` but are not in the client nav**, because the spec
+   fixes that nav at Dashboard · Requests · Billing. They remain fully working at their URLs (verified
+   above); they are simply not linked. If they should be reachable from the UI, the nav is a two-line
+   change.
+3. **Staff can get back to the console from a tenant page through the brand link.** Without it, a staff
+   member who opened `/requests/[id]` had no route back except the browser's back button. The shift is
+   role-aware: a client's brand link resolves to `/dashboard`, so no client ever sees an `/ops` href.
+
+---
+
 ## Next up (not started)
 
 | Step | Scope |

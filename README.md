@@ -528,6 +528,12 @@ classes used by shared components.
 The Next.js app is connected to the live API. Every screen below is a client component that reads
 its data through `apps/web/src/lib/api-client.ts`.
 
+**Two route groups, two layouts.** Client screens live under `src/app/(client)` and internal staff screens
+under `src/app/(ops)`. The group names are parenthesised, so **no URL changed** — they exist so each side
+gets its own chrome: the client nav is Dashboard · Requests · Billing and never mentions `/ops`, while the
+ops layout is wider, carries Operations · Analytics · Finance, and redirects a non-staff session to
+`/dashboard`. Post-login routing is one predicate (`homePathFor`): staff → `/ops`, clients → `/dashboard`.
+
 | Route | Screen | Talks to |
 |---|---|---|
 | `/login` | Sign-in | `POST /auth/login`, then `GET /auth/organizations` |

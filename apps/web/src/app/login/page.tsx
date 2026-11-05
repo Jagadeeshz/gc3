@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { fetchOrganizations, login, ApiClientError } from '@/lib/api-client';
-import { buildSession } from '@/lib/session';
+import { buildSession, homePathFor } from '@/lib/session';
 import { useSession } from '@/lib/session-context';
 
 /**
@@ -21,7 +21,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (ready && session) {
-      router.replace('/dashboard');
+      // Already signed in: send them where their role belongs, not to a fixed page.
+      router.replace(homePathFor(session));
     }
   }, [ready, session, router]);
 
@@ -34,16 +35,18 @@ export default function LoginPage() {
       const auth = await login(email.trim(), password);
       const organizations = await fetchOrganizations(auth.accessToken);
 
-      signIn(
-        buildSession({
-          accessToken: auth.accessToken,
-          expiresIn: auth.expiresIn,
-          actor: auth.actor,
-          organizations,
-        }),
-      );
+      const next = buildSession({
+        accessToken: auth.accessToken,
+        expiresIn: auth.expiresIn,
+        actor: auth.actor,
+        organizations,
+      });
 
-      router.replace('/dashboard');
+      signIn(next);
+
+      // Staff → /ops, clients → /dashboard. The ops layout redirects a client
+      // back if they ever get there by hand.
+      router.replace(homePathFor(next));
     } catch (caught) {
       setError(
         caught instanceof ApiClientError
