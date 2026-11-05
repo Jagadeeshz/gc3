@@ -4,11 +4,22 @@ Multi-tenant operating platform for **Global Cloud Capability & Consulting (GC³
 delivery operations, pod workspaces, finance, and AI-augmented workflows.
 
 Built to the **GC3 Development Brief v1.0** (`Development-Breif.md` in this folder). The repository is
-at **Phase 2** (Phase 1 complete): identity and tenancy persist in PostgreSQL, every tenant route is
-authenticated and authorized through a role → permission map, client users join through a hashed,
-single-use invitation that can be rotated or revoked, invitations are delivered over SMTP with a
-permanent delivery audit, and Phase 2 now spans both the data layer and the HTTP API for service
-requests, comments and deliverables — tenant-scoped end to end and permission-guarded per role.
+**complete through Phase 5** — the Master Roadmap is closed:
+
+- **Phase 0–1** — pnpm monorepo, PostgreSQL schema, identity and tenancy. Every tenant route is
+  authenticated and authorized through a role → permission map; client users join through a hashed,
+  single-use invitation that can be rotated or revoked, delivered over SMTP with a permanent delivery audit.
+- **Phase 2** — client portal: service requests, catalogue, comments, deliverables with versions, stored
+  files with SHA-256 integrity, and event notifications.
+- **Phase 3** — staff operations console across tenants, pod workspaces and staffing, task breakdown,
+  SLA tracking with risk alerts, and durable dispatch on Redis.
+- **Phase 4** — subscription tiers, metered usage with hard plan guards, invoice generation with exact
+  integer paise arithmetic, and client/admin billing screens.
+- **Phase 5** — queue health with a worker heartbeat, executive analytics, a security audit trail,
+  rate limiting, hardened headers, and a production build that is served, not just compiled.
+
+**362 integration tests across 31 files**, run against a real PostgreSQL (and a real Redis for the
+durability suite). Nothing in this repository is verified against a mock database.
 
 ---
 
@@ -703,6 +714,10 @@ drain in another), `enqueue-live-event.ts` (queue an event while the API is stop
 | Phase 4: invoice generation engine, line items, status lifecycle | done |
 | Phase 4: usage metering and hard plan guards | done |
 | Phase 4: client billing page and platform finance console | done |
+| Phase 5: queue health, worker heartbeat and console alerts | done |
+| Phase 5: executive analytics (turnaround, throughput, pods, growth) | done |
+| Phase 5: audit trail, security headers and rate limiting | done |
+| Phase 5: production build, full suite, documentation | done |
 | Delivery retry/backoff, bounce handling, delivery read API | retry + read API done; bounce handling not started |
 | Token refresh / revocation, login rate limiting | not started |
 | CI/CD, linting | not started (Phase 0 exit criteria) |

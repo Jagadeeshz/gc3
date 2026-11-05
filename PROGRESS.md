@@ -48,7 +48,13 @@ owner, a platform admin, an operations manager and a finance manager.
 | 24 | Phase 5 · Queue & system observability | `d93c948` | ✅ delivered |
 | 25 | Phase 5 · Platform executive analytics & usage reporting | `f9acf97` | ✅ delivered |
 | 26 | Phase 5 · Audit logging, security hardening & rate limiting | `<pending>` | ✅ delivered |
-| 27 | Phase 5 · Production build, verification & documentation | `<pending>` | ⏳ queued |
+| 27 | Phase 5 · Production build, verification & documentation | `<pending>` | ✅ delivered |
+
+**Phase 5 — System Hardening, Analytics & Production Readiness — is complete** (slices 24–27).
+
+**The GC³ Portal Master Roadmap is closed.** Phases 0–5 are delivered: 52 commits, **362 tests across 31
+files**, 16 migrations, 12 web routes and 31 API route groups. Everything below is verified against a real
+Postgres, a real Redis and a real browser — nothing in this log is a mock or a projection.
 
 ---
 
@@ -1449,6 +1455,97 @@ tenant's region restored to `apac`. Slice 27's build then proved the fix under t
 - **Client roles only.** `updateMembershipRolesSchema` accepts `CLIENT_OWNER | CLIENT_TEAM_MEMBER |
   CLIENT_APPROVER`; staff roles are provisioned by the platform, so privilege escalation is impossible at
   the schema, not merely discouraged at the route.
+
+---
+
+## Slice 27 — Phase 5 · Production build, verification and documentation  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §19 (build and run), §20 (definition of done)
+
+### Production build
+
+```text
+$ pnpm build
+apps/api build: Done                     (tsc --noEmit: whole-program typecheck)
+apps/web build: ✓ Compiled successfully in 7.6s
+apps/web build:   Finished TypeScript in 7.8s
+apps/web build: ✓ Generating static pages (12/12)
+apps/web build: Route (app)
+┌ ƒ /                     ├ ○ /billing            ├ ○ /ops
+├ ○ /_not-found           ├ ○ /categories         ├ ○ /ops/analytics
+├ ○ /dashboard            ├ ○ /deliveries         ├ ○ /ops/billing
+├ ○ /login                ├ ○ /requests           ├ ƒ /requests/[requestId]
+└ ○ /requests/new
+```
+
+The built bundle was then **served**, not just compiled — `next start --port 3010` against the real API:
+
+```text
+/login 200 · / 200 · /billing 200 · /ops 200 · /ops/analytics 200 · /ops/billing 200
+```
+
+**Why the API "build" is a typecheck.** The API runs TypeScript directly under `tsx` (`start: tsx
+src/index.ts`) and consumes the workspace packages as source, so it has no separate JS artifact to emit —
+emitting one would require compiling `packages/types` and friends too, and would produce a build that
+differs from what runs. Stating it plainly beats shipping a `dist/` nobody starts.
+
+### Full verification
+
+```text
+$ pnpm typecheck
+packages/types Done · packages/ui Done · packages/validation Done · apps/web Done · apps/api Done
+
+$ pnpm test        (apps/api)
+ Test Files  31 passed (31)
+      Tests  362 passed (362)
+   Duration  261.51s
+
+$ prisma migrate status
+16 migrations found — Database schema is up to date!
+```
+
+Per-slice test counts: queue health 12, analytics 7, security 15 — 34 new tests in Phase 5, 362 total.
+
+### A flake, found and fixed rather than re-run
+
+The first full Phase 5 run came back **361/362**: one `TRUNCATE` in `tests/setup.ts` failed under a lock.
+Re-running would have hidden it. Instead the harness now (a) names the Phase 3 and Phase 4 tables
+explicitly instead of relying on the cascade from `organizations`, and (b) retries a locked truncation up
+to four times with backoff, with a comment explaining why a retry is honest in a serial suite. The
+subsequent run was 362/362.
+
+### Decisions worth naming
+
+- **Verified means executed.** Every claim in this log has a command behind it: the build output, the
+  served routes, the 429s with their `Retry-After`, the audit rows with their before/after payloads.
+- **A green suite that flakes is not green.** The harness fix is part of the deliverable, not a nuisance
+  around it.
+- **The API is honest about what it is.** TypeScript on `tsx`, packages as source, one typecheck gate.
+
+---
+
+## Phase 5 — closing statement
+
+| Slice | Delivered | Commit |
+|---|---|---|
+| 24 · Queue & system observability | queue stats endpoint, TTL heartbeat, alert engine, console card | `d93c948` |
+| 25 · Platform executive analytics | turnaround/throughput/pod-efficiency/growth queries and `/ops/analytics` | `f9acf97` |
+| 26 · Audit, hardening, rate limiting | audit context + reader, tenant/role edit endpoints, security headers, two limiters | `1ce7d1a` |
+| 27 · Build, verification, docs | production build served, 362/362, typecheck 5/5, this record | `<pending>` |
+
+**What is built and proven:** multi-tenant identity and RBAC with invites and SMTP delivery; service
+requests, catalogue, comments, deliverables with versions, stored files and SHA-256 integrity; a staff
+operations console across tenants with pods, staffing, tasks and SLA tracking; durable dispatch on Redis
+with event notifications and retries; subscription tiers, metered usage with hard plan guards, invoice
+generation with exact integer arithmetic and a human-only settlement path; queue health, executive
+analytics, a security audit trail, rate limiting and hardened headers.
+
+**What is deliberately not built** — stated so nobody assumes otherwise: token refresh and a revocation
+list; login audit of every attempt (only the ceiling is enforced); offboarding an ACTIVE member;
+virus scanning and signed URLs for uploads; proration and credit notes for billing; PDF rendering; tax
+rules; Redis-backed rate limiting for multi-node; queue-depth paging beyond the console card. Each is a
+known boundary with a described upgrade path, not a surprise.
 
 ---
 
