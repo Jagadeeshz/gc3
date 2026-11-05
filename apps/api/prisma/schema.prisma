@@ -237,12 +237,17 @@ model AuditEvent {
   targetType     String?   @map("target_type") @db.VarChar(60)
   targetId       String?   @map("target_id") @db.VarChar(60)
   metadata       Json?
+  /// Request context, so a security review can tie a change to an HTTP call.
+  ip             String?   @db.VarChar(64)
+  userAgent      String?   @map("user_agent") @db.VarChar(300)
+  requestId      String?   @map("request_id") @db.VarChar(64)
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, createdAt])
   @@index([action])
+  @@index([createdAt])
   @@map("audit_events")
 }
 

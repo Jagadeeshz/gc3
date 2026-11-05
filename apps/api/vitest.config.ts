@@ -40,6 +40,11 @@ export default defineConfig({
       // else stays on the deterministic in-process driver.
       EVENT_QUEUE_DRIVER: 'memory',
       QUEUE_PREFIX: 'gc3-test',
+      // Rate limiting is off by default in the suite: fixtures log in hundreds of
+      // times from one address. The security suite turns both limits down to a
+      // handful on purpose, so the 429 path still runs through the real middleware.
+      RATE_LIMIT_MAX: '0',
+      AUTH_RATE_LIMIT_MAX: '0',
     },
   },
 });

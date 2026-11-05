@@ -103,6 +103,34 @@ export const inviteLifecycleParamsSchema = z.object({
 
 export type InviteLifecycleParams = z.infer<typeof inviteLifecycleParamsSchema>;
 
+/** Route params for a membership: /organizations/:organizationId/memberships/:userId/roles. */
+export const membershipParamsSchema = inviteLifecycleParamsSchema;
+
+/**
+ * Role changes are limited to the three client roles.
+ *
+ * Staff and agent roles are provisioned by the platform, not assigned by a tenant:
+ * letting a client owner hand out `PLATFORM_ADMIN` would be a privilege-escalation
+ * path, and the schema is the cheapest place to make that impossible.
+ */
+export const updateMembershipRolesSchema = z.object({
+  roles: z
+    .array(z.enum(['CLIENT_OWNER', 'CLIENT_TEAM_MEMBER', 'CLIENT_APPROVER']))
+    .min(1, 'A member needs at least one role')
+    .max(3, 'A member needs at most three roles')
+    .refine((roles) => new Set(roles).size === roles.length, 'Roles must be unique'),
+});
+
+export type UpdateMembershipRolesInput = z.infer<typeof updateMembershipRolesSchema>;
+
+/** `GET /ops/audit` — the security log, newest first. */
+export const auditQuerySchema = paginationSchema.extend({
+  organizationId: uuidSchema.optional(),
+  action: z.string().trim().min(3).max(80).optional(),
+  actorId: uuidSchema.optional(),
+  since: z.iso.datetime({ offset: true }).optional(),
+});
+
 export const acceptInviteSchema = z.object({
   token: inviteTokenSchema,
   password: passwordPolicySchema,

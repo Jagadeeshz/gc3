@@ -46,8 +46,8 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 owner, a platform admin, an operations manager and a finance manager.
 
 | 24 | Phase 5 · Queue & system observability | `d93c948` | ✅ delivered |
-| 25 | Phase 5 · Platform executive analytics & usage reporting | `<pending>` | ✅ delivered |
-| 26 | Phase 5 · Audit logging, security hardening & rate limiting | `<pending>` | ⏳ queued |
+| 25 | Phase 5 · Platform executive analytics & usage reporting | `f9acf97` | ✅ delivered |
+| 26 | Phase 5 · Audit logging, security hardening & rate limiting | `<pending>` | ✅ delivered |
 | 27 | Phase 5 · Production build, verification & documentation | `<pending>` | ⏳ queued |
 
 ---
@@ -1318,7 +1318,7 @@ No alerts: the queue is draining and the worker is beating.*
 
 ## Slice 25 — Phase 5 · Platform executive analytics  ✅
 
-**Commit:** `<pending>`
+**Commit:** `f9acf97`
 **Brief refs:** §8 (platform reporting), §15 (executive visibility)
 
 ### What shipped
@@ -1361,6 +1361,94 @@ table (*Cloud Delivery · 0 · 1 · — · 0.0%*) and *Nov 26 +7*.
   set; the commitment is what the platform promised.
 - **One documented closure on dev data:** `REQ-EA763D6B` was moved IN_REVIEW → DELIVERED → CLOSED through
   the normal status route so the report had a real sample rather than an empty state.
+
+---
+
+## Slice 26 — Phase 5 · Audit logging, security hardening and rate limiting  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §12 (auditability), §14 (security), §17 (operational readiness)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Audit schema | migration `20261105100000_audit_context` adds `ip`, `user_agent`, `request_id` to `audit_events` plus a `created_at DESC` index — an audit row that cannot say *where a change came from* is only half a record |
+| Audit writer | `audit/audit-log.ts` — `recordAudit()` never throws (a failed audit must not roll back a committed change) but logs loudly; `SENSITIVE_AUDIT_ACTIONS` publishes the watched set as data so an omission is visible |
+| Audit reader | `GET /api/v1/ops/audit` (`ops:read`) — newest first, filtered by tenant, action, actor and time |
+| Tenant edits | `PATCH /organizations/:id` (`organization:update`) — the endpoint did not exist; it now edits name/slug/timezone/region and audits the changed fields with before **and** after values. Sending `status` is refused: suspension is a platform decision |
+| Role changes | `PATCH /organizations/:id/memberships/:userId/roles` (`membership:manage`) — client roles only (a client owner cannot mint a `PLATFORM_ADMIN`), and the last active owner cannot be demoted (409) |
+| Security headers | `middleware/security-headers.ts` — nosniff, `X-Frame-Options: DENY`, no-referrer, COOP/CORP, a permissions policy, `default-src 'none'` CSP, HSTS in production only, `x-powered-by` stripped |
+| Rate limiting | `middleware/rate-limit.ts` — a fixed-window counter with two instances: `/auth/login` keyed by IP **and** email (20/15 min), the rest of `/api/v1` keyed by tenant or IP (600/min). 429 carries `Retry-After` and `x-ratelimit-*`, and the error envelope says how long to wait |
+| Tests | 15 in `security.test.ts`: headers on success *and* failure, login 429, per-tenant isolation of budgets, remaining-budget advertisement, disabled-limiter pass-through, role-change audit with request context, last-owner refusal writing nothing, staff-role rejection, tenant-edit audit, no-op edits not logged, the audit API and its filters, and the authorization matrix for tenant edits |
+
+### Live evidence
+
+```text
+GET /api/v1/health → 200
+  x-content-type-options: nosniff
+  x-frame-options: DENY
+  referrer-policy: no-referrer
+  content-security-policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+  permissions-policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
+  cross-origin-opener-policy: same-origin
+  x-ratelimit-limit: 600     x-ratelimit-remaining: 599
+  x-powered-by: (absent)     strict-transport-security: (absent — development)
+```
+
+```text
+API started with AUTH_RATE_LIMIT_MAX=3
+  login attempt 1: 200 · attempt 2: 200 · attempt 3: 200
+  login attempt 4: 429  retry-after: 894
+  {"code":"RATE_LIMITED","message":"Too many sign-in attempts from this address. Try again in 894s.",
+   "details":[{"path":"retryAfterSeconds","message":"894"}],"requestId":"40a87ea0-…"}
+
+API started with RATE_LIMIT_MAX=5
+  GET /service-requests #1..#5 → 200, remaining 4,3,2,1,0
+  GET /service-requests #6      → 429, retry-after 50
+  {"code":"RATE_LIMITED","message":"Rate limit exceeded (5 requests per 60s). Try again in 50s."}
+  GET /service-requests (different tenant) → 200, remaining 4
+```
+
+```text
+PATCH /organizations/<helios> {"name":"Helios Cloud HQ"} → 200
+PATCH /organizations/<helios> {"name":"Helios Cloud"}    → 200
+PATCH …/memberships/<last-owner>/roles {"roles":["CLIENT_TEAM_MEMBER"]}
+  → 409 "This is the last active client owner: promote somebody else before changing these roles"
+
+GET /ops/audit?organizationId=<helios>  → total 10
+  09:04:23  organization.updated           portal.verify@gc3.local  {"after":{"name":"Helios Cloud"},"before":{"name":"Helios Cloud HQ"}}
+  09:04:21  organization.updated           portal.verify@gc3.local  {"after":{"name":"Helios Cloud HQ","region":"global"},"before":{"name":"Helios Cloud","region":"apac"}}
+  08:26:18  invoice.paid                   portal.verify@gc3.local  {"from":"ISSUED","to":"PAID"}
+  08:26:13  invoice.issued                 portal.verify@gc3.local  {"from":"DRAFT","to":"ISSUED"}
+  08:24:32  subscription.auto_provisioned  SYSTEM                   {"tierCode":"STARTER","reason":"no subscription existed"}
+  11-04     membership.invite_accepted     client.owner@helios.test
+```
+
+### The audit log caught a bug in this slice
+
+The third row above — `region: apac → global` — is a defect **I introduced in this slice**: `updateOrganizationSchema`
+is a partial of the create schema, and Zod still applies `.default()` to absent keys, so forwarding the parsed
+object rewrote `region` (and would have rewritten `timezone`) on every rename. It was invisible in the API
+response and obvious in the audit trail, which is the entire argument for writing one.
+
+Fixed by forwarding only the keys actually present in the request body, with a regression test, and the dev
+tenant's region restored to `apac`. Slice 27's build then proved the fix under the full suite.
+
+### Decisions worth naming
+
+- **Never roll back a business change for an audit failure.** `recordAudit` swallows its own errors and
+  screams in the log instead: losing the change is worse than losing the note about it, and the noise is
+  what gets it fixed.
+- **Rate limits are per tenant, not per IP.** Nobody in an office should be locked out because a colleague
+  ran a loop. Unauthenticated routes key on IP because there is nobody else to attribute traffic to.
+- **Sign-in is limited by IP *and* email.** Spraying one password across many accounts looks different from
+  hammering one account from many addresses; one key cannot catch both.
+- **Honest about the shared-nothing counter.** It is in-memory per process, so N nodes allow N times the
+  ceiling. Said out loud in the README rather than implied to be a global quota.
+- **Client roles only.** `updateMembershipRolesSchema` accepts `CLIENT_OWNER | CLIENT_TEAM_MEMBER |
+  CLIENT_APPROVER`; staff roles are provisioned by the platform, so privilege escalation is impossible at
+  the schema, not merely discouraged at the route.
 
 ---
 

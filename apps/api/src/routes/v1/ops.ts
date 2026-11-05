@@ -2,14 +2,21 @@ import { Router } from 'express';
 import type {
   AnalyticsReport,
   ApiSuccess,
+  AuditLogPage,
   FinanceOverview,
   OpsDashboard,
   QueueHealth,
   SlaSweepReport,
 } from '@gc3/types';
-import { analyticsQuerySchema, formatIssues, opsDashboardQuerySchema } from '@gc3/validation';
+import {
+  analyticsQuerySchema,
+  auditQuerySchema,
+  formatIssues,
+  opsDashboardQuerySchema,
+} from '@gc3/validation';
 import { ApiError } from '../../lib/api-error';
 import { requireAuth, requirePermission } from '../../middleware/auth';
+import { auditRepository } from '../../audit/audit-log';
 import { queueHealth } from '../../observability/queue-health';
 import { analyticsRepository } from '../../repositories/analytics.repository';
 import { invoiceRepository } from '../../repositories/invoice.repository';
@@ -43,6 +50,33 @@ opsRouter.get('/dashboard', requirePermission('ops:read'), async (request, respo
   });
 
   const payload: ApiSuccess<OpsDashboard> = { success: true, data: dashboard };
+  response.status(200).json(payload);
+});
+
+/**
+ * GET /ops/audit — the security log: role changes, tenant edits, invoice and
+ * subscription movements, newest first.
+ *
+ * Cross-tenant by design (a security review needs to see everything), narrowed
+ * with `?organizationId=`; the boundary is `ops:read`.
+ */
+opsRouter.get('/audit', requirePermission('ops:read'), async (request, response) => {
+  const query = auditQuerySchema.safeParse(request.query);
+
+  if (!query.success) {
+    throw ApiError.badRequest('Invalid audit query', formatIssues(query.error));
+  }
+
+  const page = await auditRepository.list({
+    organizationId: query.data.organizationId ?? null,
+    ...(query.data.action ? { action: query.data.action } : {}),
+    ...(query.data.actorId ? { actorId: query.data.actorId } : {}),
+    ...(query.data.since ? { since: new Date(query.data.since) } : {}),
+    page: query.data.page,
+    pageSize: query.data.pageSize,
+  });
+
+  const payload: ApiSuccess<AuditLogPage> = { success: true, data: page };
   response.status(200).json(payload);
 });
 

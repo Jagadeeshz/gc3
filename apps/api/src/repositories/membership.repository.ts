@@ -3,6 +3,7 @@ import type { InviteUserInput } from '@gc3/validation';
 import { prisma } from '../db/client';
 import { ApiError } from '../lib/api-error';
 import { generateInviteToken, hashInviteToken } from '../auth/invite';
+import { recordAudit } from '../audit/audit-log';
 
 /**
  * Shape the mapper needs. Deliberately narrower than a full Prisma row: callers
@@ -127,6 +128,71 @@ export const membershipRepository = {
       where: { organizationId, userId, status: 'ACTIVE' },
       select: { id: true, roles: true },
     });
+  },
+
+  /**
+   * Changes a member's roles.
+   *
+   * Two guards make this safe to expose: only client roles can be assigned through
+   * this path, and the last ACTIVE owner of a tenant cannot be demoted — otherwise
+   * one click can leave a workspace with nobody able to administer it. Both are
+   * enforced here rather than in the route so no future caller can skip them.
+   */
+  async changeRolesScoped(
+    organizationId: string,
+    userId: string,
+    roles: readonly ClientRole[],
+    actor: { userId: string; ip?: string | null; userAgent?: string | null; requestId?: string | null },
+  ): Promise<
+    | { ok: true; membership: { id: string; userId: string; roles: readonly string[] } }
+    | { ok: false; reason: 'not-found' | 'last-owner' }
+  > {
+    const membership = await prisma.membership.findFirst({
+      where: { organizationId, userId, status: 'ACTIVE' },
+      select: { id: true, roles: true, userId: true },
+    });
+
+    if (!membership) {
+      return { ok: false, reason: 'not-found' };
+    }
+
+    const wasOwner = membership.roles.includes('CLIENT_OWNER');
+    const staysOwner = roles.includes('CLIENT_OWNER');
+
+    if (wasOwner && !staysOwner) {
+      const owners = await prisma.membership.count({
+        where: { organizationId, status: 'ACTIVE', roles: { has: 'CLIENT_OWNER' } },
+      });
+
+      if (owners <= 1) {
+        return { ok: false, reason: 'last-owner' };
+      }
+    }
+
+    const updated = await prisma.membership.update({
+      where: { id: membership.id },
+      data: { roles: [...roles] },
+      select: { id: true, userId: true, roles: true },
+    });
+
+    await recordAudit({
+      organizationId,
+      actorType: 'USER',
+      actorId: actor.userId,
+      action: 'membership.roles_changed',
+      targetType: 'membership',
+      targetId: membership.id,
+      metadata: {
+        subjectUserId: userId,
+        from: membership.roles,
+        to: [...roles],
+      },
+      ip: actor.ip ?? null,
+      userAgent: actor.userAgent ?? null,
+      requestId: actor.requestId ?? null,
+    });
+
+    return { ok: true, membership: updated };
   },
 
   /**

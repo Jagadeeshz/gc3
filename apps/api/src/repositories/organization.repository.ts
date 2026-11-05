@@ -1,5 +1,6 @@
 import type { Organization, OrganizationStatus } from '@gc3/types';
 import type { CreateOrganizationInput } from '@gc3/validation';
+import { recordAudit } from '../audit/audit-log';
 import { prisma } from '../db/client';
 
 /** Row shape returned by Prisma (Date objects) → API contract (ISO strings). */
@@ -50,6 +51,72 @@ export const organizationRepository = {
         targetType: 'organization',
         targetId: row.id,
       },
+    });
+
+    return toEntity(row);
+  },
+
+  /**
+   * Edits a tenant's own record.
+   *
+   * Tenant edits are a sensitive operation: a renamed or re-slugged tenant changes
+   * what clients see and what URLs resolve. The row is written first, then the
+   * audit entry records exactly which fields changed and what they were before —
+   * an audit row saying only "updated" would be useless a month later.
+   */
+  async updateScoped(
+    scope: string,
+    id: string,
+    input: { name?: string; slug?: string; timezone?: string; region?: string },
+    actor: { userId: string; ip?: string | null; userAgent?: string | null; requestId?: string | null },
+  ): Promise<Organization | null> {
+    const current = await prisma.organization.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true, name: true, slug: true, timezone: true, region: true },
+    });
+
+    if (!current || current.id !== scope) {
+      return null;
+    }
+
+    const changed = Object.entries(input).filter(([key, value]) => {
+      const before = (current as unknown as Record<string, unknown>)[key];
+      return value !== undefined && value !== before;
+    });
+
+    if (changed.length === 0) {
+      // Nothing to write and nothing to log: an audit trail full of no-op edits is
+      // noise that hides the real ones.
+      return this.findByIdScoped(scope, id);
+    }
+
+    const row = await prisma.organization.update({
+      where: { id },
+      data: {
+        ...(input.name !== undefined ? { name: input.name } : {}),
+        ...(input.slug !== undefined ? { slug: input.slug } : {}),
+        ...(input.timezone !== undefined ? { timezone: input.timezone } : {}),
+        ...(input.region !== undefined ? { region: input.region } : {}),
+      },
+    });
+
+    await recordAudit({
+      organizationId: id,
+      actorType: 'USER',
+      actorId: actor.userId,
+      action: 'organization.updated',
+      targetType: 'organization',
+      targetId: id,
+      metadata: {
+        fields: changed.map(([key]) => key),
+        before: Object.fromEntries(
+          changed.map(([key]) => [key, (current as unknown as Record<string, unknown>)[key] ?? null]),
+        ),
+        after: Object.fromEntries(changed.map(([key, value]) => [key, value])),
+      },
+      ip: actor.ip ?? null,
+      userAgent: actor.userAgent ?? null,
+      requestId: actor.requestId ?? null,
     });
 
     return toEntity(row);

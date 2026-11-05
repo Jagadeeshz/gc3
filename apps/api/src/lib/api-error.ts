@@ -88,4 +88,16 @@ export class ApiError extends Error {
       ],
     );
   }
+
+  /**
+   * Too many requests (429).
+   *
+   * Carries the seconds to wait in the details so a client can back off without
+   * parsing English, and the transport layer also sets `Retry-After`.
+   */
+  static tooManyRequests(message: string, retryAfterSeconds: number) {
+    return new ApiError(429, 'RATE_LIMITED', message, [
+      { path: 'retryAfterSeconds', message: String(retryAfterSeconds) },
+    ]);
+  }
 }

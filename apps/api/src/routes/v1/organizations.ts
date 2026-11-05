@@ -5,7 +5,10 @@ import {
   formatIssues,
   inviteLifecycleParamsSchema,
   inviteUserSchema,
+  membershipParamsSchema,
   organizationIdParamsSchema,
+  updateMembershipRolesSchema,
+  updateOrganizationSchema,
 } from '@gc3/validation';
 import { ApiError } from '../../lib/api-error';
 import { isUniqueViolation } from '../../db/client';
@@ -75,6 +78,161 @@ organizationsRouter.get(
     }
 
     const body: ApiSuccess<Organization> = { success: true, data: organization };
+    response.status(200).json(body);
+  },
+);
+
+/**
+ * PATCH /api/v1/organizations/:organizationId
+ *
+ * Edits the tenant's own record. Gated on `organization:update` and matched
+ * against the tenant scope, so a caller can only edit the workspace they are
+ * scoped to. Every changed field is written to the audit log with its before and
+ * after value.
+ */
+organizationsRouter.patch(
+  '/:organizationId',
+  requireAuth,
+  requireTenantScope,
+  requirePermission('organization:update'),
+  requireMatchingTenant,
+  async (request, response) => {
+    const params = organizationIdParamsSchema.safeParse(request.params);
+    const parsed = updateOrganizationSchema.safeParse(request.body);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid organization id', formatIssues(params.error));
+    }
+
+    if (!parsed.success) {
+      throw ApiError.badRequest('Invalid organization payload', formatIssues(parsed.error));
+    }
+
+    const actor = request.actor as { userId: string } | undefined;
+
+    if (!actor) {
+      throw ApiError.unauthenticated();
+    }
+
+    const raw = (request.body ?? {}) as Record<string, unknown>;
+
+    // Only the fields the caller actually sent.
+    //
+    // `updateOrganizationSchema` is a partial of the create schema, and Zod still
+    // applies a field's `.default()` when the key is absent — so passing the parsed
+    // object straight through would silently rewrite a tenant's region or timezone
+    // to the create-time defaults every time somebody renamed it. Caught by this
+    // endpoint's own audit log, which recorded a `region` change nobody asked for.
+    const input: { name?: string; slug?: string; timezone?: string; region?: string } = {};
+
+    if ('name' in raw && parsed.data.name !== undefined) {
+      input.name = parsed.data.name;
+    }
+    if ('slug' in raw && parsed.data.slug !== undefined) {
+      input.slug = parsed.data.slug;
+    }
+    if ('timezone' in raw && parsed.data.timezone !== undefined) {
+      input.timezone = parsed.data.timezone;
+    }
+    if ('region' in raw && parsed.data.region !== undefined) {
+      input.region = parsed.data.region;
+    }
+
+    // Tenant status is a platform decision (suspension, offboarding), not something
+    // a tenant edits about itself; refusing is better than quietly ignoring it.
+    if ('status' in raw) {
+      throw ApiError.badRequest('Organization status is changed by the platform, not through this endpoint', [
+        { path: 'status', message: 'Not editable here' },
+      ]);
+    }
+
+    try {
+      const organization = await organizationRepository.updateScoped(
+        request.organizationId as string,
+        params.data.organizationId,
+        input,
+        {
+          userId: actor.userId,
+          ip: request.ip ?? null,
+          userAgent: request.header('user-agent') ?? null,
+          requestId: request.requestId ?? null,
+        },
+      );
+
+      if (!organization) {
+        throw ApiError.notFound(`Organization ${params.data.organizationId} was not found`);
+      }
+
+      const body: ApiSuccess<Organization> = { success: true, data: organization };
+      response.status(200).json(body);
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new ApiError(409, 'CONFLICT', `Organization slug "${parsed.data.slug}" is taken`);
+      }
+      throw error;
+    }
+  },
+);
+
+/**
+ * PATCH /api/v1/organizations/:organizationId/memberships/:userId/roles
+ *
+ * Changes a member's roles. `membership:manage` — held by platform admins and by
+ * a tenant's own client owners, who already choose roles when they invite.
+ *
+ * The last ACTIVE owner cannot be demoted: a workspace with nobody able to
+ * administer it is a support incident, not a permission change.
+ */
+organizationsRouter.patch(
+  '/:organizationId/memberships/:userId/roles',
+  requireAuth,
+  requireTenantScope,
+  requirePermission('membership:manage'),
+  requireMatchingTenant,
+  async (request, response) => {
+    const params = membershipParamsSchema.safeParse(request.params);
+    const parsed = updateMembershipRolesSchema.safeParse(request.body);
+
+    if (!params.success) {
+      throw ApiError.badRequest('Invalid membership parameters', formatIssues(params.error));
+    }
+
+    if (!parsed.success) {
+      throw ApiError.badRequest('Invalid roles payload', formatIssues(parsed.error));
+    }
+
+    const actor = request.actor as { userId: string } | undefined;
+
+    if (!actor) {
+      throw ApiError.unauthenticated();
+    }
+
+    const outcome = await membershipRepository.changeRolesScoped(
+      request.organizationId as string,
+      params.data.userId,
+      parsed.data.roles,
+      {
+        userId: actor.userId,
+        ip: request.ip ?? null,
+        userAgent: request.header('user-agent') ?? null,
+        requestId: request.requestId ?? null,
+      },
+    );
+
+    if (!outcome.ok) {
+      if (outcome.reason === 'not-found') {
+        throw ApiError.notFound('No active membership for that user in this organization');
+      }
+
+      throw ApiError.conflict(
+        'This is the last active client owner: promote somebody else before changing these roles',
+      );
+    }
+
+    const body: ApiSuccess<{ id: string; userId: string; roles: readonly string[] }> = {
+      success: true,
+      data: outcome.membership,
+    };
     response.status(200).json(body);
   },
 );

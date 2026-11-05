@@ -189,6 +189,11 @@ Base URL: `http://localhost:3001/api/v1`
 | PATCH | `/invoices/:invoiceId/status` | bearer + scope | `finance:manage` — `ISSUED` (net 30), `PAID` (records the actor), `VOID`; every other move is 409 |
 | GET | `/invoices/:invoiceId/download` | bearer + scope | `finance:read` — printable text document as an attachment |
 | GET | `/ops/billing` | bearer only | `finance:read` — MRR, tier mix, invoice counts, outstanding vs settled, recent bills and the per-tenant ledger |
+| GET | `/ops/queue/stats` | bearer only | `ops:read` — queue depth, registered schedulers, worker heartbeat and alert flags; never 500s, reports an absent worker instead |
+| GET | `/ops/analytics` | bearer only | `ops:read` — turnaround (avg/median/p90), eight-week throughput, pod efficiency and six-month tenant growth; `?windowDays=` 7–365 |
+| GET | `/ops/audit` | bearer only | `ops:read` — the security log, newest first; `?organizationId=`, `?action=`, `?actorId=`, `?since=` |
+| PATCH | `/organizations/:organizationId` | bearer + scope | `organization:update` — rename / re-slug / timezone / region; only the fields sent are touched, and every change is audited with before/after |
+| PATCH | `/organizations/:organizationId/memberships/:userId/roles` | bearer + scope | `membership:manage` — client roles only; the last active owner cannot be demoted (409) |
 
 `bearer + scope` means: `Authorization: Bearer <token>` **and** `x-organization-id: <uuid>`.
 
@@ -254,6 +259,7 @@ permissions. `INVITED` and `REVOKED` memberships contribute nothing.
 | `ops:read` | — | — | — | ✅ | ✅ | — | — | — | — |
 | `finance:read` | ✅ | — | — | ✅ | ✅ | — | — | ✅ | ✅ |
 | `finance:manage` | — | — | — | ✅ | — | — | — | — | ✅ |
+| `membership:manage` | ✅ | — | — | ✅ | — | — | — | — | — |
 
 **Bootstrapping.** There is no public registration. Provision staff out of band:
 
@@ -523,6 +529,49 @@ its data through `apps/web/src/lib/api-client.ts`.
 | `/billing` | Tenant billing: plan, period, three usage meters with warning/exceeded states, invoice table, expandable line items, download. Owners read it; no client can change it | `GET /subscription`, `GET /invoices`, `GET /invoices/:id`, `GET /invoices/:id/download` |
 | `/ops/billing` | Finance console: MRR, tier mix, invoice counts, outstanding vs settled, tenant ledger with per-tenant billing, and issue/settle/void actions for `finance:manage` holders | `GET /ops/billing`, `POST /invoices/generate`, `PATCH /invoices/:id/status` |
 | `/deliveries` | Delivery history: released assets, newest first | `GET /deliverables/history` |
+
+### Security posture (Phase 5)
+
+```text
+x-content-type-options: nosniff
+x-frame-options: DENY
+referrer-policy: no-referrer
+cross-origin-opener-policy: same-origin
+cross-origin-resource-policy: same-site
+permissions-policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
+content-security-policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+strict-transport-security: max-age=15552000; includeSubDomains   (production only)
+x-ratelimit-limit / x-ratelimit-remaining / retry-after
+```
+
+Every response carries those headers, including 401s and 429s, and `x-powered-by` is removed. The CSP is
+`default-src 'none'` because the API only ever serves JSON and one plain-text invoice — a compromised
+response has nothing it is allowed to load.
+
+**Rate limiting** is a fixed-window counter, per process:
+
+| Limiter | Key | Default |
+|---|---|---|
+| `/auth/login` | client IP **and** submitted email | 20 per 15 min |
+| everything else under `/api/v1` | `x-organization-id` when present, else IP | 600 per minute |
+
+A tenant that runs out of budget cannot spend another tenant's, and a sign-in brute force cannot spend a
+tenant's budget at all. `0` disables a limiter (the test suite runs with both off and turns them down
+deliberately in `security.test.ts`). The counter is in memory, so N API nodes allow N times the ceiling —
+Redis-backed counters are the upgrade path and the middleware shape would not change.
+
+**Audit log.** `audit_events` records every consequential change with the actor, the target, a
+before/after payload, and the request that caused it (`ip`, `user_agent`, `request_id`). The sensitive set
+is exported as data (`SENSITIVE_AUDIT_ACTIONS`) so an omission is visible:
+
+`organization.created`, `organization.updated`, `membership.invited`, `membership.invite_resent`,
+`membership.invite_revoked`, `membership.invite_accepted`, `membership.roles_changed`,
+`membership.revoked`, `subscription.tier_changed`, `subscription.auto_provisioned`, `invoice.issued`,
+`invoice.paid`, `invoice.void`.
+
+Read it at `GET /api/v1/ops/audit` (`ops:read`). Rows are appended, never updated: `recordAudit` never
+throws, because a failed audit write must not roll back a committed business change — but it logs loudly,
+since a silent gap in an audit trail is worse than a noisy one.
 
 ### Session and headers
 

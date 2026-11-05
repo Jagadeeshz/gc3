@@ -189,6 +189,7 @@ export type Permission =
   | 'membership:read'
   | 'membership:invite'
   | 'membership:revoke'
+  | 'membership:manage'
   | 'tenant:context'
   | 'request:read'
   | 'request:create'
@@ -928,3 +929,36 @@ export interface AnalyticsReport {
   readonly pods: readonly PodEfficiencyRow[];
   readonly tenantGrowth: readonly TenantGrowthRow[];
 }
+
+// ---------------------------------------------------------------------------
+// Phase 5 — Security audit log
+// ---------------------------------------------------------------------------
+
+/** Who acted: a user, the platform itself, or an agent actor. */
+export type AuditActorType = 'USER' | 'SYSTEM' | 'AI_AGENT';
+
+/**
+ * One consequential change.
+ *
+ * The log is append-only by convention: nothing updates or deletes an audit row,
+ * which is what makes it worth reading when something goes wrong.
+ */
+export interface AuditLogEntry {
+  readonly id: Uuid;
+  readonly organizationId: Uuid | null;
+  readonly organizationName: string | null;
+  readonly actorType: AuditActorType;
+  readonly actorId: Uuid | null;
+  readonly actorEmail: string | null;
+  /** Dotted action name: `membership.roles_changed`, `invoice.paid`. */
+  readonly action: string;
+  readonly targetType: string;
+  readonly targetId: string | null;
+  readonly metadata: Record<string, unknown> | null;
+  readonly ip: string | null;
+  readonly userAgent: string | null;
+  readonly requestId: string | null;
+  readonly createdAt: IsoDateTime;
+}
+
+export interface AuditLogPage extends Paginated<AuditLogEntry> {}

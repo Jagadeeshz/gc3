@@ -89,6 +89,19 @@ const envSchema = z.object({
 
   /** Waiting jobs above this count raise a backlog alert on the operations console. */
   QUEUE_BACKLOG_THRESHOLD: z.coerce.number().int().min(1).max(100_000).default(50),
+
+  /**
+   * Rate ceilings (Phase 5).
+   *
+   * `0` disables the limiter. The test suite runs with both off — hundreds of
+   * fixture logins from one address would otherwise trip them — and the security
+   * suite turns them down to a handful on purpose, so the 429 path is still
+   * exercised against the same middleware the deployment uses.
+   */
+  RATE_LIMIT_MAX: z.coerce.number().int().min(0).max(100_000).default(600),
+  RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().min(1).max(3_600).default(60),
+  AUTH_RATE_LIMIT_MAX: z.coerce.number().int().min(0).max(100_000).default(20),
+  AUTH_RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().min(1).max(3_600).default(900),
 });
 
 export type Env = z.infer<typeof envSchema>;

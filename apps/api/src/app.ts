@@ -1,7 +1,9 @@
 import express, { type Express } from 'express';
 import { env } from './config/env';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
+import { apiRateLimit, authRateLimit } from './middleware/rate-limit';
 import { requestIdMiddleware, resolveRequestId } from './middleware/request-id';
+import { securityHeaders } from './middleware/security-headers';
 import { v1Router } from './routes/v1';
 
 /**
@@ -13,6 +15,10 @@ export function createApp(): Express {
 
   app.disable('x-powered-by');
   app.set('trust proxy', true);
+
+  // Hardening goes first: a rate-limited request and a rejected one both carry
+  // the same headers as a successful one, so a 429 is still a safe response.
+  app.use(securityHeaders);
 
   // Correlation id first: every later middleware and error envelope uses it.
   app.use((request, _response, next) => {
@@ -58,7 +64,11 @@ export function createApp(): Express {
     next();
   });
 
-  app.use('/api/v1', v1Router);
+  // Sign-in is limited before the body is even needed, and separately from the
+  // general API budget: a brute force should not be able to spend a tenant's quota.
+  app.use('/api/v1/auth/login', authRateLimit);
+
+  app.use('/api/v1', apiRateLimit, v1Router);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
