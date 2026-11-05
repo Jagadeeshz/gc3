@@ -39,7 +39,7 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 | 20 | Phase 4 · Subscription tiers & billing data layer | `d2ada56` | ✅ delivered |
 | 21 | Phase 4 · Invoicing & line-item generation engine | `a4f816f` | ✅ delivered |
 | 22 | Phase 4 · Usage tracking & subscription metering | `e3174a1` | ✅ delivered |
-| 23 | Phase 4 · Client & admin financial dashboards | `<pending>` | ✅ delivered |
+| 23 | Phase 4 · Client & admin financial dashboards | `e4fc68b` | ✅ delivered |
 
 **Phase 4 — Finance, Invoicing & Subscription Billing — is complete** (slices 20–23). 328 tests across
 28 files, migrations through `20261105000000_phase4_finance`, live-verified in the browser with a client
@@ -1074,7 +1074,7 @@ and a real browser.
 
 ## Slice 20 — Phase 4 · Subscription tiers and billing data layer  ✅
 
-**Commit:** `<pending>`
+**Commit:** `d2ada56`
 **Brief refs:** §5 (plans, subscriptions), §9 (data model), §12 (tenancy)
 
 ### What shipped
@@ -1111,7 +1111,7 @@ and a real browser.
 
 ## Slice 21 — Phase 4 · Invoicing and line-item generation  ✅
 
-**Commit:** `<pending>`
+**Commit:** `a4f816f`
 **Brief refs:** §5 (billing), §7 (invoices generated), §12 (audit)
 
 ### What shipped
@@ -1151,7 +1151,7 @@ and a real browser.
 
 ## Slice 22 — Phase 4 · Usage tracking, metering and plan guards  ✅
 
-**Commit:** `<pending>`
+**Commit:** `e3174a1`
 **Brief refs:** §5 (plan limits), §12 (tenant isolation), §14 (platform behaviour under load)
 
 ### What shipped
@@ -1189,7 +1189,7 @@ and a real browser.
 
 ## Slice 23 — Phase 4 · Client and platform financial dashboards  ✅
 
-**Commit:** `<pending>`
+**Commit:** `e4fc68b`
 **Brief refs:** §7 (client portal), §8 (operations console), §13 (UI standards)
 
 ### What shipped
