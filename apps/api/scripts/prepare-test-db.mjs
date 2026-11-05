@@ -64,6 +64,12 @@ console.log('[test-db] applying migrations');
 const out = run('pnpm exec prisma migrate deploy', { DATABASE_URL: testUrl });
 console.log(out.trim());
 
+// The price list is reference data, not fixtures: a fresh test database without it
+// would fail every finance test for the wrong reason. Same idempotent seed as dev.
+console.log('[test-db] seeding subscription tiers');
+const seeded = run('pnpm exec tsx scripts/seed-tiers.ts', { DATABASE_URL: testUrl });
+console.log(seeded.trim());
+
 if (!containerAvailable) {
   console.warn('[test-db] migration applied against an external database (Podman unavailable)');
 }

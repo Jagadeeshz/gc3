@@ -205,6 +205,8 @@ export type Permission =
   | 'pod:manage'
   | 'task:read'
   | 'task:manage'
+  | 'finance:read'
+  | 'finance:manage'
   | 'ops:read';
 
 /** The authenticated caller, resolved from a verified access token. */
@@ -657,4 +659,132 @@ export interface OpsDashboard {
   readonly organizations: readonly OpsOrganizationSummary[];
   readonly pods: readonly OpsPodSummary[];
   readonly queue: readonly OpsQueueItem[];
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4 — Finance: subscriptions, usage and invoices
+//
+// All money is integer minor units (paise). Nothing in this section is a float,
+// so an invoice totals the same on every machine.
+// ---------------------------------------------------------------------------
+
+export type SubscriptionStatus = 'ACTIVE' | 'PAST_DUE' | 'SUSPENDED' | 'CANCELLED';
+export type InvoiceStatus = 'DRAFT' | 'ISSUED' | 'PAID' | 'OVERDUE' | 'VOID';
+export type InvoiceLineItemKind = 'TIER_FEE' | 'USAGE' | 'ADJUSTMENT';
+/** What the platform meters. Storage is counted in KB to stay inside int range. */
+export type UsageMeterKey = 'REQUESTS' | 'STORAGE_KB' | 'API_CALLS';
+
+/**
+ * The platform's price list. Global by design — every tenant is offered the same
+ * tiers, which is why this is the one entity here without an organizationId.
+ */
+export interface SubscriptionTier extends Timestamps {
+  readonly id: Uuid;
+  readonly code: string;
+  readonly name: string;
+  readonly description: string | null;
+  readonly monthlyPriceCents: number;
+  readonly currency: string;
+  readonly requestsIncluded: number;
+  readonly storageMbIncluded: number;
+  readonly apiCallsIncluded: number;
+  readonly seatsIncluded: number;
+  readonly requestOverageCents: number;
+  readonly storageMbOverageCents: number;
+  readonly apiCallsOverageCentsPer1k: number;
+  readonly isActive: boolean;
+  readonly sortOrder: number;
+}
+
+export interface OrganizationSubscription extends Timestamps {
+  readonly id: Uuid;
+  readonly organizationId: Uuid;
+  readonly tierId: Uuid;
+  readonly status: SubscriptionStatus;
+  readonly currentPeriodStart: IsoDateTime;
+  readonly currentPeriodEnd: IsoDateTime;
+  readonly startedAt: IsoDateTime;
+  readonly cancelledAt: IsoDateTime | null;
+}
+
+/** One meter against its allowance. */
+export interface UsageMeterSnapshot {
+  readonly key: UsageMeterKey;
+  /** Used in this period, in the meter's own unit (requests, MB, calls). */
+  readonly quantity: number;
+  readonly included: number;
+  /** Hard stop, or null when the meter is not capped. */
+  readonly limit: number | null;
+  readonly remaining: number;
+  readonly percentUsed: number;
+  readonly state: 'OK' | 'WARNING' | 'EXCEEDED';
+  readonly unit: 'requests' | 'MB' | 'calls';
+}
+
+/** What a tenant sees on its billing page. */
+export interface SubscriptionOverview {
+  readonly subscription: OrganizationSubscription;
+  readonly tier: SubscriptionTier;
+  readonly period: { readonly start: IsoDateTime; readonly end: IsoDateTime; readonly label: string };
+  readonly usage: readonly UsageMeterSnapshot[];
+}
+
+export interface InvoiceLineItem {
+  readonly id: Uuid;
+  readonly invoiceId: Uuid;
+  readonly kind: InvoiceLineItemKind;
+  readonly description: string;
+  readonly quantity: number;
+  readonly unitAmountCents: number;
+  readonly amountCents: number;
+  /** Which meter produced this line, when it came from usage. */
+  readonly meterKey: string | null;
+}
+
+export interface Invoice extends Timestamps, TenantScoped {
+  readonly id: Uuid;
+  /** Per-tenant sequence: INV-2026-11-0001. */
+  readonly number: string;
+  readonly status: InvoiceStatus;
+  readonly periodStart: IsoDateTime;
+  readonly periodEnd: IsoDateTime;
+  readonly currency: string;
+  readonly subtotalCents: number;
+  readonly taxCents: number;
+  readonly totalCents: number;
+  readonly notes: string | null;
+  readonly issuedAt: IsoDateTime | null;
+  readonly dueAt: IsoDateTime | null;
+  readonly paidAt: IsoDateTime | null;
+  readonly paidByUserId: Uuid | null;
+  readonly voidedAt: IsoDateTime | null;
+}
+
+export interface InvoiceDetail extends Invoice {
+  readonly lineItems: readonly InvoiceLineItem[];
+}
+
+/** Platform-wide finance view for the operations console. */
+export interface FinanceOverview {
+  readonly generatedAt: IsoDateTime;
+  /** Recurring revenue from active subscriptions, in minor units. */
+  readonly mrrCents: number;
+  readonly organizations: number;
+  readonly byTier: readonly {
+    readonly tierCode: string;
+    readonly tierName: string;
+    readonly organizations: number;
+    readonly mrrCents: number;
+  }[];
+  readonly invoices: {
+    readonly draft: number;
+    readonly issued: number;
+    readonly paid: number;
+    readonly overdue: number;
+    readonly void: number;
+    /** Issued + overdue, i.e. billed but not settled. */
+    readonly outstandingCents: number;
+    readonly paidCents: number;
+  };
+  readonly recent: readonly (Invoice & { readonly organizationName: string })[];
 }

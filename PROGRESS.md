@@ -36,6 +36,9 @@ Status of each delivered slice, with the evidence that backs it. Source of truth
 
 **Phase 3 — Delivery Operations, Pod Workspaces & SLA Tracking — is complete** (slices 15–19).
 
+| 20 | Phase 4 · Subscription tiers & billing data layer | `<pending>` | ✅ delivered |
+| 21 | Phase 4 · Invoicing & line-item generation engine | `<pending>` | ⏳ next |
+
 ---
 
 ## Slice 0 — Monorepo foundation  ✅
@@ -1060,6 +1063,43 @@ Nine endpoints, three new tables (`pods`, `pod_members`, `tasks`), SLA columns a
 kinds added; the client portal was untouched by any of it except where it deliberately stays blind
 (internal notes, tasks, the ops console). 283 integration tests, all against real Postgres, real Redis
 and a real browser.
+
+---
+
+## Slice 20 — Phase 4 · Subscription tiers and billing data layer  ✅
+
+**Commit:** `<pending>`
+**Brief refs:** §5 (plans, subscriptions), §9 (data model), §12 (tenancy)
+
+### What shipped
+
+| Area | Detail |
+|---|---|
+| Schema | `subscription_tiers`, `organization_subscriptions`, `invoices`, `invoice_line_items`, `usage_meters` + four enums — migration `20261105000000_phase4_finance` |
+| Money | integer minor units everywhere (paise). No float, no decimal string, in the database or in the API |
+| Tenancy | every table carries `organizationId` except `subscription_tiers`, which is the platform price list — the one deliberate global entity, documented as such in the schema |
+| Tier seeds | `scripts/seed-tiers.ts` (idempotent upsert by code): Starter ₹25,000 / Professional ₹75,000 / Enterprise ₹2,50,000 per month, each with request, storage, API-call and seat allowances plus overage unit prices. Wired into `db:seed:tiers` **and** into `prepare-test-db` so a fresh test database behaves like production |
+| Periods | `lib/period.ts` — one definition of "which month is this", shared by metering and invoicing so the two can never disagree |
+| Meters | `usage.repository.ts` — atomic upsert per (tenant, meter, period); storage is counted in KB so the counter stays in int range to ~2 TB |
+| Plan API | `GET /subscription` (plan + allowances + live usage), `GET /subscription/tiers`, `PATCH /subscription` (`finance:manage`) with an audit row naming both tier codes |
+| Permissions | `finance:read` (ADMIN, OPS, ACCOUNT_MANAGER, FINANCE_MANAGER, CLIENT_OWNER), `finance:manage` (ADMIN, FINANCE_MANAGER) |
+| Tests | 12: auto-provisioning + audit, idempotent reads, catalogue, warning/exceeded meter states, tier change + audit, client 403, unknown tier 404, malformed payload, tenant independence, and the read-permission matrix |
+
+### Evidence
+
+- `pnpm test` 12/12 in `subscription.test.ts` (full suite runs after slice 23)
+- `pnpm --filter @gc3/api typecheck` clean
+- Seed output: three tiers with `monthlyPriceCents` 2500000 / 7500000 / 25000000
+
+### Decisions worth naming
+
+- **Auto-provisioning, not refusal.** An organization with no subscription gets the entry tier on first
+  read and an audit row saying why. A tenant created outside this flow should not be locked out of its
+  own billing page.
+- **Plan changes are human.** `finance:manage` is held by platform admins and finance managers only; a
+  client owner can read the plan but cannot upgrade itself.
+- **Allowances are per calendar month**, matching the meter period key. Proration for mid-cycle changes
+  is deliberately not implemented — that is a commercial rule, not a technical default.
 
 ---
 

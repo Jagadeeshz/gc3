@@ -34,6 +34,8 @@ const ALL_PERMISSIONS: readonly Permission[] = [
   'pod:manage',
   'task:read',
   'task:manage',
+  'finance:read',
+  'finance:manage',
   'ops:read',
 ];
 
@@ -69,6 +71,7 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'pod:manage',
     'task:read',
     'task:manage',
+    'finance:read',
     'ops:read',
   ],
   // Owns the client relationship; read-only over membership and delivery output.
@@ -82,6 +85,7 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'deliverable:read',
     'notification:read',
     'task:read',
+    'finance:read',
   ],
   // Runs the pod: assigns and progresses work, produces deliverables.
   POD_MANAGER: [
@@ -119,6 +123,8 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'request:read',
     'category:read',
     'deliverable:read',
+    'finance:read',
+    'finance:manage',
   ],
 };
 
@@ -137,6 +143,7 @@ export const CLIENT_ROLE_PERMISSIONS: Record<ClientRole, readonly Permission[]> 
     'category:read',
     'deliverable:read',
     'deliverable:review',
+    'finance:read',
   ],
   // Day-to-day contributor: raises requests, cannot manage people or approve.
   CLIENT_TEAM_MEMBER: [

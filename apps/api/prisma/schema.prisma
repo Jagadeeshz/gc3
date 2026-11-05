@@ -149,6 +149,10 @@ model Organization {
   pods Pod[]
   podMembers PodMember[]
   tasks Task[]
+  subscription      OrganizationSubscription?
+  invoices          Invoice[]
+  invoiceLineItems  InvoiceLineItem[]
+  usageMeters       UsageMeter[]
 
   @@index([status])
   @@index([createdAt])
@@ -186,6 +190,8 @@ model User {
   podMemberships       PodMember[]       @relation("PodMemberUser")
   tasksAssigned        Task[]            @relation("TaskAssignee")
   tasksCreated         Task[]            @relation("TaskCreator")
+  invoicesPaid         Invoice[]         @relation("InvoicePaidBy")
+  invoicesCreated      Invoice[]         @relation("InvoiceCreatedBy")
 
   @@index([status])
   @@index([platformRole])
@@ -515,4 +521,183 @@ model PodMember {
   @@unique([podId, userId])
   @@index([organizationId])
   @@map("pod_members")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4 — Finance: subscriptions, usage metering and invoicing
+//
+// Money is stored as integer minor units (paisa/cents) everywhere. There is no
+// float in this section: an invoice that rounds differently on two machines is
+// not an invoice.
+//
+// Tenancy: every tenant-owned row here carries organizationId. SubscriptionTier
+// is the deliberate exception — tiers are the platform's price list, identical
+// for every tenant, so they are global catalogue rows, not tenant data.
+// ---------------------------------------------------------------------------
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  SUSPENDED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  OVERDUE
+  VOID
+}
+
+enum InvoiceLineItemKind {
+  TIER_FEE
+  USAGE
+  ADJUSTMENT
+}
+
+/// What is being metered. Storage is counted in KB so the counter stays in an
+/// integer range that comfortably covers terabytes.
+enum UsageMeterKey {
+  REQUESTS
+  STORAGE_KB
+  API_CALLS
+}
+
+/// The platform's price list. Global by design: every tenant sees the same tiers.
+model SubscriptionTier {
+  id          String  @id @default(uuid()) @db.Uuid
+  code        String  @unique @db.VarChar(40)
+  name        String  @db.VarChar(80)
+  description String? @db.VarChar(500)
+
+  monthlyPriceCents Int    @map("monthly_price_cents")
+  currency          String @default("INR") @db.VarChar(3)
+
+  /// Included allowances for one billing period.
+  requestsIncluded  Int @default(0) @map("requests_included")
+  storageMbIncluded Int @default(0) @map("storage_mb_included")
+  apiCallsIncluded  Int @default(0) @map("api_calls_included")
+  seatsIncluded     Int @default(0) @map("seats_included")
+
+  /// Overage unit prices, in minor units.
+  requestOverageCents       Int @default(0) @map("request_overage_cents")
+  storageMbOverageCents     Int @default(0) @map("storage_mb_overage_cents")
+  apiCallsOverageCentsPer1k Int @default(0) @map("api_calls_overage_cents_per_1k")
+
+  isActive  Boolean @default(true) @map("is_active")
+  sortOrder Int     @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  subscriptions OrganizationSubscription[]
+
+  @@index([isActive, sortOrder])
+  @@map("subscription_tiers")
+}
+
+/// One current subscription per tenant. History lives in the invoices, which
+/// snapshot the tier they were billed for.
+model OrganizationSubscription {
+  id             String             @id @default(uuid()) @db.Uuid
+  organizationId String             @unique @map("organization_id") @db.Uuid
+  tierId         String             @map("tier_id") @db.Uuid
+  status         SubscriptionStatus @default(ACTIVE)
+
+  currentPeriodStart DateTime @map("current_period_start") @db.Timestamptz(3)
+  currentPeriodEnd   DateTime @map("current_period_end") @db.Timestamptz(3)
+
+  startedAt   DateTime  @default(now()) @map("started_at") @db.Timestamptz(3)
+  cancelledAt DateTime? @map("cancelled_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tier         SubscriptionTier   @relation(fields: [tierId], references: [id], onDelete: Restrict)
+
+  @@index([tierId])
+  @@map("organization_subscriptions")
+}
+
+/// A bill. Generation produces DRAFT; issuing and settling are human finance
+/// actions (see finance:manage and the notes in PROGRESS).
+model Invoice {
+  id             String        @id @default(uuid()) @db.Uuid
+  organizationId String        @map("organization_id") @db.Uuid
+  /// Per-tenant sequence: INV-2026-11-0001.
+  number         String        @db.VarChar(40)
+  status         InvoiceStatus @default(DRAFT)
+
+  periodStart DateTime @map("period_start") @db.Timestamptz(3)
+  periodEnd   DateTime @map("period_end") @db.Timestamptz(3)
+
+  currency      String @default("INR") @db.VarChar(3)
+  subtotalCents Int    @map("subtotal_cents")
+  taxCents      Int    @default(0) @map("tax_cents")
+  totalCents    Int    @map("total_cents")
+
+  notes String? @db.VarChar(500)
+
+  issuedAt     DateTime? @map("issued_at") @db.Timestamptz(3)
+  dueAt        DateTime? @map("due_at") @db.Timestamptz(3)
+  paidAt       DateTime? @map("paid_at") @db.Timestamptz(3)
+  paidByUserId String?   @map("paid_by_user_id") @db.Uuid
+  voidedAt     DateTime? @map("voided_at") @db.Timestamptz(3)
+  createdById  String?   @map("created_by_id") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  paidBy       User?          @relation("InvoicePaidBy", fields: [paidByUserId], references: [id], onDelete: SetNull)
+  createdBy    User?          @relation("InvoiceCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  lineItems    InvoiceLineItem[]
+
+  @@unique([organizationId, number])
+  @@index([organizationId, status])
+  @@index([status, dueAt])
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id             String              @id @default(uuid()) @db.Uuid
+  organizationId String              @map("organization_id") @db.Uuid
+  invoiceId      String              @map("invoice_id") @db.Uuid
+  kind           InvoiceLineItemKind
+  description    String              @db.VarChar(200)
+
+  quantity        Int
+  unitAmountCents Int @map("unit_amount_cents")
+  amountCents     Int @map("amount_cents")
+
+  /// Which meter produced this line, when it came from usage.
+  meterKey String? @map("meter_key") @db.VarChar(20)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_line_items")
+}
+
+/// One counter per tenant, meter and period. Upserted on every metered event.
+model UsageMeter {
+  id             String        @id @default(uuid()) @db.Uuid
+  organizationId String        @map("organization_id") @db.Uuid
+  key            UsageMeterKey
+  /// Billing period as YYYY-MM.
+  period         String        @db.VarChar(7)
+  quantity       Int           @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, key, period])
+  @@index([organizationId, period])
+  @@map("usage_meters")
 }

@@ -313,6 +313,47 @@ export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
 
 export const taskIdParamsSchema = z.object({ taskId: uuidSchema });
 
+// ---------------------------------------------------------------------------
+// Finance: subscriptions and invoices (Phase 4)
+// ---------------------------------------------------------------------------
+
+/** `PATCH /subscription` — a commercial decision, so it is explicit and audited. */
+export const changeTierSchema = z.object({
+  tierCode: z.string().trim().min(2).max(40).toUpperCase(),
+});
+
+export const invoiceIdParamsSchema = z.object({ invoiceId: uuidSchema });
+
+/**
+ * `POST /invoices/generate` — bills one calendar month.
+ *
+ * The period is optional and defaults to the previous complete month: billing the
+ * month you are standing in produces an invoice that is already out of date.
+ */
+export const generateInvoiceSchema = z.object({
+  period: z
+    .string()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Expected YYYY-MM')
+    .optional(),
+  notes: z.string().trim().max(500).nullable().optional(),
+});
+
+export type GenerateInvoiceInput = z.infer<typeof generateInvoiceSchema>;
+
+export const listInvoicesQuerySchema = paginationSchema.extend({
+  status: z.enum(['DRAFT', 'ISSUED', 'PAID', 'OVERDUE', 'VOID']).optional(),
+});
+
+/**
+ * Status changes are the money-moving part, so only forward transitions a human
+ * would take are modelled: issue a draft, settle an issued/overdue invoice, void
+ * anything that is not PAID.
+ */
+export const invoiceStatusTransitionSchema = z.object({
+  status: z.enum(['ISSUED', 'PAID', 'VOID']),
+  note: z.string().trim().max(500).optional(),
+});
+
 /**
  * Routing decision for a request. At least one field must be present; sending
  * `null` explicitly clears that assignment.

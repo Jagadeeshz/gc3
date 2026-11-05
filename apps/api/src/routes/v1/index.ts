@@ -11,6 +11,7 @@ import { organizationsRouter } from './organizations';
 import { podsRouter } from './pods';
 import { serviceCategoriesRouter } from './service-categories';
 import { serviceRequestsRouter } from './service-requests';
+import { subscriptionsRouter } from './subscriptions';
 import { tasksRouter } from './tasks';
 
 /**
@@ -137,3 +138,6 @@ v1Router.use('/ops', opsRouter);
 
 /** Phase 3: internal work items, by task id (listing lives on the request). */
 v1Router.use('/tasks', tasksRouter);
+
+/** Phase 4: the tenant's plan, allowances and metered usage. */
+v1Router.use('/subscription', subscriptionsRouter);
