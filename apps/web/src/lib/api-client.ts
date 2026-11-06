@@ -1,5 +1,6 @@
 import type {
   AccessibleOrganization,
+  ClientRole,
   AnalyticsReport,
   AuthActor,
   CapabilityPod,
@@ -946,4 +947,24 @@ export interface DemoRequestInput {
  */
 export async function requestDemo(input: DemoRequestInput): Promise<{ id: string }> {
   return request<{ id: string }>('/demo-requests', { method: 'POST', body: input });
+}
+
+/**
+ * Change a member's client roles.
+ *
+ * `membership:manage` is an owner permission, and the API refuses to demote the last
+ * active owner — the caller gets 409, which the UI surfaces rather than swallowing.
+ */
+export async function updateMembershipRoles(
+  token: string,
+  organizationId: string,
+  userId: string,
+  roles: readonly ClientRole[],
+): Promise<Membership> {
+  return request<Membership>(`/organizations/${organizationId}/memberships/${userId}/roles`, {
+    method: 'PATCH',
+    body: { roles },
+    token,
+    organizationId,
+  });
 }

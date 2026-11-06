@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PortalShell } from '@/components/portal/shell';
+import { ClientShell } from '@/components/portal/client-shell';
 
 /**
  * Client workspace layout — route group `(client)`.
@@ -10,5 +10,5 @@ import { PortalShell } from '@/components/portal/shell';
  * rather than a shared portal shell that also advertised the ops console.
  */
 export default function ClientLayout({ children }: { readonly children: ReactNode }) {
-  return <PortalShell variant="client">{children}</PortalShell>;
+  return <ClientShell>{children}</ClientShell>;
 }
