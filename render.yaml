@@ -1,0 +1,41 @@
+# Render blueprint for the GC³ API.
+#
+# The portal is on Vercel; this is the long-running half — Express plus its
+# interval workers, which is exactly what a serverless platform cannot host.
+services:
+  - type: web
+    name: gc3-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    plan: starter
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gc3-postgres
+          property: connectionString
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: WEB_ORIGIN
+        value: https://gc3.vercel.app
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: gc3-redis
+          property: connectionString
+
+  - type: redis
+    name: gc3-redis
+    plan: starter
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+
+databases:
+  - name: gc3-postgres
+    databaseName: gc3_portal
+    user: gc3
+    plan: basic-256mb

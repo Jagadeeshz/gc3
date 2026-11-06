@@ -1,0 +1,26 @@
+# Fly.io configuration for the GC³ API.
+#   fly launch --copy-config --name gc3-api
+#   fly secrets set DATABASE_URL=... AUTH_SECRET=... WEB_ORIGIN=https://gc3.vercel.app
+app = "gc3-api"
+primary_region = "bom"
+
+[build]
+  dockerfile = "apps/api/Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = false   # interval workers must keep running
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "20s"
+  method = "GET"
+  path = "/api/v1/health"
