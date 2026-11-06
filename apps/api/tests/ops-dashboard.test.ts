@@ -74,7 +74,7 @@ describe('GET /ops/dashboard — access control', () => {
     await authGet(DASHBOARD, operations.token).expect(200);
   });
 
-  it.each(['ACCOUNT_MANAGER', 'SPECIALIST', 'FINANCE_MANAGER'] as const)(
+  it.each(['ACCOUNT_MANAGER', 'SPECIALIST'] as const)(
     'refuses a %s',
     async (role) => {
       const staff = await createStaff(role);
@@ -83,6 +83,19 @@ describe('GET /ops/dashboard — access control', () => {
       expect(response.body.error.code).toBe('FORBIDDEN');
     },
   );
+
+  /**
+   * FINANCE_MANAGER moved from "refused" to "served" when the staff dashboards
+   * landed: the Management workspace needs the operational summary beside revenue,
+   * so finance holds `ops:read`. The boundary that still matters — and that this
+   * pins instead — is the security log, which finance must never read.
+   */
+  it('serves a finance manager, but not the security log', async () => {
+    const finance = await createStaff('FINANCE_MANAGER');
+
+    await authGet(DASHBOARD, finance.token).expect(200);
+    await authGet(`${API}/ops/audit`, finance.token).expect(403);
+  });
 
   it('refuses a client owner even when they send a tenant header', async () => {
     const organization = await createOrganization();
