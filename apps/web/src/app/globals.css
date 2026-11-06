@@ -71,6 +71,85 @@
   border-top: 1px solid color-mix(in oklab, var(--color-warm) 12%, transparent);
 }
 
+/* ------------------------------------------------------------------ *
+ * Marketing surface tokens (obsidian / slate hairline system).
+ * The portal stays on void+gold; the public site reads cooler and is
+ * built on #090D16 with #1E293B hairlines and tabular figures.
+ * ------------------------------------------------------------------ */
+@theme {
+  --color-obsidian: #090d16;
+  --color-obsidian-soft: #0b111c;
+  --color-obsidian-raised: #0e1523;
+  --color-hairline: #1e293b;
+  --color-ghost: #e8eef7;
+  --color-ghost-muted: #94a3b8;
+}
+
+/* One page container so every band lines up on the same 1240px rail. */
+@utility shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1240px;
+  padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+@utility figures {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'ss01' 1;
+}
+
+/* Fine 1px grid, used at low opacity behind hero and the closing panel. */
+@utility blueprint {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--color-hairline) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--color-hairline) 55%, transparent) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+/*
+ * Scroll-linked entrance. Progressive enhancement: browsers without
+ * `animation-timeline` simply render the content, so nothing depends on JS
+ * and a failed script never leaves a section invisible.
+ */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .rise {
+      animation: rise-in linear both;
+      animation-timeline: view();
+      /* complete before the block is fully in view, so nothing stays faded while reading */
+      animation-range: entry 0% entry 62%;
+    }
+  }
+}
+
+@keyframes orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .orbit-ring {
+    animation: orbit-spin 56s linear infinite;
+    transform-origin: center;
+  }
+  .orbit-ring-reverse {
+    animation: orbit-spin 84s linear infinite reverse;
+    transform-origin: center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
