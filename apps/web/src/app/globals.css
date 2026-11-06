@@ -203,6 +203,34 @@
   top: 6.5rem;
 }
 
+/* Hero orbit: pods drifting around the core. Compositor-only properties. */
+@keyframes disc-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -7px, 0); }
+}
+
+@keyframes ring-breathe {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.62; }
+}
+
+@keyframes core-pulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-disc {
+    animation: disc-float 7s ease-in-out infinite;
+  }
+  .orbit-ring-pulse {
+    animation: ring-breathe 9s ease-in-out infinite;
+  }
+  .core-glow {
+    animation: core-pulse 5s ease-in-out infinite;
+  }
+}
+
 @keyframes orbit-spin {
   to {
     transform: rotate(360deg);

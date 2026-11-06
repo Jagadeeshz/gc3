@@ -4,6 +4,7 @@ import { ArrowDown, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { SessionGate } from '@/components/marketing/session-gate';
 import { SiteNav } from '@/components/marketing/site-nav';
 import { ScrollProgress } from '@/components/marketing/scroll-progress';
+import { HeroOrbit } from '@/components/marketing/hero-orbit';
 import { ActProblem } from '@/components/marketing/act-problem';
 import { ActParadigm } from '@/components/marketing/act-paradigm';
 import { ActPods } from '@/components/marketing/act-pods';
@@ -92,7 +93,7 @@ export default function ScrollytellingHome() {
          */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
-            className="absolute inset-0 scale-[1.04] bg-[url('/images/gc3-hub-bg.webp')] bg-cover bg-[center_bottom] bg-no-repeat opacity-[0.55] blur-[2px] [will-change:transform]"
+            className="absolute inset-0 scale-[1.04] bg-[url('/images/gc3-hub-bg.webp')] bg-cover bg-[center_bottom] bg-no-repeat opacity-[0.32] blur-[3px] [will-change:transform]"
           />
           <div className="absolute inset-0 [background:radial-gradient(78%_64%_at_50%_42%,transparent_0%,var(--color-obsidian)_76%)]" />
           <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-obsidian via-obsidian/70 to-transparent" />
@@ -100,6 +101,9 @@ export default function ScrollytellingHome() {
           <div className="absolute inset-y-0 left-0 w-[46%] bg-gradient-to-r from-obsidian via-obsidian/55 to-transparent" />
           <div className="absolute inset-y-0 right-0 w-[26%] bg-gradient-to-l from-obsidian/85 to-transparent" />
         </div>
+
+        {/* Generated from the catalogue: our six pods orbiting the core. */}
+        <HeroOrbit />
 
         <div className="shell relative flex min-h-[86svh] flex-col justify-center py-16">
           <p className="rise font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-300/90">
