@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { CapabilityPod } from '@gc3/types';
 import { ApiClientError, fetchPods } from '@/lib/api-client';
+import { PodComparison } from './pricing-sections';
 
 /**
  * The capability-pod catalogue.
@@ -68,10 +69,12 @@ export function PodCard({
   pod,
   byCode,
   current,
+  popular = false,
 }: {
   readonly pod: CapabilityPod;
   readonly byCode: ReadonlyMap<string, CapabilityPod>;
   readonly current: boolean;
+  readonly popular?: boolean;
 }) {
   const Icon = POD_ICON[pod.code] ?? Layers;
   const price = priceLabel(pod);
@@ -92,6 +95,10 @@ export function PodCard({
       {current ? (
         <span className="absolute -top-2.5 left-4 rounded-full border border-emerald-400/40 bg-emerald-400/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-emerald-200">
           Your pod
+        </span>
+      ) : popular ? (
+        <span className="absolute -top-2.5 left-4 rounded-full border border-amber-400/40 bg-amber-400/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-amber-200">
+          Most specified
         </span>
       ) : null}
 
@@ -174,16 +181,24 @@ export function PodCard({
 export function PodGrid({
   pods,
   currentCodes = [],
+  popularCode = 'GROWTH',
 }: {
   readonly pods: readonly CapabilityPod[];
   readonly currentCodes?: readonly string[];
+  readonly popularCode?: string;
 }) {
   const byCode = new Map(pods.map((pod) => [pod.code, pod]));
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {pods.map((pod) => (
-        <PodCard key={pod.code} pod={pod} byCode={byCode} current={currentCodes.includes(pod.code)} />
+        <PodCard
+          key={pod.code}
+          pod={pod}
+          byCode={byCode}
+          current={currentCodes.includes(pod.code)}
+          popular={!currentCodes.length && pod.code === popularCode}
+        />
       ))}
     </div>
   );
@@ -239,6 +254,8 @@ export function PodCatalogue({
 
   return (
     <div className="grid gap-5">
+      {compact ? null : <PodComparison pods={pods} />}
+
       <PodGrid pods={compact ? pods.slice(0, 3) : pods} currentCodes={currentCodes} />
 
       <div className="flex flex-wrap items-start gap-2 rounded-[10px] border border-[#1E293B] bg-[#0B1220]/60 px-3.5 py-3">

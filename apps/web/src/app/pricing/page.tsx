@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight, Coins, Layers, Users } from 'lucide-react';
 import { PodCatalogue } from '@/components/pricing/pod-catalogue';
+import { PlatformBand, PricingFaq } from '@/components/pricing/pricing-sections';
 
 export const metadata: Metadata = {
   title: 'GC³ — Capability pods, credits and pricing',
@@ -75,10 +76,36 @@ export default function PricingPage() {
             Six pods, each a standing multidisciplinary team on a monthly credit pool. Start at the
             capability you need; the pods above carry the ones below at no extra credit cost.
           </p>
+
+          <dl className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-[12px] border border-[#1E293B] bg-[#1E293B] sm:grid-cols-4">
+            {[
+              ['6', 'Capability pods'],
+              ['48–120h', 'Delivery commitments'],
+              ['1:1', 'Agent per specialist'],
+              ['Monthly', 'No annual lock-in'],
+            ].map(([value, label]) => (
+              <div key={label} className="bg-[#0B1220] px-4 py-3.5">
+                <dd className="font-display text-[20px] font-semibold tabular-nums leading-none text-slate-100">
+                  {value}
+                </dd>
+                <dt className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">
+                  {label}
+                </dt>
+              </div>
+            ))}
+          </dl>
         </section>
 
         <section className="mt-10">
           <PodCatalogue />
+        </section>
+
+        <section className="mt-14">
+          <PlatformBand />
+        </section>
+
+        <section className="mt-14">
+          <PricingFaq />
         </section>
 
         <section className="mt-12 grid gap-4 border-t border-[#1E293B] pt-10 sm:grid-cols-3">
