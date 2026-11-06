@@ -708,3 +708,49 @@ model UsageMeter {
   @@index([organizationId, period])
   @@map("usage_meters")
 }
+
+/// Official Quantocos commercial catalogue (brief v1.0).
+///
+/// A price list, not a billing mechanism: billing still meters requests, storage
+/// and API calls on `SubscriptionTier`. Pods are sold on credit pools, team
+/// composition and stacking (Growth includes Creative; Strategy includes both).
+/// Money is integer minor units in the pod's own `currency`.
+model CapabilityPod {
+  id       String  @id @default(uuid()) @db.Uuid
+  code     String  @unique @db.VarChar(40)
+  name     String  @db.VarChar(80)
+  tagline  String? @db.VarChar(200)
+  description String? @db.VarChar(800)
+
+  /// 0 when the pod is priced per credit rather than monthly.
+  monthlyPriceCents Int    @default(0) @map("monthly_price_cents")
+  /// Per-credit rate, for the pods sold as $X/credit.
+  creditRateCents   Int    @default(0) @map("credit_rate_cents")
+  currency          String @default("USD") @db.VarChar(3)
+
+  creditsIncluded   Int @default(0) @map("credits_included")
+  /// Hour-based pods (REMAU) sell hours, not credits.
+  hoursIncluded     Int @default(0) @map("hours_included")
+  peakHoursIncluded Int @default(0) @map("peak_hours_included")
+
+  managers    Int @default(0)
+  specialists Int @default(0)
+  agents      Int @default(0)
+  teamSummary String? @map("team_summary") @db.VarChar(200)
+
+  /// Codes of the pods this one carries — the stacking rule, stored as data.
+  includesCodes String[] @default([]) @map("includes_codes")
+  /// What the pod delivers, in the brief's own words.
+  perks         String[] @default([])
+
+  minTermMonths Int @default(0) @map("min_term_months")
+  isCustomPriced Boolean @default(false) @map("is_custom_priced")
+  isActive      Boolean @default(true) @map("is_active")
+  sortOrder     Int     @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([isActive, sortOrder])
+  @@map("capability_pods")
+}

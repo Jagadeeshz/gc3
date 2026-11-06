@@ -2,6 +2,7 @@ import type {
   AccessibleOrganization,
   AnalyticsReport,
   AuthActor,
+  CapabilityPod,
   Membership,
   OpsCatalogueRow,
   OpsDeliverableRow,
@@ -920,4 +921,12 @@ export async function opsMyDeliverables(token: string): Promise<readonly OpsDeli
 
 export async function opsPods(token: string, organizationId: string): Promise<readonly PodSummary[]> {
   return request<readonly PodSummary[]>('/pods', { token, organizationId });
+}
+
+/**
+ * The commercial catalogue. Public — a price list is a document you hand to a
+ * prospect, so this call works with no session at all.
+ */
+export async function fetchPods(token?: string | null): Promise<readonly CapabilityPod[]> {
+  return request<readonly CapabilityPod[]>('/pricing/pods', token ? { token } : {});
 }

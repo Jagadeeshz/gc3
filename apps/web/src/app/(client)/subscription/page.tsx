@@ -11,6 +11,7 @@ import {
   listInvoices,
 } from '@/lib/api-client';
 import { useSession } from '@/lib/session-context';
+import { PodCatalogue } from '@/components/pricing/pod-catalogue';
 import { activeRoles } from '@/lib/session';
 import {
   formatDate,
@@ -277,6 +278,18 @@ export default function SubscriptionPage() {
             </tbody>
           </table>
         )}
+      </Panel>
+
+      <Panel
+        title="Capability pods"
+        subtitle="The commercial catalogue this workspace can move to"
+      >
+        <p className="mb-4 text-[11px] leading-relaxed text-slate-400">
+          Your subscription currently bills against the metered platform plan above. Capability pods
+          are sold on credit pools with a standing team — moving onto one is a commercial action taken
+          by your account team, not a self-serve button, because it changes the contract.
+        </p>
+        <PodCatalogue token={token} />
       </Panel>
     </div>
   );

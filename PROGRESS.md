@@ -1833,3 +1833,93 @@ opportunities, proposals, onboarding, sales reports, time & utilisation, quality
 feedback, integrations. Each names the model that would back it. They render an
 advisory panel, never sample rows: an operations console that invents a number is
 worse than one that admits a gap, because people decide from these screens.
+
+
+---
+
+# Phase 8 — Official Commercial Catalogue (capability pods)
+
+The brief's commercial structure is now data: six pods with real prices, credit
+pools, team composition and stacking rules, served from the database to every
+surface that shows a price.
+
+## The decision that shaped this slice
+
+The platform already had a price table — `subscription_tiers` — and it was wrong:
+`STARTER ₹25,000 / PROFESSIONAL ₹75,000 / ENTERPRISE ₹250,000` were placeholders I
+invented in Phase 4, metered in paise against requests, storage and API calls. The
+brief's actual commercial model is **USD, credit pools, standing teams, and pods that
+carry other pods**.
+
+Rather than overwrite the billing invariants (every invoice amount in minor units,
+one currency per row, metered allowances), the official catalogue is a separate
+first-class table:
+
+    capability_pods   what we sell, in the currency we sell it in
+    subscription_tiers  what the platform currently bills a tenant against
+
+Encoding $3,000 credit plans into paise-based billing rows would have made every
+invoice ambiguous about its own currency. The two models are now explicitly apart,
+which is a fact the client subscription screen states rather than hides.
+
+## What was built
+
+| Area | File |
+|---|---|
+| Migration | `apps/api/prisma/migrations/20261107090000_capability_pods` |
+| Model | `CapabilityPod` in `schema.prisma` (money in minor units + `currency`) |
+| Seed | `apps/api/scripts/seed-pods.ts` (idempotent, runs in `prepare-test-db`) |
+| Public API | `GET /api/v1/pricing/pods` — no token, no tenant, nothing scoped |
+| Contract | `CapabilityPod` in `packages/types` |
+| Shared UI | `apps/web/src/components/pricing/pod-catalogue.tsx` |
+| Marketing | `apps/web/src/app/pricing/page.tsx` |
+| Client portal | pods panel on `/subscription`, price strip on `/services` |
+
+## The catalogue, as seeded
+
+| Pod | Price | Credits | Team | Carries |
+|---|---|---|---|---|
+| Creative | $3,000/mo | 120 | 1 manager · 2 specialists · 2 agents | — |
+| Growth (Digital) | $6,000/mo | 240 | 1 · 4 · 4 | Creative |
+| Strategy | $9,000/mo | 360 | 1 · 6 · 6 | Growth + Creative |
+| Automation | $25/credit | — | custom, scoped per engagement | — |
+| Interactive | $25/credit | — | custom, scoped per engagement | — |
+| REMAU | $8,000/mo | 240h (280h peak) | shared pod, 3-month minimum | — |
+
+Perks are the brief's own words: Creative carries social content, design, copy,
+video/motion, decks and brand assets; Automation carries process audits, RAG
+chatbots, voice agents, custom agents and content pipelines; Interactive carries
+property visualisation, 3D web experiences, configurators, scrollytelling, VR
+showrooms and game-engine POCs; REMAU carries launch campaigns, NRI-diaspora
+marketing, XR walkthroughs and investor comms.
+
+## Stacking is data, not copy
+
+`includesCodes` holds the rule — Growth `[CREATIVE]`, Strategy `[GROWTH, CREATIVE]` —
+so the UI renders the relationship rather than restating it, and the price list and
+the catalogue cannot drift. Tests compute the transitive closure: Strategy reaches
+both pods below it, Creative reaches nothing.
+
+## Verification
+
+- `tests/pricing-catalogue.test.ts` — **12/12**, asserting every price, credit pool,
+  team size, the $25/credit rate, REMAU's 240/280 hours and 3-month minimum, ordering,
+  the stacking closure, that a retired pod disappears, and that the public payload
+  exposes nothing tenant-scoped.
+- Browser: `/pricing` renders 6 cards — $3,000 · 120 credits · 1/2/2; $6,000 · 240 ·
+  1/4/4; $9,000 · 360 · 1/6/6; $25/credit ×2; $8,000 · 240 (280 peak) with the
+  3-month badge. `/subscription` shows the catalogue panel (6 cards). `/services`
+  shows the price strip with all six and a link to the full catalogue.
+- Obsidian `#090D16`, slate `#1E293B`, emerald for price/credits/stacking, amber for
+  peak hours and minimum terms — applied through the shared component, so all three
+  surfaces cannot disagree.
+
+## What this slice deliberately does not do
+
+**A tenant is not yet billed on a pod.** `POST /subscriptions/change-tier` still
+moves a tenant between the metered platform plans, and an invoice still prices in
+paise. Migrating billing to pods needs a credit ledger (draw-down, rollover, overage
+at $25/credit), which does not exist yet — so the client subscription screen says
+plainly that pods are the catalogue you can move to and that moving is a commercial
+action by the account team, not a self-serve button. That is the next slice if the
+commercial model should also be the billing model.

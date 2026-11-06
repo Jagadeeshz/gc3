@@ -68,6 +68,9 @@ console.log(out.trim());
 // would fail every finance test for the wrong reason. Same idempotent seed as dev.
 console.log('[test-db] seeding subscription tiers');
 const seeded = run('pnpm exec tsx scripts/seed-tiers.ts', { DATABASE_URL: testUrl });
+// The commercial catalogue is reference data too: a fresh test database must carry
+// the same pods as production, or the price-list tests would assert nothing.
+run('pnpm exec tsx scripts/seed-pods.ts', { DATABASE_URL: testUrl });
 console.log(seeded.trim());
 
 if (!containerAvailable) {

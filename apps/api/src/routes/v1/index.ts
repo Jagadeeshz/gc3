@@ -11,6 +11,7 @@ import { notificationsRouter } from './notifications';
 import { opsRouter } from './ops';
 import { organizationsRouter } from './organizations';
 import { podsRouter } from './pods';
+import { pricingRouter } from './pricing';
 import { serviceCategoriesRouter } from './service-categories';
 import { serviceRequestsRouter } from './service-requests';
 import { subscriptionsRouter } from './subscriptions';
@@ -146,6 +147,9 @@ v1Router.use('/tasks', tasksRouter);
 
 /** Phase 4: the tenant's plan, allowances and metered usage. */
 v1Router.use('/subscription', subscriptionsRouter);
+
+// Public: the commercial catalogue. No token, no tenant, nothing scoped.
+v1Router.use('/pricing', pricingRouter);
 
 /** Phase 4: invoices — generation, reads, status transitions and the document. */
 v1Router.use('/invoices', invoicesRouter);

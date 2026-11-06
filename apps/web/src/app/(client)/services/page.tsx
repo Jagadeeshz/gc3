@@ -6,6 +6,7 @@ import { ArrowRight, CheckCircle2, LayoutGrid, Loader2, X } from 'lucide-react';
 import type { ServiceCategory, ServiceRequest, ServiceRequestPriority } from '@gc3/types';
 import { ApiClientError, createRequest, listCategories } from '@/lib/api-client';
 import { useSession } from '@/lib/session-context';
+import { PodPriceStrip } from '@/components/pricing/pod-catalogue';
 import { EmptyState, ErrorNote, Loading, PageHeader, Panel } from '@/components/portal/kit';
 
 /**
@@ -145,6 +146,8 @@ export default function ServicesPage() {
       />
 
       {error ? <ErrorNote message={error} /> : null}
+
+      <PodPriceStrip token={token} />
 
       {created ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-emerald-400/30 bg-emerald-400/5 px-4 py-3">

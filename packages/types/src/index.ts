@@ -652,6 +652,42 @@ export interface OpsPodSummary extends PodSummary {
  * served to callers holding `ops:read`, and never takes a tenant header.
  */
 // ---------------------------------------------------------------------------
+// Capability pods — the commercial catalogue (breadth of what we sell)
+// ---------------------------------------------------------------------------
+
+/**
+ * A pod as it is sold.
+ *
+ * `includesCodes` is the stacking rule as data: GROWTH includes CREATIVE,
+ * STRATEGY includes GROWTH and CREATIVE. The UI renders the relationship from this
+ * field rather than from copy, so the price list and the catalogue cannot drift.
+ */
+export interface CapabilityPod {
+  readonly id: Uuid;
+  readonly code: string;
+  readonly name: string;
+  readonly tagline: string | null;
+  readonly description: string | null;
+  /** Integer minor units in `currency`; 0 when the pod is priced per credit. */
+  readonly monthlyPriceCents: number;
+  readonly creditRateCents: number;
+  readonly currency: string;
+  readonly creditsIncluded: number;
+  readonly hoursIncluded: number;
+  readonly peakHoursIncluded: number;
+  readonly managers: number;
+  readonly specialists: number;
+  readonly agents: number;
+  readonly teamSummary: string | null;
+  readonly includesCodes: readonly string[];
+  readonly perks: readonly string[];
+  readonly minTermMonths: number;
+  readonly isCustomPriced: boolean;
+  readonly isActive: boolean;
+  readonly sortOrder: number;
+}
+
+// ---------------------------------------------------------------------------
 // Operations directory (Phase 7) — cross-tenant rows the staff dashboards read
 // ---------------------------------------------------------------------------
 
