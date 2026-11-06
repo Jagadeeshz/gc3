@@ -30,7 +30,7 @@ const FRICTIONS = [
 
 export function ActProblem() {
   return (
-    <section id="act-problem" className="relative border-b border-hairline bg-obsidian py-20 sm:py-28">
+    <section id="act-problem" className="act-anchor relative border-b border-hairline bg-obsidian py-20 sm:py-28">
       <div className="shell grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)] lg:gap-16">
         <div className="stage rise">
           <div className="relative overflow-hidden rounded-[16px] border border-hairline bg-obsidian-soft p-5 sm:p-7">
@@ -43,15 +43,18 @@ export function ActProblem() {
               </span>
             </div>
 
-            <div className="mt-5 grid grid-cols-8 gap-1.5" aria-hidden="true">
+            <div className="group/estate mt-5 grid grid-cols-8 gap-1.5" aria-hidden="true">
               {LICENCES.map((index) => (
                 <span
                   key={index}
-                  className="aspect-square rounded-[3px] border border-hairline bg-obsidian-raised"
-                  style={{ opacity: 0.35 + (index % 7) * 0.07 }}
+                  style={{ opacity: 0.55 + (index % 7) * 0.08 }}
+                  className="aspect-square rounded-[3px] border border-ghost/15 bg-ghost/[0.07] transition-[background-color,border-color,transform,opacity] duration-200 ease-out hover:scale-[1.25] hover:border-amber-400/70 hover:bg-amber-400/25 hover:opacity-100 group-hover/estate:opacity-55"
                 />
               ))}
             </div>
+            <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted/70">
+              Hover any tile — forty separate decisions, none of them shared
+            </p>
 
             <div className="mt-6 grid gap-2 border-t border-hairline pt-5">
               {[

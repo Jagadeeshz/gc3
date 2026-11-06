@@ -182,6 +182,21 @@
   }
 }
 
+/*
+ * Anchors land under the sticky header without this, which reads as a bug to
+ * anyone who deep-links to an act.
+ */
+@utility act-anchor {
+  scroll-margin-top: 6.5rem;
+}
+
+/* Honour the reader: smooth scrolling is motion, and motion is optional. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Sticky column that owns the visual while the narrative scrolls past it. */
 @utility stage {
   position: sticky;

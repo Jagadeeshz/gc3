@@ -29,14 +29,19 @@ const PILLARS = [
 /** A specialist and the agent paired to them, drawn as one unit. */
 function SpecialistAgentPair({ index }: { readonly index: number }) {
   return (
-    <div className="relative flex items-stretch gap-px overflow-hidden rounded-[10px] border border-hairline bg-hairline">
+    <div className="group/pair relative flex items-stretch gap-px overflow-hidden rounded-[10px] border border-hairline bg-hairline transition-colors duration-200 hover:border-emerald-400/35">
       <div className="flex flex-1 items-center gap-2 bg-obsidian-raised px-3 py-2.5">
-        <UserRound aria-hidden className="size-3.5 text-ghost-muted" strokeWidth={1.75} />
-        <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ghost-muted">
+        <UserRound aria-hidden className="size-3.5 text-ghost-muted transition-colors group-hover/pair:text-ghost" strokeWidth={1.75} />
+        <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ghost-muted transition-colors group-hover/pair:text-ghost">
           Specialist {index}
         </span>
       </div>
-      <div className="flex items-center gap-2 bg-emerald-400/[0.07] px-3 py-2.5">
+      {/* The pairing marker: one human, one agent, one accountable unit. */}
+      <div className="flex items-center gap-1 bg-obsidian px-1.5">
+        <span className="size-1 rounded-full bg-emerald-400/80" />
+        <span className="font-mono text-[8px] uppercase tracking-[0.1em] text-emerald-300/80">1:1</span>
+      </div>
+      <div className="flex items-center gap-2 bg-emerald-400/[0.07] px-3 py-2.5 transition-colors group-hover/pair:bg-emerald-400/[0.13]">
         <Bot aria-hidden className="size-3.5 text-emerald-300" strokeWidth={1.75} />
         <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-emerald-300">
           Agent {index}
@@ -50,7 +55,7 @@ export function ActParadigm() {
   return (
     <section
       id="act-paradigm"
-      className="relative border-b border-hairline bg-obsidian-soft py-20 sm:py-28"
+      className="act-anchor relative border-b border-hairline bg-obsidian-soft py-20 sm:py-28"
     >
       <div className="shell grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)] lg:gap-16">
         <div className="grid content-start gap-10">
@@ -138,7 +143,17 @@ export function ActParadigm() {
               </div>
             </div>
 
-            <p className="mt-5 flex items-start gap-2 border-t border-hairline pt-5 text-[11px] leading-relaxed text-ghost-muted">
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-hairline pt-4">
+              <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
+                1 Manager : N Specialists : 1 Agent each
+              </span>
+              <span className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-emerald-300/80">
+                <span className="size-1 rounded-full bg-emerald-400/80" />
+                paired
+              </span>
+            </div>
+
+            <p className="mt-4 flex items-start gap-2 border-t border-hairline pt-4 text-[11px] leading-relaxed text-ghost-muted">
               <Link2 aria-hidden className="mt-0.5 size-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} />
               Every agent works against a named specialist and a human gate — the pairing is the
               control, not the disclaimer.
