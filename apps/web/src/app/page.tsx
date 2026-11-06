@@ -4,6 +4,7 @@ import { ArrowDown, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { SessionGate } from '@/components/marketing/session-gate';
 import { SiteNav } from '@/components/marketing/site-nav';
 import { ScrollProgress } from '@/components/marketing/scroll-progress';
+import { HeroScene } from '@/components/marketing/hero-scene';
 import { ActProblem } from '@/components/marketing/act-problem';
 import { ActParadigm } from '@/components/marketing/act-paradigm';
 import { ActPods } from '@/components/marketing/act-pods';
@@ -85,17 +86,20 @@ export default function ScrollytellingHome() {
           className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(16,185,129,0.10),transparent_70%)]"
         />
 
+        {/* The illustrated rig: parallax floor, travelling signals, hover callouts. */}
+        <HeroScene />
+
         <div className="shell relative flex min-h-[86svh] flex-col justify-center py-16">
           <p className="rise font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-300/90">
             GC³ — Global Capability Center 3.0
           </p>
 
-          <h1 className="rise mt-5 max-w-[20ch] font-display text-[clamp(2.4rem,6.4vw,5.2rem)] leading-[0.98] tracking-[-0.035em] text-ghost">
+          <h1 className="rise mt-5 max-w-[17ch] font-display text-[clamp(2.2rem,5vw,4.3rem)] leading-[1.0] tracking-[-0.03em] text-ghost lg:max-w-[52%]">
             Enterprise AI does not fail on models.
             <span className="mt-2 block text-amber-300/90">It fails on operations.</span>
           </h1>
 
-          <p className="rise mt-7 max-w-[54ch] text-[15px] leading-[1.8] text-ghost-muted">
+          <p className="rise mt-7 max-w-[48ch] text-[15px] leading-[1.8] text-ghost-muted lg:max-w-[46%]">
             GC³ composes one pod around one outcome and sells it on one subscription — a standing
             team, a monthly credit pool, and none of the procurement that used to sit between you and
             the work. This page is the argument, in three acts.

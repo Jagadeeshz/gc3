@@ -203,6 +203,69 @@
   top: 6.5rem;
 }
 
+/* ------------------------------------------------------------------ *
+ * Hero scene motion.
+ *
+ * Transforms and stroke offsets only — both composite on the GPU, so the
+ * illustration keeps animating at 60fps while the page scrolls. Everything is
+ * inside a prefers-reduced-motion guard, and nothing here is required to see
+ * the drawing: without it, the rig is simply still.
+ * ------------------------------------------------------------------ */
+
+@keyframes bob-token {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes flow-dash {
+  to { stroke-dashoffset: -136; }
+}
+
+@keyframes drift-grid {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -7px, 0); }
+}
+
+@keyframes hotspot-pulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bob {
+    animation: bob-token 5.5s ease-in-out infinite;
+  }
+
+  .dash-flow {
+    stroke-dasharray: 6 30;
+    animation: flow-dash 4.5s linear infinite;
+  }
+
+  .drift {
+    animation: drift-grid 18s ease-in-out infinite;
+  }
+
+  .pulse-dot {
+    animation: hotspot-pulse 2.8s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+}
+
+/* Hero hotspot callouts.
+ * Plain CSS rather than a Tailwind group variant: the reveal depends on :hover on
+ * an SVG <g>, and writing the rule out leaves nothing to interpretation.
+ */
+.hero-hotspot .tip {
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+
+.hero-hotspot:hover .tip,
+.hero-hotspot:focus-within .tip {
+  opacity: 1;
+}
+
 @keyframes orbit-spin {
   to {
     transform: rotate(360deg);
