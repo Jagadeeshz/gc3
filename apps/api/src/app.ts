@@ -4,6 +4,7 @@ import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { apiRateLimit, authRateLimit } from './middleware/rate-limit';
 import { requestIdMiddleware, resolveRequestId } from './middleware/request-id';
 import { securityHeaders } from './middleware/security-headers';
+import { cors } from './middleware/cors';
 import { v1Router } from './routes/v1';
 
 /**
@@ -18,6 +19,7 @@ export function createApp(): Express {
 
   // Hardening goes first: a rate-limited request and a rejected one both carry
   // the same headers as a successful one, so a 429 is still a safe response.
+  app.use(cors);
   app.use(securityHeaders);
 
   // Correlation id first: every later middleware and error envelope uses it.

@@ -15,6 +15,15 @@ const envSchema = z.object({
 
   /** HMAC secret for access tokens. Must be ≥ 32 chars; rotate per environment. */
   AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters'),
+  /**
+   * Comma-separated origins allowed to call this API from a browser.
+   *
+   * The portal is deployed separately from the API (Vercel for the web app, a
+   * long-running host for Express + Postgres + Redis), so cross-origin calls are
+   * the normal case in production — and a browser will refuse them without this.
+   * Absent means "same-origin only", which is correct for local development.
+   */
+  WEB_ORIGIN: z.string().optional(),
   AUTH_ISSUER: z.string().min(1).default('gc3-portal'),
   AUTH_AUDIENCE: z.string().min(1).default('gc3-api'),
   /** Access-token lifetime in seconds (short by design; refresh lands later). */
