@@ -14,6 +14,11 @@ export default defineConfig({
     path: 'prisma/migrations',
   },
   datasource: {
-    url: env('DATABASE_URL'),
+    /**
+     * Migrations must run against the DIRECT connection, not the pooler: a
+     * transaction-mode pooler cannot hold the advisory lock Prisma takes, and
+     * `migrate deploy` over 6543 fails with a confusing timeout.
+     */
+    url: process.env.SUPABASE_DIRECT_URL ?? env('DATABASE_URL'),
   },
 });

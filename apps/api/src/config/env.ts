@@ -10,8 +10,18 @@ const envSchema = z.object({
   API_HOST: z.string().min(1).default('0.0.0.0'),
   /** Browser origin allowed to call the API (comma-separated list). */
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
-  /** PostgreSQL connection string. Required from Phase 1 onward. */
-  DATABASE_URL: z.url(),
+  /**
+   * PostgreSQL connection string.
+   *
+   * Two names are accepted because hosted Postgres gives you two URLs with different
+   * jobs: a pooled one for the application (Supabase's transaction pooler on 6543) and
+   * a direct one for migrations. `DATABASE_URL` is the local/direct name; on Supabase
+   * the pooled URL arrives as `SUPABASE_DB_URL`.
+   */
+  DATABASE_URL: z.url().optional(),
+  SUPABASE_DB_URL: z.url().optional(),
+  /** Direct (non-pooled) URL — migrations and seeds only. Never used at runtime. */
+  SUPABASE_DIRECT_URL: z.url().optional(),
 
   /** HMAC secret for access tokens. Must be ≥ 32 chars; rotate per environment. */
   AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters'),
@@ -111,7 +121,21 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().min(1).max(3_600).default(60),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().min(0).max(100_000).default(20),
   AUTH_RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().min(1).max(3_600).default(900),
+}).refine((value) => Boolean(value.DATABASE_URL ?? value.SUPABASE_DB_URL), {
+  message: 'Set DATABASE_URL or SUPABASE_DB_URL — the API cannot start without a database',
+  path: ['DATABASE_URL'],
 });
+
+/** The URL the API itself connects with: pooled on Supabase, direct locally. */
+export function runtimeDatabaseUrl(): string {
+  const url = process.env.SUPABASE_DB_URL ?? process.env.DATABASE_URL;
+
+  if (!url) {
+    throw new Error('No database URL: set SUPABASE_DB_URL (Supabase) or DATABASE_URL (local).');
+  }
+
+  return url;
+}
 
 export type Env = z.infer<typeof envSchema>;
 
