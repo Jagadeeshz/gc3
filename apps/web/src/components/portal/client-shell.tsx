@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import type { ServiceRequest } from '@gc3/types';
 import { listRequests } from '@/lib/api-client';
-import { activeRoles, clearSession, writeSession, type PortalSession } from '@/lib/session';
+import { activeRoles, markSignedOut, writeSession, type PortalSession } from '@/lib/session';
 import { useSession } from '@/lib/session-context';
 import { clientNavFor } from '@/lib/client-nav';
 import { requestStatusLabel } from '@/components/portal/status';
@@ -38,7 +38,7 @@ import { useViewMode } from '@/lib/view-mode';
 const VIEW_LABEL = { owner: 'Owner view', member: 'Member view' } as const;
 
 export function ClientShell({ children }: { readonly children: ReactNode }) {
-  const { session } = useSession();
+  const { session, ready, signOut } = useSession();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -81,13 +81,35 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
     setDrawerOpen(false);
   }, [pathname]);
 
+  /**
+   * Unauthenticated visitor — send them to the login screen.
+   *
+   * Without this, signing out and refreshing `/overview` still painted the workspace
+   * chrome (empty, because every request 401s). A signed-out user must not be able to
+   * look at a tenant's shell at all, even a hollow one.
+   */
+  useEffect(() => {
+    if (ready && !session) {
+      router.replace('/login');
+    }
+  }, [ready, session, router]);
+
   const sections = useMemo(() => clientNavFor(isOwnerView), [isOwnerView]);
 
-  const signOut = useCallback(() => {
-    clearSession();
+  /**
+   * Sign out.
+   *
+   * This must go through the session context, not `clearSession()` alone: clearing
+   * localStorage leaves the provider holding the old session in memory, so /login
+   * still sees a signed-in user and redirects straight back into the workspace. That
+   * is exactly the bug this replaced — clicking logout appeared to do nothing.
+   */
+  const handleSignOut = useCallback(() => {
+    markSignedOut();
+    signOut();
+    setDrawerOpen(false);
     router.replace('/login');
-    router.refresh();
-  }, [router]);
+  }, [router, signOut]);
 
   const switchWorkspace = useCallback(
     (nextOrganizationId: string) => {
@@ -119,6 +141,26 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
     : { href: '/deliverables', label: 'Submit feedback', icon: MessageSquarePlus };
 
   const ActionIcon = primaryAction.icon;
+
+  // Nothing is rendered before the session is known: a skeleton, not the app, so a
+  // signed-out visitor never sees a flash of the workspace.
+  if (!ready) {
+    return (
+      <div className="grid min-h-dvh place-items-center bg-obsidian">
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-600">Loading workspace…</p>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="grid min-h-dvh place-items-center bg-obsidian">
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-600">
+          Redirecting to sign in…
+        </p>
+      </div>
+    );
+  }
 
   const rail = (
     <div className="flex h-full flex-col gap-5 px-3 py-4">
@@ -299,7 +341,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
           </span>
           <button
             type="button"
-            onClick={signOut}
+            onClick={handleSignOut}
             aria-label="Sign out"
             className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-slate-200"
           >

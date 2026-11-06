@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { fetchOrganizations, login, ApiClientError } from '@/lib/api-client';
-import { buildSession, homePathFor } from '@/lib/session';
+import { buildSession, consumeSignedOutFlag, homePathFor } from '@/lib/session';
 import { useSession } from '@/lib/session-context';
 
 /**
@@ -14,10 +14,18 @@ import { useSession } from '@/lib/session-context';
 export default function LoginPage() {
   const router = useRouter();
   const { session, ready, signIn } = useSession();
+  // Set by the shell on sign-out, so the user gets confirmation rather than a form
+  // that looks like it simply failed to load. Read on mount rather than through
+  // useSearchParams, which would force this page out of static prerendering.
+  const [justSignedOut, setJustSignedOut] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setJustSignedOut(consumeSignedOutFlag());
+  }, []);
 
   useEffect(() => {
     if (ready && session) {
@@ -105,6 +113,15 @@ export default function LoginPage() {
                 className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
               />
             </label>
+
+            {justSignedOut && !error ? (
+              <p
+                role="status"
+                className="rounded-lg border border-emerald-400/30 bg-emerald-400/[0.08] px-3 py-2 text-xs text-emerald-200"
+              >
+                You have been signed out.
+              </p>
+            ) : null}
 
             {error ? (
               <p

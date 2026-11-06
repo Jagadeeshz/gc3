@@ -95,3 +95,31 @@ export function activeRoles(session: PortalSession): readonly string[] {
 export function homePathFor(session: PortalSession): '/ops' | '/overview' {
   return session.actor.platformRole !== null ? '/ops' : '/overview';
 }
+
+/**
+ * A one-shot flag that survives a client-side redirect.
+ *
+ * The sign-out redirect races with the layout guard, which sends unauthenticated
+ * visitors to /login on its own — so a `?signedOut=1` query string is not reliable.
+ * sessionStorage is: it survives both redirects, is scoped to the tab, and is cleared
+ * as soon as the login page reads it.
+ */
+const SIGNED_OUT_KEY = 'gc3.portal.signedOut';
+
+export function markSignedOut(): void {
+  try {
+    window.sessionStorage.setItem(SIGNED_OUT_KEY, '1');
+  } catch {
+    /* private mode: no banner, but the sign-out still happened */
+  }
+}
+
+export function consumeSignedOutFlag(): boolean {
+  try {
+    const present = window.sessionStorage.getItem(SIGNED_OUT_KEY) === '1';
+    window.sessionStorage.removeItem(SIGNED_OUT_KEY);
+    return present;
+  } catch {
+    return false;
+  }
+}
