@@ -222,6 +222,14 @@ export function PodCatalogue({
   const [pods, setPods] = useState<readonly CapabilityPod[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  /**
+   * Which metric the price column reports.
+   *
+   * 'credit' is derived, never invented: monthly price ÷ credits included. It is
+   * the toggle that proves the catalogue is coherent — every monthly pod lands on
+   * the same $25/credit the custom pods are sold at.
+   */
+  const [metricMode, setMetricMode] = useState<'monthly' | 'credit'>('monthly');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -254,7 +262,51 @@ export function PodCatalogue({
 
   return (
     <div className="grid gap-5">
-      {compact ? null : <PodComparison pods={pods} />}
+      {compact ? null : (
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div
+              role="tablist"
+              aria-label="Price metric"
+              className="inline-flex rounded-lg border border-[#1E293B] bg-[#0B1220] p-0.5"
+            >
+              {(
+                [
+                  { key: 'monthly', label: 'Per month' },
+                  { key: 'credit', label: 'Per credit' },
+                ] as const
+              ).map((option) => {
+                const active = metricMode === option.key;
+
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setMetricMode(option.key)}
+                    className={`rounded-[6px] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition-colors ${
+                      active
+                        ? 'bg-emerald-400/15 text-emerald-200'
+                        : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-slate-500">
+              {metricMode === 'credit'
+                ? 'monthly ÷ credits — every pod resolves to the same rate'
+                : 'published list price'}
+            </p>
+          </div>
+
+          <PodComparison pods={pods} metricMode={metricMode} />
+        </>
+      )}
 
       <PodGrid pods={compact ? pods.slice(0, 3) : pods} currentCodes={currentCodes} />
 

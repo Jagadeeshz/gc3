@@ -5,6 +5,9 @@ import { SessionGate } from '@/components/marketing/session-gate';
 import { SiteNav } from '@/components/marketing/site-nav';
 import { ScrollProgress } from '@/components/marketing/scroll-progress';
 import { HeroOrbit } from '@/components/marketing/hero-orbit';
+import { BentoGrid } from '@/components/marketing/bento-grid';
+import { PodCarousel } from '@/components/marketing/pod-carousel';
+import { CommandPalette } from '@/components/marketing/command-palette';
 import { ActProblem } from '@/components/marketing/act-problem';
 import { ActParadigm } from '@/components/marketing/act-paradigm';
 import { ActPods } from '@/components/marketing/act-pods';
@@ -76,6 +79,7 @@ export default function ScrollytellingHome() {
     <div className="min-h-dvh bg-obsidian">
       <SessionGate />
       <ScrollProgress />
+      <CommandPalette />
       <SiteNav />
 
       {/* ---------------------------------------------------------------- hero */}
@@ -177,6 +181,28 @@ export default function ScrollytellingHome() {
       <ActProblem />
       <ActParadigm />
       <ActPods />
+
+      {/* ------------------------------------------------------------ carousel */}
+      <section className="border-b border-hairline bg-obsidian py-20 sm:py-24">
+        <div className="shell grid gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:gap-14">
+          <div className="lg:pt-2">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
+              One at a time
+            </p>
+            <h2 className="mt-3 font-display text-[clamp(1.6rem,2.8vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ghost">
+              The same six pods, read as a deck.
+            </h2>
+            <p className="mt-4 max-w-[42ch] text-[13px] leading-relaxed text-ghost-muted">
+              Advance with the arrows, the dots, or let it turn on its own — it pauses the moment
+              you hover or focus inside it.
+            </p>
+          </div>
+
+          <PodCarousel />
+        </div>
+      </section>
+
+      <BentoGrid />
 
       {/* -------------------------------------------------- the software + FAQ */}
       <section className="border-b border-hairline bg-obsidian py-20 sm:py-24">

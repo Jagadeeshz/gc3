@@ -26,10 +26,19 @@ const money = (minor: number, currency: string): string =>
     minor / 100,
   );
 
-function priceCell(pod: CapabilityPod): string {
-  return pod.isCustomPriced
-    ? `${money(pod.creditRateCents, pod.currency)}/credit`
-    : `${money(pod.monthlyPriceCents, pod.currency)}/mo`;
+function priceCell(pod: CapabilityPod, mode: 'monthly' | 'credit' = 'monthly'): string {
+  if (pod.isCustomPriced) {
+    return `${money(pod.creditRateCents, pod.currency)}/credit`;
+  }
+
+  if (mode === 'credit' && pod.creditsIncluded > 0) {
+    // Derived, not stored: the monthly price divided by the credit pool.
+    const perCredit = Math.round(pod.monthlyPriceCents / pod.creditsIncluded);
+
+    return `${money(perCredit, pod.currency)}/credit`;
+  }
+
+  return `${money(pod.monthlyPriceCents, pod.currency)}/mo`;
 }
 
 function capacityCell(pod: CapabilityPod): string {
@@ -45,7 +54,13 @@ function teamCell(pod: CapabilityPod): string {
 }
 
 /** A real comparison table: the buying decision in one screen, tabular throughout. */
-export function PodComparison({ pods }: { readonly pods: readonly CapabilityPod[] }) {
+export function PodComparison({
+  pods,
+  metricMode = 'monthly',
+}: {
+  readonly pods: readonly CapabilityPod[];
+  readonly metricMode?: 'monthly' | 'credit';
+}) {
   const names = new Map(pods.map((pod) => [pod.code, pod.name.replace(' (Digital)', '')]));
 
   return (
@@ -70,7 +85,7 @@ export function PodComparison({ pods }: { readonly pods: readonly CapabilityPod[
                 <span className="text-[12px] font-medium text-slate-100">{pod.name}</span>
               </td>
               <td className="px-4 py-3 font-mono text-[12px] tabular-nums text-emerald-300">
-                {priceCell(pod)}
+                {priceCell(pod, metricMode)}
               </td>
               <td className="px-4 py-3 font-mono text-[11px] tabular-nums text-slate-300">
                 {capacityCell(pod)}
