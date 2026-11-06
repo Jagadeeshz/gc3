@@ -7,6 +7,7 @@ import { ScrollProgress } from '@/components/marketing/scroll-progress';
 import { ActProblem } from '@/components/marketing/act-problem';
 import { ActParadigm } from '@/components/marketing/act-paradigm';
 import { ActPods } from '@/components/marketing/act-pods';
+import { PlatformBand, PricingFaq } from '@/components/pricing/pricing-sections';
 
 export const metadata: Metadata = {
   title: 'GC³ — Global Capability Center 3.0',
@@ -117,7 +118,25 @@ export default function ScrollytellingHome() {
             </Link>
           </div>
 
-          <nav aria-label="Acts" className="rise mt-14 flex flex-wrap gap-x-6 gap-y-2">
+          <dl className="rise mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[12px] border border-hairline bg-hairline sm:grid-cols-4">
+            {[
+              ['6', 'Capability pods'],
+              ['48–120h', 'Delivery commitments'],
+              ['1:1', 'Agent per specialist'],
+              ['Monthly', 'No annual lock-in'],
+            ].map(([value, label]) => (
+              <div key={label} className="bg-obsidian-soft px-4 py-3.5">
+                <dd className="font-display text-[22px] font-semibold tabular-nums leading-none text-ghost">
+                  {value}
+                </dd>
+                <dt className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">
+                  {label}
+                </dt>
+              </div>
+            ))}
+          </dl>
+
+          <nav aria-label="Acts" className="rise mt-12 flex flex-wrap gap-x-6 gap-y-2">
             {ACTS.map((act) => (
               <Link
                 key={act.id}
@@ -138,6 +157,19 @@ export default function ScrollytellingHome() {
       <ActProblem />
       <ActParadigm />
       <ActPods />
+
+      {/* -------------------------------------------------- the software + FAQ */}
+      <section className="border-b border-hairline bg-obsidian py-20 sm:py-24">
+        <div className="shell">
+          <PlatformBand />
+        </div>
+      </section>
+
+      <section className="border-b border-hairline bg-obsidian-soft py-20 sm:py-24">
+        <div className="shell">
+          <PricingFaq />
+        </div>
+      </section>
 
       {/* ------------------------------------------------------------- closing */}
       <section id="contact" className="relative overflow-hidden bg-obsidian py-20 sm:py-28">
