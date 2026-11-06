@@ -219,12 +219,17 @@ const INSIGHTS = [
 
 const FOOTER_NAV = [
   {
-    heading: 'Pods',
+    heading: 'Pods & pricing',
+    // The official catalogue: six pods with published prices. Each entry lands on
+    // the price list rather than the marketing summary, so a reader who wants the
+    // number gets the number.
     links: [
-      { label: 'Product Pod', href: '#pods' },
-      { label: 'Cloud Pod', href: '#pods' },
-      { label: 'Creative Pod', href: '#pods' },
-      { label: 'Interactive Pod', href: '#pods' },
+      { label: 'Creative Pod — $3,000/mo', href: '/pricing' },
+      { label: 'Growth Pod — $6,000/mo', href: '/pricing' },
+      { label: 'Strategy Pod — $9,000/mo', href: '/pricing' },
+      { label: 'Automation Pod — $25/credit', href: '/pricing' },
+      { label: 'Interactive Pod — $25/credit', href: '/pricing' },
+      { label: 'REMAU Pod — $8,000/mo', href: '/pricing' },
     ],
   },
   {

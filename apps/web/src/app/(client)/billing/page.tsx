@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowDownToLine, BadgeIndianRupee, CircleAlert, Receipt, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowDownToLine, BadgeIndianRupee, CircleAlert, Info, Receipt, TrendingUp } from 'lucide-react';
 import type { Invoice, InvoiceDetail, Paginated, SubscriptionOverview } from '@gc3/types';
 import {
   ApiClientError,
@@ -158,6 +159,16 @@ export default function BillingPage() {
           invoice issued to it.
         </p>
       </header>
+
+      <p className="flex flex-wrap items-center gap-1.5 rounded-[10px] border border-[#1E293B] bg-[#0B1220]/60 px-3.5 py-2.5 text-[11px] text-slate-400">
+        <Info aria-hidden className="size-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} />
+        Invoices price the metered platform plan. Capability pods and their credit pools are the
+        commercial catalogue —{' '}
+        <Link href="/subscription" className="text-emerald-300 underline-offset-4 hover:underline">
+          see the pods on My Subscription
+        </Link>
+        .
+      </p>
 
       {notice ? (
         <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.07] px-4 py-2.5 text-xs text-amber-200">

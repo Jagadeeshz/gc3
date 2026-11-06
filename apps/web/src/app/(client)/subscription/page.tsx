@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { CalendarClock, CreditCard, Layers, ShieldCheck } from 'lucide-react';
+import { CalendarClock, CreditCard, Info, Layers, ShieldCheck } from 'lucide-react';
 import type { Invoice, Paginated, SubscriptionOverview, SubscriptionTier } from '@gc3/types';
 import {
   ApiClientError,
@@ -121,6 +121,16 @@ export default function SubscriptionPage() {
           </Link>
         }
       />
+      <div className="flex flex-wrap items-start gap-2 rounded-[10px] border border-[#1E293B] bg-[#0B1220]/60 px-3.5 py-3">
+        <Info aria-hidden className="mt-0.5 size-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} />
+        <p className="text-[11px] leading-relaxed text-slate-400">
+          <span className="text-slate-200">Two price models, both real.</span> This workspace bills
+          against the metered platform plan below — requests, storage and API calls. Capability pods are
+          sold separately on monthly credit pools with a standing team, and moving onto one is a
+          commercial change your account team makes. Nothing on this page is an estimate.
+        </p>
+      </div>
+
 
       <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
         <Panel title="Active package" subtitle="What you are on, and what it includes">
