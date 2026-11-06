@@ -25,6 +25,8 @@ const claimsSchema = z.object({
       'POD_MANAGER',
       'SPECIALIST',
       'FINANCE_MANAGER',
+      'SALES_MANAGER',
+      'MANAGEMENT',
     ])
     .nullable(),
 });

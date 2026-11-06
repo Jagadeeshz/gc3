@@ -123,14 +123,14 @@ export function EmptyState({
   body,
   action,
 }: {
-  readonly icon: LucideIcon;
+  readonly icon?: LucideIcon;
   readonly title: string;
   readonly body: string;
   readonly action?: { readonly href: string; readonly label: string };
 }) {
   return (
     <div className="flex flex-col items-start gap-2 rounded-[12px] border border-dashed border-[#1E293B] bg-[#0B1220]/40 px-5 py-8">
-      <Icon aria-hidden className="size-5 text-gold-light" strokeWidth={1.75} />
+      {Icon ? <Icon aria-hidden className="size-5 text-gold-light" strokeWidth={1.75} /> : null}
       <p className="text-sm font-medium text-warm">{title}</p>
       <p className="max-w-[58ch] text-xs text-muted">{body}</p>
       {action ? (

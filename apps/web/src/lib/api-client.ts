@@ -3,6 +3,14 @@ import type {
   AnalyticsReport,
   AuthActor,
   Membership,
+  OpsCatalogueRow,
+  OpsDeliverableRow,
+  OpsNotificationRow,
+  OpsRequestRow,
+  OpsStaffRow,
+  OpsTaskRow,
+  OpsTenantRow,
+  OpsWorkloadRow,
   ApiErrorBody,
   AuthSession,
   Deliverable,
@@ -807,7 +815,11 @@ export async function fetchAnalytics(
 
 /** The authenticated actor, as the API sees it. Used by Profile / Settings. */
 export async function fetchMe(token: string): Promise<AuthActor> {
-  return request<AuthActor>('/auth/me', { token });
+  // The endpoint answers `{ actor, permissions }`; callers want the actor, and
+  // assuming a flat body here is exactly how a profile screen renders blanks.
+  const payload = await request<{ readonly actor: AuthActor }>('/auth/me', { token });
+
+  return payload.actor;
 }
 
 /**
@@ -830,4 +842,82 @@ export async function listMemberships(
   );
 
   return page.items;
+}
+
+// ---------------------------------------------------------------------------
+// Staff dashboards (Phase 7) — the cross-tenant reads behind /ops
+// ---------------------------------------------------------------------------
+
+export async function opsOrganizations(token: string): Promise<readonly OpsTenantRow[]> {
+  return request<readonly OpsTenantRow[]>('/ops/organizations', { token });
+}
+
+export async function opsStaff(token: string): Promise<readonly OpsStaffRow[]> {
+  return request<readonly OpsStaffRow[]>('/ops/staff', { token });
+}
+
+export async function opsRequests(
+  token: string,
+  options: { status?: string; limit?: number } = {},
+): Promise<readonly OpsRequestRow[]> {
+  const query = new URLSearchParams();
+  if (options.status) query.set('status', options.status);
+  if (options.limit) query.set('limit', String(options.limit));
+
+  const suffix = query.size > 0 ? `?${query.toString()}` : '';
+
+  return request<readonly OpsRequestRow[]>(`/ops/requests${suffix}`, { token });
+}
+
+export async function opsDeliverables(
+  token: string,
+  options: { status?: string; limit?: number } = {},
+): Promise<readonly OpsDeliverableRow[]> {
+  const query = new URLSearchParams();
+  if (options.status) query.set('status', options.status);
+  if (options.limit) query.set('limit', String(options.limit));
+
+  const suffix = query.size > 0 ? `?${query.toString()}` : '';
+
+  return request<readonly OpsDeliverableRow[]>(`/ops/deliverables${suffix}`, { token });
+}
+
+export async function opsTasks(
+  token: string,
+  options: { status?: string; mine?: boolean; limit?: number } = {},
+): Promise<readonly OpsTaskRow[]> {
+  const query = new URLSearchParams();
+  if (options.status) query.set('status', options.status);
+  if (options.mine) query.set('mine', 'true');
+  if (options.limit) query.set('limit', String(options.limit));
+
+  const suffix = query.size > 0 ? `?${query.toString()}` : '';
+
+  return request<readonly OpsTaskRow[]>(`/ops/tasks${suffix}`, { token });
+}
+
+export async function opsWorkload(token: string): Promise<readonly OpsWorkloadRow[]> {
+  return request<readonly OpsWorkloadRow[]>('/ops/workload', { token });
+}
+
+export async function opsCatalogue(token: string): Promise<readonly OpsCatalogueRow[]> {
+  return request<readonly OpsCatalogueRow[]>('/ops/catalogue', { token });
+}
+
+export async function opsNotifications(token: string): Promise<readonly OpsNotificationRow[]> {
+  return request<readonly OpsNotificationRow[]>('/ops/notifications', { token });
+}
+
+/** Requests behind the caller's own work — no tenant parameter exists. */
+export async function opsMyRequests(token: string): Promise<readonly OpsRequestRow[]> {
+  return request<readonly OpsRequestRow[]>('/ops/my/requests', { token });
+}
+
+/** Deliverables produced against the caller's own work. */
+export async function opsMyDeliverables(token: string): Promise<readonly OpsDeliverableRow[]> {
+  return request<readonly OpsDeliverableRow[]>('/ops/my/deliverables', { token });
+}
+
+export async function opsPods(token: string, organizationId: string): Promise<readonly PodSummary[]> {
+  return request<readonly PodSummary[]>('/pods', { token, organizationId });
 }

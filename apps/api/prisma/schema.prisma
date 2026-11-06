@@ -63,6 +63,8 @@ enum StaffRole {
   POD_MANAGER
   SPECIALIST
   FINANCE_MANAGER
+  SALES_MANAGER
+  MANAGEMENT
 }
 
 enum ActorType {

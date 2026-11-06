@@ -38,6 +38,8 @@ const ALL_PERMISSIONS: readonly Permission[] = [
   'finance:read',
   'finance:manage',
   'ops:read',
+  'directory:read',
+  'security:read',
 ];
 
 /**
@@ -74,6 +76,8 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'task:manage',
     'finance:read',
     'ops:read',
+    'directory:read',
+    'security:read',
   ],
   // Owns the client relationship; read-only over membership and delivery output.
   ACCOUNT_MANAGER: [
@@ -87,8 +91,16 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'notification:read',
     'task:read',
     'finance:read',
+    'directory:read',
   ],
-  // Runs the pod: assigns and progresses work, produces deliverables.
+  /**
+   * Runs the pod: assigns and progresses work, produces deliverables.
+   *
+   * Holds `ops:read` because the delivery board and the request queue are the
+   * job, and `directory:read` because a pod manager needs to know which client an
+   * account belongs to. Deliberately does NOT hold `security:read`: running
+   * delivery does not require reading who demoted whom.
+   */
   POD_MANAGER: [
     'organization:read',
     'tenant:context',
@@ -104,6 +116,8 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'deliverable:review',
     'task:read',
     'task:manage',
+    'ops:read',
+    'directory:read',
   ],
   // Production team member: does the work, cannot move the workflow alone.
   SPECIALIST: [
@@ -126,6 +140,50 @@ export const STAFF_ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = 
     'deliverable:read',
     'finance:read',
     'finance:manage',
+    'directory:read',
+    'ops:read',
+  ],
+  /**
+   * Commercial desk: owns onboarding, renewals and the commercial record.
+   *
+   * Holds `finance:read` (a subscription and its allowances are the thing being
+   * sold) and `directory:read` (the client list), but no `ops:read`: the sales
+   * desk has no business in the security log, the queue internals or another
+   * team's build board.
+   */
+  SALES_MANAGER: [
+    'organization:read',
+    'organization:update',
+    'membership:read',
+    'membership:invite',
+    'tenant:context',
+    'request:read',
+    'request:comment',
+    'category:read',
+    'deliverable:read',
+    'notification:read',
+    'task:read',
+    'finance:read',
+    'directory:read',
+  ],
+  /**
+   * Executive seat: reads revenue and delivery across every tenant, writes
+   * nothing at all. `MANAGEMENT` holds no create/update/manage permission, which
+   * is what makes a management report a report rather than a working surface.
+   */
+  MANAGEMENT: [
+    'organization:read',
+    'membership:read',
+    'tenant:context',
+    'request:read',
+    'category:read',
+    'deliverable:read',
+    'notification:read',
+    'task:read',
+    'finance:read',
+    'ops:read',
+    'directory:read',
+    'security:read',
   ],
 };
 

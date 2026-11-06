@@ -50,7 +50,10 @@ const CLIENT_NAV: readonly NavItem[] = [
 
 /** Internal staff console navigation. */
 const OPS_NAV: readonly NavItem[] = [
-  { href: '/ops', label: 'Operations', icon: Gauge, gate: 'ops' },
+  // Ungated: every staff role has a workspace at /ops. What is inside it is the
+  // role's own business — the page resolves persona from the role, and the API
+  // refuses any board the role may not read.
+  { href: '/ops', label: 'Operations', icon: Gauge },
   { href: '/ops/analytics', label: 'Analytics', icon: BarChart3, gate: 'ops' },
   { href: '/ops/billing', label: 'Finance', icon: Receipt, gate: 'finance' },
 ];
@@ -65,13 +68,29 @@ const OPS_NAV: readonly NavItem[] = [
 const FINANCE_ROLES: readonly string[] = [
   'CLIENT_OWNER',
   'ACCOUNT_MANAGER',
+  'SALES_MANAGER',
   'FINANCE_MANAGER',
+  'MANAGEMENT',
+  'OPERATIONS_MANAGER',
   'PLATFORM_ADMIN',
   'OPERATIONS_MANAGER',
 ];
 
 /** Roles that may open the operations console (`ops:read`). */
-const OPS_ROLES: readonly string[] = ['PLATFORM_ADMIN', 'OPERATIONS_MANAGER'];
+/**
+ * Staff who may open the operations console.
+ *
+ * Mirrors the `ops:read` permission rather than naming an editorial list: pod
+ * managers run delivery, finance and management read it, and a specialist — who
+ * has no ops:read — lands on their own workspace instead.
+ */
+const OPS_ROLES: readonly string[] = [
+  'PLATFORM_ADMIN',
+  'OPERATIONS_MANAGER',
+  'POD_MANAGER',
+  'FINANCE_MANAGER',
+  'MANAGEMENT',
+];
 
 export function PortalShell({
   children,

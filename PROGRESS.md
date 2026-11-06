@@ -1727,3 +1727,109 @@ lands on `/overview`, staff on `/ops`, everyone else on `/login` (verified for a
 four cases). The scaffold itself is preserved at `/foundation` — it is the only
 public page in the app and it does expose API health, so gate or delete it before
 production.
+
+
+---
+
+# Phase 7 — Internal Operations Dashboards
+
+Six staff workspaces on one route, one tab strip each, every panel reading the
+database. The tab counts follow the brief exactly: **9 · 12 · 10 · 11 · 10 · 11**.
+
+## Two roles that did not exist
+
+`SALES_MANAGER` and `MANAGEMENT` were in the brief and not in the platform, so they
+were added properly rather than approximated with a nearby role:
+
+- migration `20261106090000_ops_roles` — `ALTER TYPE "StaffRole" ADD VALUE` for both
+  (nothing else in the file: the new values cannot be used in the same transaction).
+- `packages/types` — the `StaffRole` / `InternalRole` unions.
+- `apps/api/src/auth/tokens.ts` and `packages/validation` — the JWT claim schema and
+  the shared role enum, which also enumerated the old six. **This was a live bug I
+  introduced and then caught**: without it the API minted a token for a sales manager
+  and rejected it as invalid on the very next request.
+- `apps/api/src/auth/permissions.ts` — two new bundles. `MANAGEMENT` holds no create,
+  update or manage permission at all; that is what makes a management seat read-only
+  by construction rather than by convention.
+
+## Two permissions that had to be split
+
+`ops:read` was doing two jobs, and the dashboards made that untenable:
+
+| Permission | Question it answers | Who holds it |
+|---|---|---|
+| `directory:read` | who our clients are, who works here | admin, operations, pod manager, sales, management, finance |
+| `ops:read` | what is in flight, across every tenant | admin, operations, pod manager, management, finance |
+| `security:read` | who changed what (audit log) | admin, operations, management |
+
+A pod manager now runs delivery without being able to read the security log, and the
+sales desk sees the client directory without seeing a single request. `GET /ops/audit`
+moved from `ops:read` to `security:read`.
+
+## New API surface
+
+All under `/ops`, each stating its boundary:
+
+| Route | Permission | Scope |
+|---|---|---|
+| `GET /ops/organizations` | `directory:read` | every tenant, with live counts and plan |
+| `GET /ops/staff` | `directory:read` | staff, role, pod seats, live task load |
+| `GET /ops/requests` | `ops:read` | cross-tenant delivery board, SLA state computed |
+| `GET /ops/deliverables` | `ops:read` | review/release queue, tenant-resolved |
+| `GET /ops/tasks` | `task:read` | platform / pod / own, resolved server-side |
+| `GET /ops/workload` | `task:read` | open, overdue, due-today per person |
+| `GET /ops/catalogue` | `ops:read` | every tenant's service catalogue |
+| `GET /ops/notifications` | `ops:read` | delivery attempts, failures included |
+| `GET /ops/my/requests` | `task:read` | requests behind the caller's own tasks |
+| `GET /ops/my/deliverables` | `task:read` | deliverables against that same work |
+
+`apps/api/src/repositories/ops-directory.repository.ts` holds every query. **Scoping
+happens in SQL, not in the component**: a specialist's board is filtered by assignee
+in the query, a pod manager's by pod seat, and neither can widen it — `mine` is a
+flag, and the id it resolves to comes from the verified token. `?assigneeId=` in the
+query string is ignored, and a test pins that.
+
+## The frontend
+
+- `apps/web/src/lib/ops-nav.ts` — the six personas and their tabs, each tab marked
+  `live`, `partial` or `unbacked` with the reason. This file is the honest inventory
+  of what the console knows.
+- `apps/web/src/components/ops/panels.tsx` — every panel, one datatable, tabular
+  numbers, slate hairlines, emerald/amber state.
+- `apps/web/src/app/(ops)/ops/page.tsx` — persona resolved from the session role
+  (never the URL), tab from `?tab=`, unknown tab falls back to the persona's first.
+
+## Verified live
+
+- Six personas, tab counts: pod member **9**, pod manager **12**, sales **10**,
+  operations **11**, management **10**, administrator **11** — all exact.
+- `SPECIALIST ?tab=audit-logs` → falls back to *My Workspace*, 9 tabs. The URL is not
+  an authority.
+- Permission matrix across 12 endpoints × 7 roles: specialist reached only
+  `/ops/tasks`, `/ops/workload`, `/ops/my/*`; pod manager reached the delivery boards
+  but got **403** on `/ops/audit` and `/ops/billing`; sales got **403** on
+  `/ops/requests`; client owner got **403** everywhere.
+- Scoping: specialist `/ops/tasks` → 3 rows, assignee *only* themselves; pod manager →
+  4 rows (their pod); admin → the platform; pod manager `?mine=true&assigneeId=<other>`
+  → 1 row, their own. Confirms the forged id is ignored.
+- `tests/ops-dashboards.test.ts` — 12/12. Mutation check: removing the `mine` filter
+  broke the scoping test, restored → 12/12.
+
+## Bugs found by building this
+
+1. **Token claims enum** — new roles minted tokens that failed verification (401 on the
+   next request). Caught by the first permission-matrix run, pinned by a test.
+2. **`/ops/workload` 500** — an empty scope passed the sentinel string `'__none__'`
+   into a `uuid` filter; Postgres rejected the cast. Now an empty scope returns an
+   empty list, with a regression test.
+3. **`fetchMe` assumed a flat actor** — `/auth/me` returns `{ actor, permissions }`, so
+   the profile panels were reading fields that were one level deeper. Fixed in
+   `api-client`; the type had been a comfortable lie until a test read the real body.
+
+## What is not backed by a model
+
+Twenty of the ninety-three tabs are marked `unbacked` and say so on screen — leads,
+opportunities, proposals, onboarding, sales reports, time & utilisation, quality &
+feedback, integrations. Each names the model that would back it. They render an
+advisory panel, never sample rows: an operations console that invents a number is
+worse than one that admits a gap, because people decide from these screens.

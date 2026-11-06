@@ -1,716 +1,253 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Activity } from 'lucide-react';
-import type { OpsDashboard, PodSummary, QueueHealth, StaffCandidate } from '@gc3/types';
-import {
-  ApiClientError,
-  addPodMember,
-  assignRequest,
-  createPod,
-  fetchOpsDashboard,
-  fetchQueueHealth,
-  fetchStaffCandidates,
-  removePodMember,
-  runSlaSweep,
-} from '@/lib/api-client';
+import { useEffect, useMemo, useState } from 'react';
+import { CircleSlash, Info, ShieldCheck } from 'lucide-react';
 import { useSession } from '@/lib/session-context';
-import { formatDate } from '@/components/portal/status';
+import {
+  OPS_BACKING_LABEL,
+  OPS_PERSONA_LABEL,
+  opsPersonaFor,
+  opsTabsFor,
+  resolveOpsTab,
+  type OpsTab,
+} from '@/lib/ops-nav';
+import {
+  AnalyticsPanel,
+  CataloguePanel,
+  DeliverablesPanel,
+  FinancePanel,
+  KnowledgePanel,
+  MemberDeskPanel,
+  NotificationsPanel,
+  OverviewPanel,
+  PodsPanel,
+  ProfilePanel,
+  RegionsPanel,
+  RenewalsPanel,
+  RequestsPanel,
+  RetentionPanel,
+  SettingsPanel,
+  SlaPanel,
+  StaffPanel,
+  SubscriptionsPanel,
+  TasksPanel,
+  TenantsPanel,
+  UnbackedPanel,
+  WorkloadPanel,
+} from '@/components/ops/panels';
 
 /**
- * Staff operations console (Phase 3).
+ * The staff console.
  *
- * The only screen that spans tenants. It is gated on the platform role here for
- * a clean "not for you" panel, but the real boundary is server-side: the API
- * refuses `/ops/dashboard` to anyone without `ops:read`, so hiding the nav entry
- * is a courtesy, not the control.
+ * One route, six workspaces. The persona comes from the session's platform role —
+ * never from the URL — so a pod member cannot address the administrator's tabs by
+ * typing `?tab=audit-logs`; the tab list is chosen before the query string is
+ * read, and an unknown tab falls back to the persona's first.
+ *
+ * Tabs are a query parameter rather than sixty route files because they are
+ * views of the same console, not different places: switching tab must not
+ * re-mount the shell or lose the sidebar.
  */
-const OPS_ROLES = ['PLATFORM_ADMIN', 'OPERATIONS_MANAGER'] as const;
+export default function OpsPage() {
+  const { session, ready } = useSession();
 
-const STATUS_TONE: Record<string, string> = {
-  BLOCKED: 'border-red-400/35 bg-red-400/10 text-red-300',
-  IN_REVIEW: 'border-sky-400/35 bg-sky-400/10 text-sky-300',
-  DELIVERED: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300',
-  IN_PROGRESS: 'border-gold/35 bg-gold/10 text-gold-light',
-};
+  const persona = session ? opsPersonaFor(session.actor.platformRole) : null;
+  const tabs = useMemo(() => (persona ? opsTabsFor(persona) : []), [persona]);
 
-const PRIORITY_TONE: Record<string, string> = {
-  URGENT: 'text-red-300',
-  HIGH: 'text-gold-light',
-  NORMAL: 'text-warm',
-  LOW: 'text-muted',
-};
+  const [activeKey, setActiveKey] = useState<string | null>(null);
 
-export default function OpsConsolePage() {
-  const { session } = useSession();
-  const [dashboard, setDashboard] = useState<OpsDashboard | null>(null);
-  const [queue, setQueue] = useState<QueueHealth | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
-  const [podDraft, setPodDraft] = useState({ name: '', description: '' });
-  const [creatingPod, setCreatingPod] = useState(false);
-  const [staff, setStaff] = useState<StaffCandidate[]>([]);
-  const [seatDraft, setSeatDraft] = useState<Record<string, string>>({});
-  const [busyMember, setBusyMember] = useState<string | null>(null);
-  const [sweepBusy, setSweepBusy] = useState(false);
-
-  const token = session?.accessToken ?? null;
-  const platformRole = session?.actor.platformRole ?? null;
-  const activeOrganizationId = session?.activeOrganizationId ?? null;
-  const allowed = platformRole !== null && OPS_ROLES.includes(platformRole as 'PLATFORM_ADMIN');
-
-  const load = useCallback(async () => {
-    if (!token) {
-      setLoading(false);
+  // Read the tab once on mount. Deep links keep working; the URL is not the
+  // authority — `resolveOpsTab` re-checks the key against this persona's tabs.
+  useEffect(() => {
+    if (typeof window === 'undefined') {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      setDashboard(await fetchOpsDashboard(token, { queueLimit: 25 }));
-
-      // Queue health is independent: a Redis hiccup must not blank the console,
-      // and the operator is better served by the rest of the page plus whatever
-      // the health check managed to say.
-      try {
-        setQueue(await fetchQueueHealth(token));
-      } catch {
-        setQueue(null);
-      }
-
-      // Staffing is tenant-scoped even though the dashboard is not, so the roster
-      // is loaded for the active workspace only.
-      if (activeOrganizationId) {
-        setStaff(await fetchStaffCandidates(token, activeOrganizationId));
-      }
-    } catch (caught) {
-      setError(caught instanceof ApiClientError ? caught.message : 'Could not load operations data');
-    } finally {
-      setLoading(false);
-    }
-  }, [token, activeOrganizationId]);
+    const key = new URLSearchParams(window.location.search).get('tab');
+    setActiveKey(key);
+  }, []);
 
   useEffect(() => {
-    if (allowed) {
-      void load();
-    } else {
-      setLoading(false);
-    }
-  }, [allowed, load]);
-
-  const podsByOrganization = useMemo(() => {
-    const map = new Map<string, PodSummary[]>();
-    for (const pod of dashboard?.pods ?? []) {
-      const list = map.get(pod.organizationId) ?? [];
-      list.push(pod);
-      map.set(pod.organizationId, list);
-    }
-    return map;
-  }, [dashboard]);
-
-  async function route(requestId: string, organizationId: string, podId: string) {
-    if (!token) {
+    if (!persona || typeof window === 'undefined') {
       return;
     }
 
-    setBusyRequestId(requestId);
-    setError(null);
-    setNotice(null);
+    const initial = new URLSearchParams(window.location.search).get('tab');
 
-    try {
-      await assignRequest(token, organizationId, requestId, {
-        podId: podId === '' ? null : podId,
-      });
-      setNotice(podId === '' ? 'Assignment cleared.' : 'Request routed to the pod.');
-      await load();
-    } catch (caught) {
-      setError(caught instanceof ApiClientError ? caught.message : 'Could not route the request');
-    } finally {
-      setBusyRequestId(null);
-    }
-  }
-
-  async function seatMember(podId: string, organizationId: string) {
-    const userId = seatDraft[podId];
-
-    if (!token || !userId) {
+    if (!initial && activeKey === null) {
       return;
     }
 
-    setBusyMember(podId);
-    setError(null);
-    setNotice(null);
-
-    try {
-      await addPodMember(token, organizationId, podId, userId);
-      setSeatDraft((draft) => ({ ...draft, [podId]: '' }));
-      setNotice('Specialist seated in the pod.');
-      await load();
-    } catch (caught) {
-      setError(caught instanceof ApiClientError ? caught.message : 'Could not seat that person');
-    } finally {
-      setBusyMember(null);
+    if (initial !== activeKey && activeKey !== null) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', activeKey);
+      window.history.replaceState(null, '', url.toString());
     }
+  }, [activeKey, persona]);
+
+  if (!ready) {
+    return <p className="text-sm text-slate-500">Opening the console…</p>;
   }
 
-  async function unseatMember(podId: string, organizationId: string, userId: string) {
-    if (!token) {
-      return;
-    }
-
-    setBusyMember(`${podId}:${userId}`);
-    setError(null);
-    setNotice(null);
-
-    try {
-      await removePodMember(token, organizationId, podId, userId);
-      setNotice('Removed from the pod.');
-      await load();
-    } catch (caught) {
-      setError(caught instanceof ApiClientError ? caught.message : 'Could not remove that person');
-    } finally {
-      setBusyMember(null);
-    }
+  if (!session) {
+    return <p className="text-sm text-slate-500">Sign in to open the operations console.</p>;
   }
 
-  /** Runs the risk engine now and reports what it found. */
-  async function sweepSla() {
-    if (!token) {
-      return;
-    }
-
-    setSweepBusy(true);
-    setError(null);
-    setNotice(null);
-
-    try {
-      const report = await runSlaSweep(token);
-      setNotice(
-        `SLA sweep: ${report.scanned} scanned · ${report.atRisk} at risk · ${report.breached} breached · ${report.alerted} alerted · ${report.skipped} skipped`,
-      );
-      await load();
-    } catch (caught) {
-      setError(caught instanceof ApiClientError ? caught.message : 'Could not run the SLA sweep');
-    } finally {
-      setSweepBusy(false);
-    }
-  }
-
-  async function submitPod(event: React.FormEvent) {
-    event.preventDefault();
-
-    if (!token || !session?.activeOrganizationId) {
-      return;
-    }
-
-    setCreatingPod(true);
-    setError(null);
-    setNotice(null);
-
-    try {
-      await createPod(token, session.activeOrganizationId, {
-        name: podDraft.name.trim(),
-        ...(podDraft.description.trim() ? { description: podDraft.description.trim() } : {}),
-      });
-      setPodDraft({ name: '', description: '' });
-      setNotice('Pod created.');
-      await load();
-    } catch (caught) {
-      setError(caught instanceof ApiClientError ? caught.message : 'Could not create the pod');
-    } finally {
-      setCreatingPod(false);
-    }
-  }
-
-  if (!allowed) {
+  if (!persona) {
     return (
-      <div className="max-w-2xl">
-        <h1 className="font-display text-3xl tracking-[-0.01em] text-warm">Operations console</h1>
-        <div className="mt-6 rounded-[14px] border border-white/10 bg-graphite/85 p-6">
-          <p className="text-sm text-warm">This console is for platform operations.</p>
-          <p className="mt-1 text-sm text-muted">
-            It aggregates every tenant, so it is limited to platform administrators and operations
-            managers. Your account
-            {platformRole ? ` (${platformRole.replace(/_/g, ' ')})` : ''} does not hold that access.
-          </p>
-        </div>
+      <div className="mx-auto mt-10 max-w-[520px] rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-6 text-center">
+        <CircleSlash aria-hidden className="mx-auto size-6 text-amber-300" strokeWidth={1.75} />
+        <h1 className="mt-3 font-display text-lg text-slate-100">No staff workspace for this account</h1>
+        <p className="mt-2 text-[12px] leading-relaxed text-slate-400">
+          This session has no platform role, so it has no operations workspace. Client accounts work in
+          their own portal.
+        </p>
       </div>
     );
   }
 
-  const totals = dashboard?.totals;
+  const active: OpsTab = resolveOpsTab(persona, activeKey);
+  const token = session.accessToken;
+  const role = session.actor.platformRole ?? 'unknown';
 
   return (
-    <div>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl tracking-[-0.01em] text-warm">Operations console</h1>
-          <p className="mt-1 text-sm text-muted">
-            Every tenant at once: load, blockages, and the work still waiting to be routed.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="rounded-lg border border-white/15 bg-graphite px-3 py-2 text-xs text-warm transition-colors hover:border-gold/40"
-        >
-          Refresh
-        </button>
-        <button
-          type="button"
-          disabled={sweepBusy}
-          onClick={() => void sweepSla()}
-          className="rounded-lg border border-gold/40 bg-gold/15 px-3 py-2 text-xs font-semibold text-gold-light transition-colors hover:bg-gold/25 disabled:opacity-50"
-        >
-          {sweepBusy ? 'Sweeping…' : 'Run SLA sweep'}
-        </button>
-      </div>
-
-      {error ? (
-        <p
-          role="alert"
-          className="mt-4 rounded-lg border border-red-400/35 bg-red-400/10 px-3 py-2 text-xs text-red-300"
-        >
-          {error}
-        </p>
-      ) : null}
-
-      {notice ? (
-        <p className="mt-4 rounded-lg border border-gold/30 bg-gold/10 px-3 py-2 text-xs text-gold-light">
-          {notice}
-        </p>
-      ) : null}
-
-      {loading ? (
-        <p className="mt-6 text-sm text-muted">Loading operations data…</p>
-      ) : !dashboard ? (
-        <p className="mt-6 text-sm text-muted">No operations data available.</p>
-      ) : (
-        <>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-            {[
-              { label: 'Tenants', value: totals?.organizations ?? 0 },
-              { label: 'Open requests', value: totals?.openRequests ?? 0 },
-              { label: 'Blocked', value: totals?.blockedRequests ?? 0 },
-              { label: 'Overdue', value: totals?.overdueRequests ?? 0 },
-              { label: 'Unrouted', value: totals?.unassignedRequests ?? 0 },
-              { label: 'SLA at risk', value: totals?.slaAtRisk ?? 0 },
-              { label: 'SLA breached', value: totals?.slaBreached ?? 0 },
-              { label: 'Pods', value: totals?.pods ?? 0 },
-            ].map((metric) => (
-              <div key={metric.label} className="rounded-[12px] border border-white/10 bg-graphite/85 p-4">
-                <p className="text-xs text-muted">{metric.label}</p>
-                <strong className="mt-2 block font-display text-2xl text-warm">{metric.value}</strong>
-              </div>
-            ))}
+    <div className="grid gap-5">
+      <header className="grid gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+              {OPS_PERSONA_LABEL[persona]} workspace · {tabs.length} tabs
+            </p>
+            <h1 className="mt-1.5 font-display text-[26px] font-semibold leading-none tracking-[-0.01em] text-slate-100">
+              {active.label}
+            </h1>
           </div>
 
-          {/*
-            Background dispatch. Counts say what is pending; the heartbeat says
-            whether anything is draining it — the two failure modes look identical
-            from the queue depth alone.
-          */}
-          {queue ? (
-            <section className="mt-8 rounded-[12px] border border-white/10 bg-graphite/85 p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <Activity aria-hidden className="size-4 text-gold-light" strokeWidth={1.75} />
-                  <h2 className="font-display text-sm font-semibold text-warm">
-                    Background dispatch
-                  </h2>
-                  <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-                    {queue.driver === 'redis' ? 'durable · redis' : 'in-process'}
-                  </span>
-                </div>
-                <span
-                  className={`rounded-full border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${
-                    queue.worker.status === 'UP' || queue.worker.status === 'INLINE'
-                      ? 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300'
-                      : 'border-red-400/35 bg-red-400/10 text-red-300'
-                  }`}
-                >
-                  worker {queue.worker.status.toLowerCase()}
-                </span>
-              </div>
-
-              <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
-                {[
-                  { label: 'Waiting', value: queue.counts.waiting },
-                  { label: 'Active', value: queue.counts.active },
-                  { label: 'Delayed', value: queue.counts.delayed },
-                  { label: 'Failed', value: queue.counts.failed },
-                  { label: 'Completed', value: queue.counts.completed },
-                ].map((metric) => (
-                  <div key={metric.label} className="rounded-lg border border-white/8 px-3 py-2">
-                    <p className="text-[10px] uppercase tracking-[0.12em] text-muted">
-                      {metric.label}
-                    </p>
-                    <strong
-                      className={`mt-0.5 block font-mono text-lg ${
-                        metric.label === 'Failed' && metric.value > 0 ? 'text-red-300' : 'text-warm'
-                      }`}
-                    >
-                      {metric.value}
-                    </strong>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] text-muted">
-                <span>
-                  last beat{' '}
-                  {queue.worker.lastSeenAt
-                    ? `${queue.worker.ageSeconds ?? 0}s ago (pid ${queue.worker.pid ?? '?'} on ${queue.worker.hostname ?? '?'})`
-                    : 'never'}
-                </span>
-                {queue.schedulers.map((scheduler) => (
-                  <span key={scheduler.id} className="font-mono text-[10px] uppercase">
-                    {scheduler.id}
-                    {scheduler.everyMs ? ` every ${Math.round(scheduler.everyMs / 1_000)}s` : ''}
-                    {scheduler.nextRunAt
-                      ? ` · next ${new Date(scheduler.nextRunAt).toLocaleTimeString()}`
-                      : ''}
-                  </span>
-                ))}
-              </div>
-
-              {queue.alerts.length > 0 ? (
-                <ul className="mt-3 grid gap-1.5">
-                  {queue.alerts.map((alert) => (
-                    <li
-                      key={alert.code}
-                      className={`rounded-lg border px-3 py-2 text-[11px] ${
-                        alert.level === 'CRITICAL'
-                          ? 'border-red-400/35 bg-red-400/10 text-red-200'
-                          : alert.level === 'WARNING'
-                            ? 'border-gold/35 bg-gold/10 text-gold-light'
-                            : 'border-white/12 bg-white/5 text-muted'
-                      }`}
-                    >
-                      <span className="font-mono uppercase tracking-[0.1em]">{alert.code}</span> —{' '}
-                      {alert.message}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-3 text-[11px] text-emerald-300/80">
-                  No alerts: the queue is draining and the worker is beating.
-                </p>
-              )}
-            </section>
-          ) : null}
-
-          <section className="mt-8">
-            <h2 className="text-sm font-semibold text-warm">Tenants</h2>
-            <div className="mt-3 overflow-x-auto rounded-[12px] border border-white/10 bg-graphite/85">
-              <table className="w-full min-w-[720px] text-left text-xs">
-                <thead className="border-b border-white/10 text-muted">
-                  <tr>
-                    <th className="px-4 py-2.5 font-medium">Organization</th>
-                    <th className="px-4 py-2.5 font-medium">Status</th>
-                    <th className="px-4 py-2.5 font-medium">Open</th>
-                    <th className="px-4 py-2.5 font-medium">Blocked</th>
-                    <th className="px-4 py-2.5 font-medium">Overdue</th>
-                    <th className="px-4 py-2.5 font-medium">Unrouted</th>
-                    <th className="px-4 py-2.5 font-medium">SLA risk</th>
-                    <th className="px-4 py-2.5 font-medium">Breached</th>
-                    <th className="px-4 py-2.5 font-medium">Pods</th>
-                    <th className="px-4 py-2.5 font-medium">Members</th>
-                    <th className="px-4 py-2.5 font-medium">Released</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dashboard.organizations.map((organization) => (
-                    <tr key={organization.organizationId} className="border-b border-white/5 last:border-0">
-                      <td className="px-4 py-2.5 text-warm">{organization.name}</td>
-                      <td className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-                        {organization.status}
-                      </td>
-                      <td className="px-4 py-2.5 text-warm">{organization.openRequests}</td>
-                      <td className="px-4 py-2.5 text-red-300">{organization.blockedRequests}</td>
-                      <td className="px-4 py-2.5 text-gold-light">{organization.overdueRequests}</td>
-                      <td className="px-4 py-2.5 text-muted">{organization.unassignedRequests}</td>
-                      <td className="px-4 py-2.5 text-gold-light">{organization.slaAtRisk}</td>
-                      <td className="px-4 py-2.5 text-red-300">{organization.slaBreached}</td>
-                      <td className="px-4 py-2.5 text-muted">{organization.podCount}</td>
-                      <td className="px-4 py-2.5 text-muted">{organization.memberCount}</td>
-                      <td className="px-4 py-2.5 text-emerald-300">
-                        {organization.releasedDeliverables}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section className="mt-8">
-            <h2 className="text-sm font-semibold text-warm">Routing queue</h2>
-            <p className="mt-1 text-xs text-muted">
-              Open work that has no pod, no owner, or is past due. Pick a pod to route it.
-            </p>
-
-            {dashboard.queue.length === 0 ? (
-              <div className="mt-3 rounded-[12px] border border-white/10 bg-graphite/85 p-5">
-                <p className="text-sm text-warm">Everything is routed.</p>
-                <p className="mt-1 text-sm text-muted">
-                  No open request is missing a pod, an owner, or overdue.
-                </p>
-              </div>
-            ) : (
-              <ul className="mt-3 grid gap-2">
-                {dashboard.queue.map((item) => {
-                  const podOptions = podsByOrganization.get(item.organizationId) ?? [];
-                  const busy = busyRequestId === item.requestId;
-
-                  return (
-                    <li
-                      key={item.requestId}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-white/10 bg-graphite/85 p-3.5"
-                    >
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-                            {item.reference}
-                          </span>
-                          <span
-                            className={[
-                              'rounded border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em]',
-                              STATUS_TONE[item.status] ?? 'border-white/15 text-muted',
-                            ].join(' ')}
-                          >
-                            {item.status.replace(/_/g, ' ')}
-                          </span>
-                          <span
-                            className={[
-                              'font-mono text-[10px] uppercase tracking-[0.08em]',
-                              PRIORITY_TONE[item.priority] ?? 'text-muted',
-                            ].join(' ')}
-                          >
-                            {item.priority}
-                          </span>
-                        </div>
-                        <p className="mt-1 truncate text-sm text-warm">{item.title}</p>
-                        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-                          {item.organizationName}
-                          {item.dueAt ? ` · due ${formatDate(item.dueAt)}` : ''}
-                          {item.podName ? ` · ${item.podName}` : ' · no pod'}
-                          {item.assigneeName ? ` · ${item.assigneeName}` : ' · no owner'}
-                        </p>
-                        {item.slaState !== 'NONE' ? (
-                          <p
-                            className={[
-                              'mt-1 inline-block rounded border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em]',
-                              item.slaState === 'BREACHED'
-                                ? 'border-red-400/35 bg-red-400/10 text-red-300'
-                                : item.slaState === 'AT_RISK'
-                                  ? 'border-gold/35 bg-gold/10 text-gold-light'
-                                  : 'border-white/15 text-muted',
-                            ].join(' ')}
-                          >
-                            {item.slaState.replace(/_/g, ' ')}
-                            {item.slaTargetAt ? ` · ${formatDate(item.slaTargetAt)}` : ''}
-                          </p>
-                        ) : null}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <select
-                          aria-label={`Route ${item.reference}`}
-                          disabled={busy || podOptions.length === 0}
-                          defaultValue={item.podId ?? ''}
-                          onChange={(event) => void route(item.requestId, item.organizationId, event.target.value)}
-                          className="rounded-lg border border-white/12 bg-void px-2.5 py-1.5 text-xs text-warm focus:border-gold/60 focus:outline-none disabled:opacity-50"
-                        >
-                          <option value="">Unassigned</option>
-                          {podOptions.map((pod) => (
-                            <option key={pod.id} value={pod.id}>
-                              {pod.name}
-                            </option>
-                          ))}
-                        </select>
-                        {busy ? <span className="text-[11px] text-muted">Routing…</span> : null}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-
-          <section className="mt-8 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-            <div>
-              <h2 className="text-sm font-semibold text-warm">Pods</h2>
-              {dashboard.pods.length === 0 ? (
-                <div className="mt-3 rounded-[12px] border border-white/10 bg-graphite/85 p-5">
-                  <p className="text-sm text-warm">No pods yet.</p>
-                  <p className="mt-1 text-sm text-muted">
-                    A pod is the standing team that owns execution inside a tenant. Create one on the
-                    right, then route work into it.
-                  </p>
-                </div>
-              ) : (
-                <ul className="mt-3 grid gap-2">
-                  {dashboard.pods.map((pod) => {
-                    const staffingHere = pod.organizationId === activeOrganizationId;
-                    const busyPod = busyMember === pod.id;
-
-                    return (
-                      <li
-                        key={pod.id}
-                        className="rounded-[12px] border border-white/10 bg-graphite/85 p-3.5"
-                      >
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm text-warm">{pod.name}</p>
-                            <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-                              {pod.organizationName} · {pod.memberCount} member
-                              {pod.memberCount === 1 ? '' : 's'}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-display text-lg text-warm">{pod.openRequests}</p>
-                            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-                              open · {pod.openTasks} task{pod.openTasks === 1 ? '' : 's'}
-                            </p>
-                          </div>
-                        </div>
-
-                        {pod.members.length > 0 ? (
-                          <ul className="mt-2.5 grid gap-1 border-t border-white/8 pt-2.5">
-                            {pod.members.map((member) => {
-                              const memberBusy = busyMember === `${pod.id}:${member.userId}`;
-
-                              return (
-                                <li
-                                  key={member.userId}
-                                  className="flex items-center justify-between gap-2 text-[11px]"
-                                >
-                                  <span className="min-w-0 truncate text-warm">
-                                    {member.fullName}
-                                    <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                                      {(member.platformRole ?? 'member').replace(/_/g, ' ')}
-                                      {member.openTasks > 0 ? ` · ${member.openTasks} tasks` : ''}
-                                      {member.openRequests > 0
-                                        ? ` · ${member.openRequests} open`
-                                        : ' · idle'}
-                                    </span>
-                                  </span>
-                                  <button
-                                    type="button"
-                                    disabled={!staffingHere || memberBusy}
-                                    onClick={() =>
-                                      void unseatMember(pod.id, pod.organizationId, member.userId)
-                                    }
-                                    className="shrink-0 rounded border border-white/12 px-1.5 py-0.5 text-[10px] text-muted transition-colors hover:border-red-400/40 hover:text-red-300 disabled:opacity-40"
-                                  >
-                                    {memberBusy ? '…' : 'Remove'}
-                                  </button>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        ) : (
-                          <p className="mt-2 border-t border-white/8 pt-2 text-[11px] text-muted">
-                            No one seated yet.
-                          </p>
-                        )}
-
-                        {staffingHere ? (
-                          <div className="mt-2.5 flex items-center gap-2">
-                            <select
-                              aria-label={`Seat someone in ${pod.name}`}
-                              value={seatDraft[pod.id] ?? ''}
-                              onChange={(event) =>
-                                setSeatDraft((draft) => ({ ...draft, [pod.id]: event.target.value }))
-                              }
-                              className="min-w-0 flex-1 rounded-lg border border-white/12 bg-void px-2.5 py-1.5 text-xs text-warm focus:border-gold/60 focus:outline-none"
-                            >
-                              <option value="">Choose a specialist…</option>
-                              {staff.map((candidate) => (
-                                <option key={candidate.userId} value={candidate.userId}>
-                                  {candidate.fullName} · {candidate.platformRole.replace(/_/g, ' ')}
-                                </option>
-                              ))}
-                            </select>
-                            <button
-                              type="button"
-                              disabled={busyPod || !seatDraft[pod.id]}
-                              onClick={() => void seatMember(pod.id, pod.organizationId)}
-                              className="rounded-lg border border-gold/40 bg-gold/15 px-2.5 py-1.5 text-[11px] font-semibold text-gold-light transition-colors hover:bg-gold/25 disabled:opacity-40"
-                            >
-                              {busyPod ? 'Seating…' : 'Seat'}
-                            </button>
-                          </div>
-                        ) : (
-                          <p className="mt-2 text-[10px] text-muted">
-                            Staffing is tenant-scoped — switch to {pod.organizationName} to seat
-                            people here.
-                          </p>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-
-            <form
-              onSubmit={submitPod}
-              className="rounded-[12px] border border-white/10 bg-graphite/85 p-4"
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] ${
+                active.backing === 'live'
+                  ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
+                  : active.backing === 'partial'
+                    ? 'border-amber-400/30 bg-amber-400/10 text-amber-300'
+                    : 'border-red-400/25 bg-red-400/[0.07] text-red-300'
+              }`}
             >
-              <h2 className="text-sm font-semibold text-warm">New pod</h2>
-              <p className="mt-1 text-[11px] text-muted">
-                Created in your active workspace
-                {session?.organizations.find((org) => org.id === session.activeOrganizationId)
-                  ? `: ${session.organizations.find((org) => org.id === session.activeOrganizationId)?.name}`
-                  : ''}
-                .
-              </p>
+              <span className="size-1.5 rounded-full bg-current" />
+              {OPS_BACKING_LABEL[active.backing]}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#1E293B] px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-400">
+              <ShieldCheck aria-hidden className="size-3" strokeWidth={1.75} />
+              {role}
+            </span>
+          </div>
+        </div>
 
-              <label className="mt-3 grid gap-1.5">
-                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
-                  Name
-                </span>
-                <input
-                  required
-                  minLength={2}
-                  value={podDraft.name}
-                  onChange={(event) => setPodDraft((draft) => ({ ...draft, name: event.target.value }))}
-                  placeholder="Cloud Delivery"
-                  className="w-full rounded-lg border border-white/12 bg-void px-3 py-2 text-sm text-warm focus:border-gold/60 focus:outline-none"
-                />
-              </label>
+        {active.note ? (
+          <p className="flex items-start gap-1.5 rounded-[10px] border border-amber-400/20 bg-amber-400/[0.06] px-3 py-2 text-[11px] leading-relaxed text-amber-200/90">
+            <Info aria-hidden className="mt-0.5 size-3 shrink-0" strokeWidth={1.75} />
+            {active.note}
+          </p>
+        ) : null}
 
-              <label className="mt-3 grid gap-1.5">
-                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
-                  Description (optional)
-                </span>
-                <textarea
-                  rows={2}
-                  value={podDraft.description}
-                  onChange={(event) =>
-                    setPodDraft((draft) => ({ ...draft, description: event.target.value }))
-                  }
-                  className="w-full rounded-lg border border-white/12 bg-void px-3 py-2 text-sm text-warm focus:border-gold/60 focus:outline-none"
-                />
-              </label>
+        {/* Tab strip — this persona's tabs, in the order the workspace defines. */}
+        <nav
+          aria-label={`${OPS_PERSONA_LABEL[persona]} sections`}
+          className="flex flex-wrap gap-1 border-b border-[#1E293B] pb-2"
+        >
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = tab.key === active.key;
 
+            return (
               <button
-                type="submit"
-                disabled={creatingPod || !session?.activeOrganizationId || podDraft.name.trim().length < 2}
-                className="mt-3 w-full rounded-lg border border-gold/40 bg-gold/15 px-3 py-2 text-xs font-semibold text-gold-light transition-colors hover:bg-gold/25 disabled:opacity-50"
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveKey(tab.key)}
+                aria-current={isActive ? 'page' : undefined}
+                className={[
+                  'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[12px] transition-colors',
+                  isActive
+                    ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
+                    : 'border-transparent text-slate-400 hover:bg-white/[0.04] hover:text-slate-200',
+                ].join(' ')}
               >
-                {creatingPod ? 'Creating…' : 'Create pod'}
+                <Icon
+                  aria-hidden
+                  className={`size-3.5 ${isActive ? 'text-emerald-300' : 'text-slate-500'}`}
+                  strokeWidth={1.75}
+                />
+                {tab.label}
+                {tab.backing === 'unbacked' ? (
+                  <span
+                    aria-label="not instrumented"
+                    title="Not instrumented"
+                    className="ml-0.5 size-1.5 rounded-full bg-amber-400/70"
+                  />
+                ) : null}
               </button>
-            </form>
-          </section>
-        </>
-      )}
+            );
+          })}
+        </nav>
+      </header>
+
+      <main>{renderPanel(active, token, role)}</main>
     </div>
   );
+}
+
+function renderPanel(tab: OpsTab, token: string, role: string) {
+  switch (tab.panel) {
+    case 'overview':
+      return <OverviewPanel token={token} />;
+    case 'member-desk':
+      return <MemberDeskPanel token={token} />;
+    case 'tasks':
+      // The pod member's board is their own work; everyone else's is the
+      // allocation board the API scopes by pod or platform.
+      return <TasksPanel token={token} mine={role === 'SPECIALIST'} />;
+    case 'my-requests':
+      return <RequestsPanel token={token} mine />;
+    case 'my-deliverables':
+      return <DeliverablesPanel token={token} mine />;
+    case 'requests':
+      return <RequestsPanel token={token} />;
+    case 'deliverables':
+      return <DeliverablesPanel token={token} />;
+    case 'workload':
+      return <WorkloadPanel token={token} capacity={tab.key === 'capacity' || tab.key === 'capacity-planning'} />;
+    case 'staff':
+      return <StaffPanel token={token} />;
+    case 'tenants':
+      return <TenantsPanel token={token} />;
+    case 'pods':
+      return <PodsPanel token={token} />;
+    case 'catalogue':
+      return <CataloguePanel token={token} />;
+    case 'notifications':
+      return <NotificationsPanel token={token} />;
+    case 'finance':
+      return <FinancePanel token={token} />;
+    case 'subscriptions':
+      return <SubscriptionsPanel token={token} />;
+    case 'renewals':
+      return <RenewalsPanel token={token} />;
+    case 'sla':
+      return <SlaPanel token={token} />;
+    case 'regions':
+      return <RegionsPanel token={token} />;
+    case 'retention':
+      return <RetentionPanel token={token} />;
+    case 'analytics':
+      return <AnalyticsPanel token={token} />;
+    case 'profile':
+      return <ProfilePanel token={token} />;
+    case 'settings':
+      return <SettingsPanel token={token} role={role} />;
+    case 'knowledge':
+      return <KnowledgePanel />;
+    case 'unbacked':
+    default:
+      return <UnbackedPanel tab={tab} />;
+  }
 }

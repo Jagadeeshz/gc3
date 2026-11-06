@@ -33,6 +33,8 @@ export const roleSchema = z.enum([
   'POD_MANAGER',
   'SPECIALIST',
   'FINANCE_MANAGER',
+  'SALES_MANAGER',
+  'MANAGEMENT',
   'PLATFORM_ADMIN',
   'AI_AGENT',
 ]) satisfies z.ZodType<Role>;
@@ -412,6 +414,69 @@ export type OpsDashboardQuery = z.infer<typeof opsDashboardQuerySchema>;
  * Bounded on purpose: an unbounded window would let a caller ask Postgres to
  * aggregate every row the platform has ever written.
  */
+/**
+ * `GET /ops/requests` and `GET /ops/deliverables` — the cross-tenant boards.
+ *
+ * `limit` is capped at 200: the console is a working surface, not an export, and
+ * an unbounded list is how a dashboard query becomes an incident.
+ */
+export const opsBoardQuerySchema = z.object({
+  status: z
+    .enum([
+      'DRAFT',
+      'SUBMITTED',
+      'TRIAGE',
+      'IN_PROGRESS',
+      'BLOCKED',
+      'IN_REVIEW',
+      'DELIVERED',
+      'CLOSED',
+      'CANCELLED',
+    ])
+    .optional(),
+  organizationId: uuidSchema.optional(),
+  podId: uuidSchema.optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+});
+
+export type OpsBoardQuery = z.infer<typeof opsBoardQuerySchema>;
+
+/** `GET /ops/deliverables` — same shape, minus the request-only filters. */
+export const opsDeliverableQuerySchema = z.object({
+  status: z
+    .enum(['PENDING', 'IN_PROGRESS', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RELEASED'])
+    .optional(),
+  organizationId: uuidSchema.optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+});
+
+export type OpsDeliverableQuery = z.infer<typeof opsDeliverableQuerySchema>;
+
+/**
+ * `GET /ops/tasks` — the internal task board.
+ *
+ * `mine` is a flag rather than an id: the caller's own id comes from the token,
+ * never from the query string, so "my tasks" cannot be pointed at someone else.
+ */
+export const opsTaskQuerySchema = z.object({
+  status: z.enum(['TODO', 'IN_PROGRESS', 'BLOCKED', 'DONE', 'CANCELLED']).optional(),
+  mine: z
+    .union([z.literal('true'), z.literal('false'), z.boolean()])
+    .transform((value) => value === true || value === 'true')
+    .optional(),
+  organizationId: uuidSchema.optional(),
+  limit: z.coerce.number().int().min(1).max(300).default(100),
+});
+
+export type OpsTaskQuery = z.infer<typeof opsTaskQuerySchema>;
+
+/** `GET /ops/notifications` and `GET /ops/catalogue` — bounded lists. */
+export const opsListQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+});
+
+export type OpsListQuery = z.infer<typeof opsListQuerySchema>;
+
 export const analyticsQuerySchema = z.object({
   windowDays: z.coerce.number().int().min(7).max(365).default(90),
 });

@@ -44,6 +44,8 @@ export type InternalRole =
   | 'POD_MANAGER'
   | 'SPECIALIST'
   | 'FINANCE_MANAGER'
+  | 'SALES_MANAGER'
+  | 'MANAGEMENT'
   | 'PLATFORM_ADMIN';
 
 /** AI agent actor role — never a human approver. */
@@ -58,7 +60,9 @@ export type StaffRole =
   | 'ACCOUNT_MANAGER'
   | 'POD_MANAGER'
   | 'SPECIALIST'
-  | 'FINANCE_MANAGER';
+  | 'FINANCE_MANAGER'
+  | 'SALES_MANAGER'
+  | 'MANAGEMENT';
 
 /** Actors that must be authorised by organization membership. */
 export const CLIENT_ROLES: readonly ClientRole[] = [
@@ -209,7 +213,9 @@ export type Permission =
   | 'task:manage'
   | 'finance:read'
   | 'finance:manage'
-  | 'ops:read';
+  | 'ops:read'
+  | 'directory:read'
+  | 'security:read';
 
 /** The authenticated caller, resolved from a verified access token. */
 export interface AuthActor {
@@ -645,6 +651,126 @@ export interface OpsPodSummary extends PodSummary {
  * Cross-tenant operations summary. Platform-scoped by definition: it is only
  * served to callers holding `ops:read`, and never takes a tenant header.
  */
+// ---------------------------------------------------------------------------
+// Operations directory (Phase 7) — cross-tenant rows the staff dashboards read
+// ---------------------------------------------------------------------------
+
+/** One client account as the operations console sees it. */
+export interface OpsTenantRow {
+  readonly id: Uuid;
+  readonly name: string;
+  readonly slug: string;
+  readonly status: OrganizationStatus;
+  readonly region: string;
+  readonly timezone: string;
+  readonly createdAt: IsoDateTime;
+  readonly counts: {
+    readonly members: number;
+    readonly requests: number;
+    readonly openRequests: number;
+    readonly deliverables: number;
+    readonly pods: number;
+  };
+  readonly plan: {
+    readonly tierCode: string | null;
+    readonly tierName: string | null;
+    readonly status: SubscriptionStatus | null;
+    readonly monthlyPricePaise: number | null;
+    readonly renewsAt: IsoDateTime | null;
+  };
+}
+
+/** A staff account and where it is seated. */
+export interface OpsStaffRow {
+  readonly id: Uuid;
+  readonly email: string;
+  readonly fullName: string;
+  readonly platformRole: StaffRole;
+  readonly status: UserStatus;
+  readonly pods: readonly { readonly id: Uuid; readonly name: string }[];
+  readonly openTasks: number;
+  readonly overdueTasks: number;
+}
+
+/** A service request, tenant-resolved, as the delivery board reads it. */
+export interface OpsRequestRow {
+  readonly id: Uuid;
+  readonly reference: string;
+  readonly title: string;
+  readonly status: ServiceRequestStatus;
+  readonly priority: ServiceRequestPriority;
+  readonly organizationId: Uuid;
+  readonly organizationName: string;
+  readonly podId: Uuid | null;
+  readonly podName: string | null;
+  readonly slaTargetAt: IsoDateTime | null;
+  readonly slaState: 'NONE' | 'OK' | 'WARNING' | 'BREACHED';
+  readonly createdAt: IsoDateTime;
+  readonly updatedAt: IsoDateTime;
+}
+
+/** A deliverable awaiting or past review, tenant-resolved. */
+export interface OpsDeliverableRow {
+  readonly id: Uuid;
+  readonly title: string;
+  readonly status: DeliverableStatus;
+  readonly version: number;
+  readonly organizationName: string;
+  readonly requestReference: string | null;
+  readonly requestId: Uuid | null;
+  readonly updatedAt: IsoDateTime;
+}
+
+/** One internal task. */
+export interface OpsTaskRow {
+  readonly id: Uuid;
+  readonly title: string;
+  readonly status: TaskStatus;
+  readonly dueAt: IsoDateTime | null;
+  readonly organizationName: string;
+  readonly requestReference: string;
+  readonly requestId: Uuid;
+  readonly podName: string | null;
+  readonly assigneeId: Uuid | null;
+  readonly assigneeName: string | null;
+  readonly overdue: boolean;
+}
+
+/** Per-person load, the only honest capacity signal the schema supports. */
+export interface OpsWorkloadRow {
+  readonly userId: Uuid;
+  readonly fullName: string;
+  readonly email: string;
+  readonly platformRole: StaffRole;
+  readonly openTasks: number;
+  readonly overdueTasks: number;
+  readonly dueToday: number;
+  readonly pods: readonly string[];
+}
+
+/** A catalogue entry, tenant-resolved. */
+export interface OpsCatalogueRow {
+  readonly id: Uuid;
+  readonly organizationName: string;
+  readonly name: string;
+  readonly slug: string;
+  readonly slaDeliveryHours: number | null;
+  readonly isActive: boolean;
+}
+
+/** A notification delivery attempt, tenant-resolved. */
+export interface OpsNotificationRow {
+  readonly id: Uuid;
+  readonly organizationName: string;
+  readonly recipient: string;
+  /** Reuses the delivery-audit unions rather than duplicating the enum here. */
+  readonly kind: NotificationDeliveryRecord['kind'];
+  readonly status: NotificationDeliveryRecord['status'];
+  readonly attempt: number;
+  readonly error: string | null;
+  readonly createdAt: IsoDateTime;
+}
+
 export interface OpsDashboard {
   readonly generatedAt: IsoDateTime;
   readonly totals: {
