@@ -19,7 +19,8 @@
     "start:prod": "node dist/index.js",
     "release": "prisma migrate deploy && tsx scripts/seed-pods.ts && tsx scripts/seed-tiers.ts",
     "db:seed:pods": "tsx scripts/seed-pods.ts",
-    "build:vercel": "esbuild src/serverless.ts --bundle --platform=node --target=node22 --format=esm --outfile=api/index.js --external:pg-native --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\""
+    "build:vercel": "esbuild src/serverless.ts --bundle --platform=node --target=node22 --format=esm --outfile=api/index.js --external:pg-native --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\"",
+    "vercel:output": "node scripts/prepare-vercel-output.mjs"
   },
   "dependencies": {
     "@gc3/types": "workspace:*",

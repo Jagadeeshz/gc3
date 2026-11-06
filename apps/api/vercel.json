@@ -1,14 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+  "framework": null,
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "buildCommand": "cd ../.. && pnpm --filter @gc3/api db:generate && pnpm --filter @gc3/api build:vercel",
-  "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node",
-      "config": { "maxDuration": 30, "memory": 1024 }
-    }
-  ],
-  "routes": [{ "src": "/(.*)", "dest": "/api/index.js" }]
+  "buildCommand": "cd ../.. && pnpm --filter @gc3/api db:generate && pnpm --filter @gc3/api build:vercel && pnpm --filter @gc3/api vercel:output"
 }

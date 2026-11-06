@@ -2,3 +2,4 @@
 .env*
 # Generated serverless bundle (built by `pnpm build:vercel`)
 api/index.js
+.vercel/output
