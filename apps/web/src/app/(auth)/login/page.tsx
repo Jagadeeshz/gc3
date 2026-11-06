@@ -40,7 +40,9 @@ export default function LoginPage() {
     setSubmitting(true);
 
     try {
-      const auth = await login(email.trim(), password);
+      // Emails are stored lower-cased; a stray capital or trailing space used to read
+      // as "invalid password", which sends people hunting for the wrong problem.
+      const auth = await login(email.trim().toLowerCase(), password);
       const organizations = await fetchOrganizations(auth.accessToken);
 
       const next = buildSession({
@@ -56,11 +58,22 @@ export default function LoginPage() {
       // back if they ever get there by hand.
       router.replace(homePathFor(next));
     } catch (caught) {
-      setError(
-        caught instanceof ApiClientError
-          ? caught.message
-          : 'Could not reach the API. Is it running on port 3001?',
-      );
+      if (caught instanceof ApiClientError) {
+        // Say what actually happened. "Invalid email or password" (401) is a credential
+        // problem; 429 is a throttle; 0 is a connection failure. One message for all
+        // three is how a rate limit gets misread as a wrong password.
+        if (caught.status === 429) {
+          setError('Too many attempts. Wait a few minutes, then try again.');
+        } else if (caught.status === 401) {
+          setError('Invalid email or password.');
+        } else if (caught.status === 0) {
+          setError(caught.message);
+        } else {
+          setError(caught.message);
+        }
+      } else {
+        setError('Something went wrong signing in. Try again.');
+      }
     } finally {
       setSubmitting(false);
     }

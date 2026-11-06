@@ -61,6 +61,12 @@ export interface RequestOptions {
   readonly token?: string;
   /** Tenant scope, sent as `x-organization-id` on tenant routes. */
   readonly organizationId?: string | null;
+  /**
+   * Retry once when the connection fails outright (no HTTP response at all).
+   * Default: on for GET, off for writes unless the caller opts in — a retried write
+   * the server did receive would create a duplicate.
+   */
+  readonly retryOnNetwork?: boolean;
 }
 
 /**
@@ -85,12 +91,44 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     headers['x-organization-id'] = options.organizationId;
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method ?? 'GET',
-    headers,
-    ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
-    cache: 'no-store',
-  });
+  /**
+   * A cold serverless function can fail the connection outright — the browser reports
+   * `TypeError: Failed to fetch`, which is indistinguishable from "your API is down" and
+   * used to surface as a login error. One retry after a short pause turns that into a
+   * 200 without hiding a genuine outage: a second failure still throws.
+   */
+  const attempt = () =>
+    fetch(`${API_BASE_URL}${path}`, {
+      method: options.method ?? 'GET',
+      headers,
+      ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
+      cache: 'no-store',
+    });
+
+  let response: Response;
+  try {
+    response = await attempt();
+  } catch (first) {
+    if (options.retryOnNetwork === false || (options.retryOnNetwork === undefined && (options.method ?? 'GET') !== 'GET')) {
+      throw new ApiClientError(0, {
+        code: 'NETWORK_ERROR',
+        message: 'Could not reach the API.',
+        requestId: 'unknown',
+      });
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 900));
+
+    try {
+      response = await attempt();
+    } catch {
+      throw new ApiClientError(0, {
+        code: 'NETWORK_ERROR',
+        message: 'Could not reach the API. Check the connection and try again.',
+        requestId: 'unknown',
+      });
+    }
+  }
 
   const payload = (await response.json().catch(() => null)) as
     | { success: true; data: T }

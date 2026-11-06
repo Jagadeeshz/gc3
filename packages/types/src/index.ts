@@ -146,7 +146,12 @@ export type ApiErrorCode =
   | 'PAYLOAD_TOO_LARGE'
   | 'RATE_LIMITED'
   | 'LIMIT_EXCEEDED'
-  | 'INTERNAL_ERROR';
+  | 'INTERNAL_ERROR'
+  /**
+   * Synthesised by the web client when the request never reached the API (offline,
+   * DNS, cold-start connection failure). The API itself never returns this code.
+   */
+  | 'NETWORK_ERROR';
 
 export interface ApiErrorBody {
   readonly code: ApiErrorCode;
