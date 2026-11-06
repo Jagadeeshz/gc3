@@ -133,6 +133,115 @@
   }
 }
 
+/* ------------------------------------------------------------------ *
+ * Scrollytelling primitives.
+ *
+ * Same philosophy as `.rise`: driven by `animation-timeline: view()` so the
+ * browser's own compositor does the work — no scroll listener, no animation
+ * library, nothing to hydrate. Browsers without view-timeline render the
+ * content fully; the story never depends on a script arriving.
+ * ------------------------------------------------------------------ */
+
+@keyframes fade-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.965) translate3d(0, 24px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translate3d(28px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A card that grows into the viewport as it is read. */
+@keyframes expand-card {
+  from {
+    opacity: 0.35;
+    transform: scale(0.94) translate3d(0, 40px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: var(--dash, 400);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* A signal travelling along a connection in the engine map. */
+@keyframes signal-travel {
+  to {
+    stroke-dashoffset: -220;
+  }
+}
+
+@keyframes pulse-node {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .fade-scale {
+      animation: fade-scale-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+
+    .slide-right {
+      animation: slide-in-right linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 75%;
+    }
+
+    .expand-card {
+      animation: expand-card linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 34%;
+    }
+
+    .draw-line {
+      animation: draw-line ease-out both;
+      animation-timeline: view();
+      animation-range: entry 20% cover 45%;
+    }
+
+    .heartbeat {
+      animation: pulse-node 2.6s ease-in-out infinite;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .signal {
+    stroke-dasharray: 6 14;
+    animation: signal-travel 9s linear infinite;
+  }
+}
+
+/* Sticky column that owns the visual while the narrative scrolls past it. */
+@utility stage {
+  position: sticky;
+  top: 6.5rem;
+}
+
 @keyframes orbit-spin {
   to {
     transform: rotate(360deg);
