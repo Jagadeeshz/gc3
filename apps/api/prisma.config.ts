@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { defineConfig, env } from 'prisma/config';
+import { defineConfig } from 'prisma/config';
 
 /**
  * Prisma CLI configuration (required in Prisma ORM 7).
@@ -19,6 +19,21 @@ export default defineConfig({
      * transaction-mode pooler cannot hold the advisory lock Prisma takes, and
      * `migrate deploy` over 6543 fails with a confusing timeout.
      */
-    url: process.env.SUPABASE_DIRECT_URL ?? env('DATABASE_URL'),
+    /*
+     * Migrations must run against the DIRECT connection: a transaction-mode pooler
+     * cannot hold the advisory lock Prisma takes, and `migrate deploy` over 6543 fails
+     * with a timeout that looks like a network fault.
+     *
+     * `prisma generate` also loads this file, and it must not demand a real URL —
+     * generate does not connect, and the build machine only carries the pooled URL.
+     * Hence the placeholder: it satisfies the config, generate succeeds, and a
+     * migration run against it fails loudly on the first connection attempt instead
+     * of silently using the wrong database.
+     */
+    url:
+      process.env.SUPABASE_DIRECT_URL ??
+      process.env.SUPABASE_DB_URL ??
+      process.env.DATABASE_URL ??
+      'postgresql://generate-only:generate-only@localhost:5432/generate-only',
   },
 });

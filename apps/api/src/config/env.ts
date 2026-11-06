@@ -126,8 +126,25 @@ const envSchema = z.object({
   path: ['DATABASE_URL'],
 });
 
-/** The URL the API itself connects with: pooled on Supabase, direct locally. */
+/**
+ * The URL the API itself connects with: pooled on Supabase, direct locally.
+ *
+ * The test run is deliberately excluded. The suite empties tables between cases, and
+ * a `SUPABASE_DB_URL` sitting in .env would point it at the real database — a test
+ * run that wipes production is the worst failure mode this file can have, so tests
+ * only ever use `DATABASE_URL`, which the harness sets to the throwaway database.
+ */
 export function runtimeDatabaseUrl(): string {
+  if (process.env.NODE_ENV === 'test') {
+    const testUrl = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
+
+    if (!testUrl) {
+      throw new Error('Running tests without DATABASE_URL: the harness must set the test database.');
+    }
+
+    return testUrl;
+  }
+
   const url = process.env.SUPABASE_DB_URL ?? process.env.DATABASE_URL;
 
   if (!url) {
