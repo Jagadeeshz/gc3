@@ -4,13 +4,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 
-// The four acts are the navigation: the page is a story, so the menu is its table
-// of contents. Anchors point at the act sections; pricing is a real route.
+// The acts are the navigation: the page is a story, so the menu is its table of
+// contents. Anchors point at the act sections; pricing is a real route.
 const NAV = [
   { href: '#act-problem', label: 'The problem' },
   { href: '#act-paradigm', label: 'What GC³ is' },
   { href: '#act-pods', label: 'Pods' },
-  { href: '#act-engine', label: 'Engine' },
   { href: '/pricing', label: 'Pricing' },
 ] as const;
 

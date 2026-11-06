@@ -7,12 +7,11 @@ import { ScrollProgress } from '@/components/marketing/scroll-progress';
 import { ActProblem } from '@/components/marketing/act-problem';
 import { ActParadigm } from '@/components/marketing/act-paradigm';
 import { ActPods } from '@/components/marketing/act-pods';
-import { ActEngine } from '@/components/marketing/act-engine';
 
 export const metadata: Metadata = {
   title: 'GC³ — Global Capability Center 3.0',
   description:
-    'Enterprise AI does not fail on models; it fails on operations. GC³ composes one pod around one outcome and sells it on one subscription, with the engine that runs it underneath.',
+    'Enterprise AI does not fail on models; it fails on operations. GC³ composes one pod around one outcome and sells it on one subscription: one manager, specialists, and a published credit pool.',
 };
 
 /**
@@ -28,6 +27,9 @@ export const metadata: Metadata = {
  *    failure mode for a page whose entire job is to be read.
  *  - The only stateful client components are the reading-progress bar and the pod
  *    act, which fetches the live catalogue. The rest is server-rendered HTML.
+ *
+ *  - There is no fourth act. The internal platform agents are not part of the
+ *    public argument and are not named on this page.
  */
 
 const FOOTER_NAV = [
@@ -48,7 +50,6 @@ const FOOTER_NAV = [
       { label: 'The bottleneck', href: '#act-problem' },
       { label: 'The paradigm shift', href: '#act-paradigm' },
       { label: 'Capability pods', href: '#act-pods' },
-      { label: 'The engine beneath', href: '#act-engine' },
     ],
   },
   {
@@ -66,7 +67,6 @@ const ACTS = [
   { id: 'act-problem', label: 'I', title: 'The bottleneck' },
   { id: 'act-paradigm', label: 'II', title: 'The paradigm shift' },
   { id: 'act-pods', label: 'III', title: 'Capability pods' },
-  { id: 'act-engine', label: 'IV', title: 'The engine beneath' },
 ] as const;
 
 export default function ScrollytellingHome() {
@@ -97,7 +97,7 @@ export default function ScrollytellingHome() {
           <p className="rise mt-7 max-w-[54ch] text-[15px] leading-[1.8] text-ghost-muted">
             GC³ composes one pod around one outcome and sells it on one subscription — a standing
             team, a monthly credit pool, and none of the procurement that used to sit between you and
-            the work. This page is the argument, in four acts.
+            the work. This page is the argument, in three acts.
           </p>
 
           <div className="rise mt-9 flex flex-wrap items-center gap-3">
@@ -138,7 +138,6 @@ export default function ScrollytellingHome() {
       <ActProblem />
       <ActParadigm />
       <ActPods />
-      <ActEngine />
 
       {/* ------------------------------------------------------------- closing */}
       <section id="contact" className="relative overflow-hidden bg-obsidian py-20 sm:py-28">
@@ -153,7 +152,7 @@ export default function ScrollytellingHome() {
             </h2>
             <p className="mt-5 text-[14px] leading-[1.8] text-ghost-muted">
               Start from the capability you need. The pod arrives composed, the credit pool is
-              published, and the engine underneath is already running.
+              published, and the team is already standing.
             </p>
           </div>
 
