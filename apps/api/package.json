@@ -18,7 +18,8 @@
     "auth:bootstrap": "tsx scripts/create-platform-admin.ts",
     "start:prod": "node dist/index.js",
     "release": "prisma migrate deploy && tsx scripts/seed-pods.ts && tsx scripts/seed-tiers.ts",
-    "db:seed:pods": "tsx scripts/seed-pods.ts"
+    "db:seed:pods": "tsx scripts/seed-pods.ts",
+    "build:vercel": "esbuild src/serverless.ts --bundle --platform=node --target=node22 --format=esm --outfile=api/index.js --external:pg-native --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\""
   },
   "dependencies": {
     "@gc3/types": "workspace:*",
