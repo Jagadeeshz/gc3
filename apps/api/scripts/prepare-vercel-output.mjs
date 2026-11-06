@@ -20,14 +20,14 @@ const dir = `${root}/functions/${FUNCTION}`;
 rmSync(root, { recursive: true, force: true });
 mkdirSync(dir, { recursive: true });
 
-cpSync('api/index.js', `${dir}/index.js`);
+cpSync('api/index.mjs', `${dir}/index.mjs`);
 
 writeFileSync(
   `${dir}/.vc-config.json`,
   JSON.stringify(
     {
       runtime: 'nodejs22.x',
-      handler: 'index.js',
+      handler: 'index.mjs',
       launcherType: 'Nodejs',
       // The Express app owns routing; Vercel must not wrap the request.
       shouldAddHelpers: false,
@@ -51,4 +51,4 @@ writeFileSync(
   ),
 );
 
-console.log(`vercel output ready: ${dir}/index.js`);
+console.log(`vercel output ready: ${dir}/index.mjs`);

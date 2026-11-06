@@ -1,5 +1,5 @@
 .vercel
 .env*
 # Generated serverless bundle (built by `pnpm build:vercel`)
-api/index.js
+api/index.mjs
 .vercel/output
