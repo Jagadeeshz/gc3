@@ -157,6 +157,7 @@ model Organization {
   usageMeters       UsageMeter[]
 
   @@index([status])
+  demoRequests        DemoRequest[]
   @@index([createdAt])
   @@map("organizations")
 }
@@ -753,4 +754,33 @@ model CapabilityPod {
 
   @@index([isActive, sortOrder])
   @@map("capability_pods")
+}
+
+/// A "Book a demo" submission from the public site.
+///
+/// Deliberately not a Lead: there is no pipeline, no owner and no stage, and calling
+/// this a lead would imply a CRM that does not exist. It is an inbound request, with
+/// exactly the fields the form collects, so sales can work it without pretending the
+/// platform tracks more than it does.
+///
+/// Tenant-less on purpose: the submitter has no account yet. `organizationId` is set
+/// only if someone converts the request into a tenant later.
+model DemoRequest {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String?  @map("organization_id") @db.Uuid
+  email          String   @db.VarChar(254)
+  fullName       String   @map("full_name") @db.VarChar(120)
+  companyName    String   @map("company_name") @db.VarChar(160)
+  companySize    String   @map("company_size") @db.VarChar(40)
+  message        String?  @db.VarChar(1000)
+  /// Where the form was submitted from, for attribution without a tracker.
+  source         String   @default("website") @db.VarChar(40)
+  ipHash         String?  @map("ip_hash") @db.VarChar(64)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([email])
+  @@map("demo_requests")
 }

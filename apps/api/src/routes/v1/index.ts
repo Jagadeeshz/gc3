@@ -6,6 +6,7 @@ import { requireAuth, requirePermission } from '../../middleware/auth';
 import { meterApiCall } from '../../metering/api-calls';
 import { authRouter } from './auth';
 import { deliverablesRouter } from './deliverables';
+import { demoRequestsRouter } from './demo-requests';
 import { invoicesRouter } from './invoices';
 import { notificationsRouter } from './notifications';
 import { opsRouter } from './ops';
@@ -150,6 +151,9 @@ v1Router.use('/subscription', subscriptionsRouter);
 
 // Public: the commercial catalogue. No token, no tenant, nothing scoped.
 v1Router.use('/pricing', pricingRouter);
+
+// Public: the Book-a-demo form. No token, no tenant, bounded input.
+v1Router.use('/demo-requests', demoRequestsRouter);
 
 /** Phase 4: invoices — generation, reads, status transitions and the document. */
 v1Router.use('/invoices', invoicesRouter);

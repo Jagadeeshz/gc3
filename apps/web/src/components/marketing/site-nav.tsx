@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
+import { openBookDemo } from './book-demo';
 
 // The acts are the navigation: the page is a story, so the menu is its table of
 // contents. Anchors point at the act sections; pricing is a real route.
@@ -15,8 +16,9 @@ const NAV = [
 
 /**
  * Public site navigation. Two portal entry points are deliberate: `Client
- * Portal` is the low-key path for returning clients, `Portal Access` is the
- * primary conversion and both resolve to the authentication flow at /login.
+ * primary action is "Book a demo" (a real form that persists the request); the
+ * secondary is "Sign in" for returning clients. They used to be two CTAs pointing at
+ * the same /login — two doors, one room.
  */
 export function SiteNav() {
   const [open, setOpen] = useState(false);
@@ -97,20 +99,23 @@ export function SiteNav() {
             ))}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <Link
-              href="/login"
-              className="hidden text-[13px] text-ghost-muted transition-colors duration-200 hover:text-ghost sm:block"
-            >
-              Client Portal
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] border border-gold-deep/40 bg-[linear-gradient(180deg,#E2C777_0%,#D9B65D_100%)] px-3 text-[12.5px] font-medium text-ink shadow-[0_1px_0_rgba(255,255,255,0.35)_inset,0_10px_28px_-16px_rgba(217,182,93,0.7)] transition-[filter,transform] duration-200 hover:brightness-105 active:translate-y-px sm:px-4 sm:text-[13px]"
-            >
-              Portal Access
-            </Link>
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3"><div className="hidden items-center gap-2 lg:flex">
             <button
+              type="button"
+              onClick={() => openBookDemo()}
+              className="rounded-full bg-emerald-300 px-4 py-2 text-[12.5px] font-semibold text-[#062014] transition-colors hover:bg-emerald-200"
+            >
+              Book a demo
+            </button>
+            <Link
+              href="/login"
+              className="rounded-full border border-ghost/30 px-4 py-2 text-[12.5px] font-medium text-ghost transition-colors hover:border-ghost/60"
+            >
+              Sign in
+            </Link>
+          </div>
+
+          <button
               type="button"
               onClick={() => setOpen((value) => !value)}
               aria-expanded={open}
@@ -140,13 +145,23 @@ export function SiteNav() {
                 </span>
               </a>
             ))}
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[10px] border border-hairline px-4 text-sm text-ghost"
-            >
-              Client Portal
-            </Link>
+            <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  openBookDemo();
+                }}
+                className="mt-2 rounded-full bg-emerald-300 px-4 py-2.5 text-center text-[13px] font-semibold text-[#062014]"
+              >
+                Book a demo
+              </button>
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="rounded-full border border-ghost/30 px-4 py-2.5 text-center text-[13px] font-medium text-ghost"
+              >
+                Sign in
+              </Link>
           </nav>
         </div>
       ) : null}

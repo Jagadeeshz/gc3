@@ -930,3 +930,20 @@ export async function opsPods(token: string, organizationId: string): Promise<re
 export async function fetchPods(token?: string | null): Promise<readonly CapabilityPod[]> {
   return request<readonly CapabilityPod[]>('/pricing/pods', token ? { token } : {});
 }
+
+export interface DemoRequestInput {
+  readonly email: string;
+  readonly fullName: string;
+  readonly companyName: string;
+  readonly companySize: '1-10' | '11-50' | '51-200' | '201-1000' | '1000+';
+  readonly message?: string;
+  readonly source?: string;
+}
+
+/**
+ * Public: the "Book a demo" form. No token, because the person filling it in has no
+ * account yet — which is the whole point of the form.
+ */
+export async function requestDemo(input: DemoRequestInput): Promise<{ id: string }> {
+  return request<{ id: string }>('/demo-requests', { method: 'POST', body: input });
+}

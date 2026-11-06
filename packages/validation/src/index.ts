@@ -571,3 +571,21 @@ export function formatIssues(error: z.ZodError): { path: string; message: string
     message: issue.message,
   }));
 }
+
+/**
+ * `POST /demo-requests` — the public "Book a demo" form.
+ *
+ * Public and unauthenticated, so the shape is strict and every field is bounded: an
+ * open endpoint that accepts arbitrary strings is an invitation to fill the database
+ * with junk.
+ */
+export const demoRequestSchema = z.object({
+  email: z.email().max(254),
+  fullName: z.string().trim().min(2).max(120),
+  companyName: z.string().trim().min(2).max(160),
+  companySize: z.enum(['1-10', '11-50', '51-200', '201-1000', '1000+']),
+  message: z.string().trim().max(1000).optional(),
+  source: z.string().trim().max(40).optional(),
+});
+
+export type DemoRequestInput = z.infer<typeof demoRequestSchema>;

@@ -8,6 +8,7 @@ import { HeroOrbit } from '@/components/marketing/hero-orbit';
 import { BentoGrid } from '@/components/marketing/bento-grid';
 import { PodCarousel } from '@/components/marketing/pod-carousel';
 import { CommandPalette } from '@/components/marketing/command-palette';
+import { BookDemoDialog, BookDemoTrigger } from '@/components/marketing/book-demo';
 import { ActProblem } from '@/components/marketing/act-problem';
 import { ActParadigm } from '@/components/marketing/act-paradigm';
 import { ActPods } from '@/components/marketing/act-pods';
@@ -74,12 +75,14 @@ const ACTS = [
   { id: 'act-pods', label: 'III', title: 'Capability pods' },
 ] as const;
 
+
 export default function ScrollytellingHome() {
   return (
     <div className="min-h-dvh bg-obsidian">
       <SessionGate />
       <ScrollProgress />
       <CommandPalette />
+      <BookDemoDialog />
       <SiteNav />
 
       {/* ---------------------------------------------------------------- hero */}
@@ -235,13 +238,7 @@ export default function ScrollytellingHome() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <a
-              href="mailto:hello@quantocos.com?subject=GC%C2%B3%20capability%20conversation"
-              className="inline-flex items-center gap-2 rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-4 py-2.5 text-[13px] font-medium text-emerald-200 transition-colors hover:bg-emerald-400/20"
-            >
-              Start a conversation
-              <ArrowRight aria-hidden className="size-3.5" strokeWidth={1.9} />
-            </a>
+            <BookDemoTrigger label="Book a demo" />
             <Link
               href="/pricing"
               className="inline-flex items-center gap-2 rounded-lg border border-hairline px-4 py-2.5 text-[13px] text-ghost transition-colors hover:border-emerald-400/30 hover:text-emerald-200"
