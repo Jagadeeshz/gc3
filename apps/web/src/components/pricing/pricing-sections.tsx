@@ -221,6 +221,7 @@ export function PricingFaq() {
                 type="button"
                 onClick={() => setOpen(expanded ? null : index)}
                 aria-expanded={expanded}
+                aria-controls={`faq-panel-${index}`}
                 className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.02]"
               >
                 <span className="text-[13px] font-medium text-slate-100">{item.q}</span>
@@ -234,6 +235,7 @@ export function PricingFaq() {
               </button>
 
               <div
+                id={`faq-panel-${index}`}
                 className={`grid transition-[grid-template-rows] duration-300 ease-out ${
                   expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                 }`}

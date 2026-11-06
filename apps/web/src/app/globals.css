@@ -214,6 +214,11 @@
   50% { opacity: 0.62; }
 }
 
+@keyframes disc-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.94; }
+  50% { transform: scale(1.018); opacity: 1; }
+}
+
 @keyframes core-pulse {
   0%, 100% { opacity: 0.85; }
   50% { opacity: 1; }
@@ -228,6 +233,9 @@
   }
   .core-glow {
     animation: core-pulse 5s ease-in-out infinite;
+  }
+  .disc-breathe {
+    animation: disc-breathe 6.5s ease-in-out infinite;
   }
 }
 
