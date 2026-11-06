@@ -1,25 +1,37 @@
 # GC3 Portal
 
-Multi-tenant operating platform for **Global Cloud Capability & Consulting (GC³)** — client portal,
-delivery operations, pod workspaces, finance, and AI-augmented workflows.
+Multi-tenant operating platform for **Global Cloud Capability & Consulting (GC³)** — a client
+portal, a staff operations console, a published commercial catalogue and a scrollytelling
+marketing site, in one pnpm monorepo.
 
-Built to the **GC3 Development Brief v1.0** (`Development-Breif.md` in this folder). The repository is
-**complete through Phase 5** — the Master Roadmap is closed:
+Built to the **GC3 Development Brief v1.0** (`Development-Breif.md`). The platform is complete
+through the Master Roadmap and three further phases:
 
-- **Phase 0–1** — pnpm monorepo, PostgreSQL schema, identity and tenancy. Every tenant route is
-  authenticated and authorized through a role → permission map; client users join through a hashed,
-  single-use invitation that can be rotated or revoked, delivered over SMTP with a permanent delivery audit.
-- **Phase 2** — client portal: service requests, catalogue, comments, deliverables with versions, stored
-  files with SHA-256 integrity, and event notifications.
-- **Phase 3** — staff operations console across tenants, pod workspaces and staffing, task breakdown,
-  SLA tracking with risk alerts, and durable dispatch on Redis.
-- **Phase 4** — subscription tiers, metered usage with hard plan guards, invoice generation with exact
-  integer paise arithmetic, and client/admin billing screens.
-- **Phase 5** — queue health with a worker heartbeat, executive analytics, a security audit trail,
-  rate limiting, hardened headers, and a production build that is served, not just compiled.
+- **Phases 0–1 — foundation and identity.** pnpm monorepo, PostgreSQL schema, tenancy. Every
+  tenant route is authenticated and authorised through a role → permission map; clients join
+  through a hashed, single-use invitation delivered over SMTP with a permanent delivery audit.
+- **Phase 2 — client portal.** Service requests, catalogue, comments, deliverables with versions,
+  stored files with SHA-256 integrity, and event notifications.
+- **Phase 3 — operations.** Cross-tenant console, pod workspaces and staffing, task breakdown,
+  SLA tracking with risk alerts, durable dispatch on Redis.
+- **Phase 4 — finance.** Subscription tiers, metered usage with hard plan guards, invoice
+  generation in exact integer minor units, client and platform billing screens.
+- **Phase 5 — hardening.** Queue health with a worker heartbeat, executive analytics, a security
+  audit trail, rate limiting, hardened headers, a production build that is served, not just compiled.
+- **Phase 6 — client interfaces.** Owner and member workspaces, role-derived navigation, a shared
+  portal kit, and the `(client)` route group.
+- **Phase 7 — staff dashboards.** Six role-based workspaces (pod member, pod manager, sales,
+  operations, management, administrator) with tab counts fixed per persona.
+- **Phase 8 — commercial catalogue.** Six capability pods as first-class data, served publicly and
+  rendered by every surface — marketing, pricing and the client subscription screen.
+- **Marketing and acquisition.** A three-act scrollytelling home page, a pricing page with a
+  comparison table, a bento grid, a pod carousel, a ⌘K command palette, and a "Book a demo" form
+  that persists to the database instead of showing a toast.
 
-**362 integration tests across 31 files**, run against a real PostgreSQL (and a real Redis for the
+**386 integration tests across 33 files**, run against a real PostgreSQL (and a real Redis for the
 durability suite). Nothing in this repository is verified against a mock database.
+
+Local: web **http://localhost:3000** · API **http://localhost:3001/api/v1**
 
 ---
 
@@ -28,28 +40,38 @@ durability suite). Nothing in this repository is verified against a mock databas
 ```text
 GC3/
 ├── apps/
-│   ├── web/                  Next.js App Router + Tailwind CSS (port 3000)
+│   ├── web/                  Next.js App Router + Tailwind v4 (port 3000)
 │   │   └── src/
-│   │       ├── app/          (portal) group: dashboard, requests; /login
-│   │       ├── components/   portal shell, status mapping
-│   │       └── lib/          api client, session store, session context
+│   │       ├── app/(auth)/   login, chrome-free layout
+│   │       ├── app/(client)/ the client workspace (15 screens)
+│   │       ├── app/(ops)/    the staff console
+│   │       ├── app/          public marketing: /, /pricing
+│   │       ├── components/   portal shell + kit, ops panels, marketing, pricing
+│   │       └── lib/          api client, session, nav config per role
 │   └── api/                  Express + TypeScript REST API, /api/v1 (port 3001)
-│       ├── prisma/           schema.prisma + migrations
+│       ├── prisma/           schema.prisma + 19 migrations
 │       ├── prisma.config.ts  Prisma CLI config (datasource URL lives here in v7)
-│       ├── scripts/          prepare-test-db.mjs (creates + migrates the test DB)
-│       ├── src/
-│       │   ├── db/           Prisma client + adapter
-│       │   ├── repositories/ tenant-scoped data access
-│       │   ├── routes/v1/    versioned route modules
-│       │   └── middleware/   request id, tenant scope, error envelope
-│       └── tests/            Vitest + Supertest integration suites
+│       ├── scripts/          seeds, dev fixtures, prepare-test-db.mjs
+│       ├── Dockerfile        multi-stage: migrate → seed → serve
+│       └── src/
+│           ├── db/           Prisma client + pg driver adapter
+│           ├── repositories/ tenant-scoped data access
+│           ├── routes/v1/    14 route modules
+│           ├── middleware/   request id, tenant scope, rate limit, CORS, headers
+│           ├── auth/         tokens, permission map, scrypt digests
+│           ├── metering/     allowance guards
+│           ├── audit/        audit log writer
+│           └── observability/ heartbeat, queue health
 ├── packages/
 │   ├── ui/                   Shared React components (@gc3/ui)
 │   ├── types/                Domain interfaces and constants (@gc3/types)
 │   └── validation/           Zod schemas (@gc3/validation)
 ├── docs/                     Architecture, workflow and module documentation
+├── DEPLOYMENT.md             Vercel (web) + a long-running API host
+├── PROGRESS.md               The build log, slice by slice, with evidence
 ├── Development-Breif.md      Product requirements & development handoff (source of truth)
 ├── GC3_Portal_Interactive_UI_Prototype.html   Approved UI prototype reference
+├── render.yaml / fly.toml / railway.json      API deployment blueprints
 ├── pnpm-workspace.yaml       Workspace glob: apps/*, packages/*
 ├── tsconfig.json             Shared strict TypeScript baseline
 └── package.json              Root scripts (private, not published)
@@ -73,12 +95,14 @@ folder is not architecture.
 | Validation | Zod | 4.6.7 |
 | Auth | HS256 JWT (jose) + scrypt password digests | 6.2.15 |
 | Email | nodemailer (SMTP), driver-swappable notification seam | 10.3.1 |
+| Queue | BullMQ on Redis, with an in-process fallback | 6.6.0 |
 | Testing | Vitest + Supertest | 5.1.0 / 7.3.1 |
 | Language | TypeScript (strict, no `any`) | 5.9.3 |
+| API bundler | esbuild (extensionless ESM imports need bundling) | latest |
 | Runtime | Node.js | ≥ 22 |
 | Package manager | pnpm workspaces | 10.34.9 |
 
-Redis and object storage arrive with the slices that need them.
+Redis backs durable dispatch. Object storage is still local disk — see *Known limits*.
 
 ---
 
@@ -98,6 +122,10 @@ pnpm db:generate      # prisma generate (after a schema change)
 pnpm db:migrate       # prisma migrate dev (new migration)
 pnpm auth:bootstrap   # provision the first PLATFORM_ADMIN (needs ADMIN_EMAIL / ADMIN_PASSWORD)
 pnpm clean            # clear build output
+pnpm --filter @gc3/api start:prod        # serve the esbuild bundle
+pnpm --filter @gc3/api exec tsx scripts/seed-tiers.ts   # billing tiers
+pnpm --filter @gc3/api exec tsx scripts/seed-pods.ts    # the six capability pods
+pnpm --filter @gc3/api exec tsx scripts/dev-ops-dashboards-fixtures.ts   # dev staff for every persona
 ```
 
 Environment: the API reads `apps/api/.env` — copy `apps/api/.env.example` to `apps/api/.env`.
@@ -205,6 +233,25 @@ Base URL: `http://localhost:3001/api/v1`
 | GET | `/ops/audit` | bearer only | `ops:read` — the security log, newest first; `?organizationId=`, `?action=`, `?actorId=`, `?since=` |
 | PATCH | `/organizations/:organizationId` | bearer + scope | `organization:update` — rename / re-slug / timezone / region; only the fields sent are touched, and every change is audited with before/after |
 | PATCH | `/organizations/:organizationId/memberships/:userId/roles` | bearer + scope | `membership:manage` — client roles only; the last active owner cannot be demoted (409) |
+
+### Later endpoints (Phases 6–8, marketing)
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | `/pricing/pods` | public | The six capability pods, ordered; nothing tenant-scoped is exposed |
+| POST | `/demo-requests` | public | The "Book a demo" form. Strict schema, IP stored only as a SHA-256 hash, identical response for every accepted request, audited |
+| GET | `/ops/organizations` | bearer only | `directory:read` — the client list, without their work |
+| GET | `/ops/staff` | bearer only | `directory:read` — who works here, their pods and open load |
+| GET | `/ops/requests` | bearer only | `ops:read` — cross-tenant request board, paged |
+| GET | `/ops/deliverables` | bearer only | `ops:read` — cross-tenant deliverable board |
+| GET | `/ops/tasks` | bearer only | `task:read` — scoped in SQL: specialist → own, pod manager → pod, ops → all |
+| GET | `/ops/my/requests` | bearer only | The caller's own work. The id comes from the token, never the query string |
+| GET | `/ops/my/deliverables` | bearer only | Same rule for deliverables |
+| GET | `/ops/workload` | bearer only | `task:read` — open tasks per person, never a utilisation percentage |
+| GET | `/ops/catalogue` | bearer only | `ops:read` — pod staffing against capacity |
+| GET | `/ops/notifications` | bearer only | `ops:read` — the delivery audit across tenants |
+| GET | `/organizations/:id` (PATCH) | bearer + scope | `organization:update` — rename, slug, timezone, region; audited with before/after |
+| PATCH | `/organizations/:id/memberships/:userId/roles` | bearer + scope | `membership:manage` — client roles only; the last active owner cannot be demoted (409) |
 
 `bearer + scope` means: `Authorization: Bearer <token>` **and** `x-organization-id: <uuid>`.
 
@@ -513,8 +560,12 @@ approved brand definition (`01-brand-and-design-system.md`):
 - Surfaces: `void #07080B`, `void-secondary #0B0D12`, `graphite #11141A`, `graphite-elevated #171B22`
 - Editorial: `mineral #F2EFE7`, `stone #E8E3D8`, `editorial #FAF8F3`, `warm #F4F0E8`
 - Ink: `ink #111318`, `ink-secondary #474B52`, `muted #A7A9B0`
-- Gold (authority, primary actions, selected states only): `gold #D9B65D`, `gold-light #E2C777`,
-  `gold-deep #A97818`
+- Emerald (primary actions, positive states, active filters): `emerald-400 #34D399` → `emerald-300 #6EE7B7`,
+  with `#04140D` as the label colour on a solid emerald button. Amber (`amber-300`) marks warnings, peak
+  hours and minimum terms; it is never used for a primary action.
+- Gold (authority and editorial accent only): `gold #D9B65D`, `gold-light #E2C777`,
+  `gold-deep #A97818` — the marketing site's display accents. The portal moved its primary actions to
+  emerald in Phase 6, because a gold button on a gold-accented page has no hierarchy.
 - Type: Source Serif 4 (display) · Plus Jakarta Sans (body/controls) · IBM Plex Mono (labels/metadata)
 
 Because `packages/ui` lives outside the web app's tree, `globals.css` registers it with
@@ -684,6 +735,161 @@ drain in another), `enqueue-live-event.ts` (queue an event while the API is stop
 
 ---
 
+## The commercial catalogue (Phase 8)
+
+Six capability pods are seeded as first-class data (`apps/api/scripts/seed-pods.ts`, idempotent) and
+served publicly. **Every price on the site is read from that endpoint** — no price literal exists in
+a marketing component, so a card cannot advertise something the platform does not hold.
+
+| Pod | Price | Capacity | Team (mgr / spec / agents) | Carries |
+|---|---|---|---|---|
+| Creative | $3,000/mo | 120 credits | 1 / 2 / 2 | — |
+| Growth (Digital) | $6,000/mo | 240 credits | 1 / 4 / 4 | Creative |
+| Strategy | $9,000/mo | 360 credits | 1 / 6 / 6 | Growth + Creative |
+| Automation | $25/credit | custom | custom | — |
+| Interactive | $25/credit | custom | custom | — |
+| REMAU | $8,000/mo | 240h (280h peak) | shared pod, 3-month minimum | — |
+
+Three decisions worth knowing:
+
+1. **Stacking is stored, not restated.** `includesCodes` holds the rule, the card renders it, and a
+   test computes the transitive closure (Strategy reaches Growth + Creative; Creative reaches nothing).
+2. **The catalogue is arithmetically coherent.** Dividing each monthly price by its credit pool
+   gives $25/credit for every pod — the same rate the custom pods are sold at. The pricing page has a
+   *Per month ⇄ Per credit* toggle that derives this from the data rather than claiming it.
+3. **Billing has not moved onto pods.** `subscription_tiers` bills in INR against requests, storage
+   and API calls; pods are sold in USD against credit pools. Encoding USD credit plans into paise
+   billing rows would make every invoice ambiguous about its own currency. A credit ledger
+   (draw-down, rollover, overage at $25/credit) is the missing piece, and until it exists tenants are
+   not billed on pods.
+
+---
+
+## Client interfaces (Phase 6)
+
+Fifteen screens under `(client)`, each reading the API directly — no mock data anywhere.
+
+| Route | Screen |
+|---|---|
+| `/overview` | The workspace at a glance: open requests, deliverables in review, allowance state |
+| `/requests`, `/requests/new`, `/requests/[id]` | List, create, and the detail view with comments, transitions and deliverables |
+| `/projects`, `/deliverables`, `/deliveries` | Work in flight, deliverables awaiting review, released history |
+| `/services` | The service catalogue with the pod price strip |
+| `/subscription`, `/billing` | Plan, allowances and invoices — owner only |
+| `/messages`, `/support` | Threads and tickets |
+| `/team`, `/pod`, `/knowledge` | Roster, pod routing status, navigation map |
+| `/settings`, `/profile` | Tenant record (owner) and the member's own record |
+
+**Navigation is derived from the role, not merely disabled.** A client member has no billing or
+subscription entry at all — the owner sees 13 entries, a member sees 9, and `My Profile` is
+member-only because an owner reaches their profile from Settings. The API enforces the same boundary;
+hiding a link the server would refuse is not a security control, so both layers agree.
+
+`/pod` is worth calling out: a client owner sees **whether each open request has been routed** and to
+nothing more. Pod composition, individual workloads and internal task lists are staff data
+(`ops:read`, `task:read`) and no client endpoint exposes them — an unrouted request is still a fact
+the client is entitled to.
+
+---
+
+## Staff dashboards (Phase 7)
+
+One route (`/ops`), six workspaces, tab counts fixed per persona:
+
+| Workspace | Tabs |
+|---|---|
+| Pod member | 9 |
+| Pod manager | 12 |
+| Sales manager | 10 |
+| Operations manager | 11 |
+| Management | 10 |
+| Administrator | 11 |
+
+Every tab is marked `live`, `partial` or `unbacked` in `apps/web/src/lib/ops-nav.ts` — and that third
+state is the point of the file. A tab with no model behind it names the model that would back it
+rather than rendering invented numbers. Sales has no pipeline, so its Leads and Opportunities tabs say
+so; there is no timesheet, so Team Performance reports task load and never a utilisation percentage.
+
+Three permission boundaries keep the personas honest:
+
+| Permission | Question | Held by |
+|---|---|---|
+| `directory:read` | who our clients are, who works here | admin, ops, pod manager, sales, management, finance |
+| `ops:read` | what is in flight, across every tenant | admin, ops, pod manager, management, finance |
+| `security:read` | who changed what (the audit log) | admin, ops, management |
+
+A pod manager runs delivery without reading who demoted whom; the sales desk sees the client list
+without seeing a single request; `MANAGEMENT` holds no create, update or manage permission at all, so
+an executive seat is read-only by construction.
+
+---
+
+## Marketing site
+
+The public surface is data-driven and dependency-light. No motion library: reveals ride
+`animation-timeline: view()` on the compositor, and the only scroll listener is one rAF-throttled
+progress bar. The governing rule is that a narrative page which renders blank until animated is a
+broken page — content is visible if the CSS never applies.
+
+| Element | Where | What it does |
+|---|---|---|
+| Orbital hero | `/` | Six glass discs driven by the live catalogue, cursor parallax, hover detail drawer, GPU transforms only |
+| Three acts | `/` | The bottleneck → the paradigm → the pods, anchored and keyboard-reachable |
+| Bento grid | `/` | Eight cells, 6-column rhythm, hover lift + edge light + detail expansion |
+| Pod carousel | `/` | Track transform, arrows, dots, autoplay that pauses on hover and focus and never starts under `prefers-reduced-motion` |
+| Command palette | `/` | ⌘K / Ctrl+K over real pods and real routes: ↑↓, ↵, esc, `combobox`/`listbox` roles |
+| Pricing | `/pricing` | Comparison table in tabular figures, "Most specified" on Growth, buyer FAQ with `aria-expanded`, Per month ⇄ Per credit toggle |
+| Book a demo | header | The form described below |
+
+**One CTA, not two.** The header used to offer "Client Portal" and "Portal Access", both of which
+resolved to `/login` — two doors into the same room, and no way to express interest without already
+having an account. It is now **Book a demo** (primary) and **Sign in** (secondary).
+
+**The demo form persists.** `POST /api/v1/demo-requests` writes to `demo_requests` and records an audit
+entry. Being public and unauthenticated, it is deliberately narrow: a strict Zod schema with bounded
+strings, the caller's IP stored only as a SHA-256 hash, and an identical response for every accepted
+request so it cannot be used to probe which companies already exist. It stores a *request* — it does
+not create a user, a tenant or a pipeline entry, because those are human decisions.
+
+---
+
+## Security additions in later phases
+
+Beyond the headers, rate limiting and audit trail described above:
+
+- `security:read` was split out of `ops:read`, so reading the log is a separate grant.
+- The audit trail now also records `demo.request.created` and `organization.updated` with
+  before/after values.
+- `AGENT_PROHIBITED_ACTIONS` plus `forbidAgentCommercialAction` block every non-GET request from an
+  `x-actor-type: AI_AGENT` caller, so the platform's own agents cannot execute payments, change
+  pricing or terms, issue refunds, or release a client deliverable.
+- Public endpoints (`/pricing/pods`, `/demo-requests`) expose nothing tenant-scoped — a test asserts
+  the catalogue payload carries no organization field.
+
+---
+
+## Deployment
+
+`apps/web` → **Vercel** (root directory `apps/web`, framework Next.js, env
+`NEXT_PUBLIC_API_BASE_URL`).
+
+`apps/api` → a **long-running host**, because it runs interval workers (retry sweep, SLA sweep) and a
+worker heartbeat that a serverless platform cannot keep alive. `apps/api/Dockerfile` is multi-stage and
+runs migrate → seed → serve; `render.yaml`, `railway.json` and `fly.toml` are committed as blueprints,
+and `fly.toml` sets `auto_stop_machines = false` for the same reason.
+
+```bash
+pnpm install --frozen-lockfile
+pnpm --filter @gc3/api build          # esbuild → apps/api/dist/index.js
+pnpm --filter @gc3/api release        # migrate deploy + seed pods + seed tiers
+node apps/api/dist/index.js
+```
+
+CORS is an allow-list (`WEB_ORIGIN`), never `*` — verified by sending a preflight with a foreign
+origin and asserting no `access-control-allow-origin` comes back. Full instructions: `DEPLOYMENT.md`.
+
+---
+
 ## Status
 
 | Area | State |
@@ -710,7 +916,7 @@ drain in another), `enqueue-live-event.ts` (queue an event while the API is stop
 | Phase 2 files: stored uploads with SHA-256, download, integrity check | done |
 | Notifications: retry/backoff worker, manual sweep, delivery read API | done |
 | Notifications: deliverable-released and status-updated event emails | done |
-| Integration test harness (Vitest + Supertest, 283 tests) | done |
+| Integration test harness (Vitest + Supertest, 386 tests across 33 files) | done |
 | Phase 3: operations console, pods, request routing | done |
 | Phase 3: pod membership and staffing | done |
 | Phase 3: task breakdown and work allocation | done |
@@ -724,6 +930,17 @@ drain in another), `enqueue-live-event.ts` (queue an event while the API is stop
 | Phase 5: executive analytics (turnaround, throughput, pods, growth) | done |
 | Phase 5: audit trail, security headers and rate limiting | done |
 | Phase 5: production build, full suite, documentation | done |
+| Phase 6: client owner and member interfaces, role-derived navigation | done |
+| Phase 7: six role-based staff dashboards with scoping | done |
+| Phase 8: capability-pod catalogue, seeded, served publicly, on every surface | done |
+| Marketing: three-act home, pricing page, bento grid, carousel, command palette | done |
+| Acquisition: "Book a demo" form persisting to `demo_requests` | done |
+| Deployment: esbuild bundle, Dockerfile, Render/Fly/Railway blueprints, CORS allow-list | done (not deployed) |
+| Billing on pods (credit ledger, rollover, overage) | not started — tiers still bill in INR |
+| CRM: pipeline, stages, owners | not started — `demo_requests` stores the request only |
+| Notification for new demo requests, and an ops screen for them | not started |
+| Token refresh / revocation list | not started (login rate limiting is done) |
+| CI/CD, ESLint, Prettier | not started (Phase 0 exit criteria) |
 | Delivery retry/backoff, bounce handling, delivery read API | retry + read API done; bounce handling not started |
 | Token refresh / revocation, revocation list | not started (login rate limiting is done) |
 | CI/CD, linting | not started (Phase 0 exit criteria) |
@@ -747,10 +964,14 @@ All suites run against a real PostgreSQL database (never a mock) with `TRUNCATE 
 cases. The permission guard was verified load-bearing: disabling `requirePermission` failed exactly
 the seven negative-authorization tests and nothing else.
 
-### Immediate next steps
+### Next steps, in priority order
 
-1. Phase 2 step 7: stored file uploads (bytes + checksum) so a released asset is verifiable.
-2. Delivery retry/backoff for FAILED rows, plus a `GET /organizations/:id/notifications` read API.
-3. Token lifecycle: refresh tokens, revocation, login rate limiting.
-4. Offboarding an ACTIVE member (session invalidation, retention rules).
-5. ESLint + Prettier and a CI workflow running `typecheck`, `test` and `build`.
+1. **A credit ledger**, so pods can be billed: draw-down per request, rollover, overage at
+   $25/credit, and invoices that state their currency without ambiguity.
+2. **Demo requests as a working inbox** — `GET /ops/demo-requests` in the administrator console, plus
+   a notification to sales on submit. The table already records everything that screen needs.
+3. **CI**: a workflow running `typecheck`, `test` and `build` on every push, plus ESLint and Prettier.
+4. **Token lifecycle**: refresh tokens and a revocation list; session invalidation on offboarding an
+   active member.
+5. **Object storage** for deliverable bytes — signed URLs, retention, and virus scanning.
+6. **Retire `/foundation`**, which is still publicly reachable.
