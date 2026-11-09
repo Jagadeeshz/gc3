@@ -4,7 +4,7 @@ import { ArrowDown, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { SessionGate } from '@/components/marketing/session-gate';
 import { SiteNav } from '@/components/marketing/site-nav';
 import { ScrollProgress } from '@/components/marketing/scroll-progress';
-import { HeroOrbit } from '@/components/marketing/hero-orbit';
+import { HeroAurora } from '@/components/marketing/hero-aurora';
 import { BentoGrid } from '@/components/marketing/bento-grid';
 import { PodCarousel } from '@/components/marketing/pod-carousel';
 import { CommandPalette } from '@/components/marketing/command-palette';
@@ -100,9 +100,7 @@ export default function ScrollytellingHome() {
          * the edges. Both are compositor-only properties.
          */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div
-            className="absolute inset-0 scale-[1.04] bg-[url('/images/gc3-hub-bg.webp')] bg-cover bg-[center_bottom] bg-no-repeat opacity-[0.32] blur-[3px] [will-change:transform]"
-          />
+
           {/* Architectural staging: a 4.5% grid, then a soft core behind the headline.
               Order matters — the grid sits under the vignette so the centre of the type block
               stays clean. */}
@@ -116,7 +114,7 @@ export default function ScrollytellingHome() {
         </div>
 
         {/* Generated from the catalogue: our six pods orbiting the core. */}
-        <HeroOrbit />
+        <HeroAurora />
 
         <div className="shell relative flex min-h-[86svh] flex-col justify-center py-16">
           <p className="rise font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-300/90">
@@ -137,7 +135,7 @@ export default function ScrollytellingHome() {
           <div className="rise mt-9 flex flex-wrap items-center gap-3">
             <Link
               href="#act-problem"
-              className="inline-flex items-center gap-2 rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-4 py-2.5 text-[13px] font-medium text-emerald-200 transition-colors hover:bg-emerald-400/20"
+              className="inline-flex items-center gap-2 rounded-lg border border-hairline px-4 py-2.5 text-[13px] text-ghost-muted transition-colors hover:border-[color:var(--bindu-rim-spectrum-mid)] hover:text-ghost"
             >
               Begin the story
               <ArrowDown aria-hidden className="size-3.5" strokeWidth={1.9} />

@@ -616,3 +616,79 @@ body {
   -webkit-backdrop-filter: var(--bindu-glass-blur-heavy);
   backdrop-filter: var(--bindu-glass-blur-heavy);
 }
+
+/* ------------------------------------------------------------------ hero aurora
+   A prism sphere rendered entirely in CSS: one rotating conic gradient, masked rings and a
+   scatter of coloured particles. Nothing here paints outside transform/opacity/filter, so
+   the hero stays on the compositor and the page keeps its 60fps without a canvas context.
+
+   Colour is the raga spectrum spread around the disc — deliberately no single dominant hue,
+   which is what made the reference read blue. */
+@keyframes aurora-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes aurora-rise {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(calc(var(--drift, 1) * 9px), -28px, 0);
+    opacity: 0.08;
+  }
+}
+
+.aurora-core {
+  background: conic-gradient(
+    from 200deg,
+    #7b00ff 0deg,
+    #00ddaa 46deg,
+    #aaff00 86deg,
+    #ffdd00 124deg,
+    #ff8800 156deg,
+    #ff2200 186deg,
+    /* the blues are compressed to a short transition arc: present, not dominant */ #7b00ff 212deg,
+    #0055ff 226deg,
+    #0099ff 238deg,
+    #00ddaa 252deg,
+    #7b00ff 300deg
+  );
+  /* Blur turns the cone into a bloom; the mask keeps the disc from ending on a hard edge. */
+  filter: blur(42px) saturate(1.15);
+  opacity: 0.3;
+  animation: aurora-spin 96s linear infinite;
+  -webkit-mask-image: radial-gradient(closest-side, #000 40%, rgba(0, 0, 0, 0.55) 72%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 40%, rgba(0, 0, 0, 0.55) 72%, transparent 100%);
+}
+
+.aurora-ring {
+  background: var(--bindu-spectrum-gradient);
+  /* A 1px ring from a filled disc: mask everything except the last pixel of radius. */
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1px));
+  animation: aurora-spin 54s linear infinite;
+}
+
+.aurora-particle {
+  animation-name: aurora-rise;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  filter: drop-shadow(0 0 4px currentColor);
+  will-change: transform, opacity;
+}
+
+/* Reduced motion: freeze the frame. Removing the layers would collapse the composition and
+   leave the hero looking broken rather than calm. */
+@media (prefers-reduced-motion: reduce) {
+  .aurora-core,
+  .aurora-ring,
+  .aurora-particle {
+    animation: none;
+  }
+}
