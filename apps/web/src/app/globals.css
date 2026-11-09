@@ -55,6 +55,16 @@ body {
   GC3 design tokens (01-brand-and-design-system).
   Tailwind v4 reads @theme and generates utilities: bg-void, text-gold, etc.
 */
+/*
+ * The spectrum collapses to one accent at convergence. Act II's spine is drawn with
+ * `via-[var(--spectrum-accent)]` rather than the nine-stop gradient: the story there is
+ * that six scattered capabilities become a single line, and a full rainbow would argue the
+ * opposite. Raga-teal is the spectrum's midpoint and the colour already used for status.
+ */
+:root {
+  --spectrum-accent: #00ddaa;
+}
+
 @theme {
   /* BINDU void family */
   --color-void: #080b12;
@@ -542,15 +552,6 @@ body {
   mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%);
 }
 
-/* Act II - convergence. One spine, spectrum at low opacity, feathered at both ends so it reads
-   as a line the story draws down the page rather than a divider. */
-.pod-spine {
-  background: var(--bindu-spectrum-gradient);
-  opacity: 0.22;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
-}
-
 /* Act III - the only spectrum on a card, and only while it is open. */
 .pod-rim-active::before {
   content: '';
@@ -571,7 +572,9 @@ body {
 
 .ledger-card:hover,
 .ledger-card:focus-within {
-  border-color: rgba(242, 213, 130, 0.28);
+  /* Neutral, not soma: gold is reserved for CTAs, and a ledger row does not light up gold
+     when you point at it. */
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .sys-tag {

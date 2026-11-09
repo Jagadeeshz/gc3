@@ -136,16 +136,16 @@ export function BentoGrid() {
                   className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                 />
 
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2.5 pr-12">
                   <span className={`grid size-8 shrink-0 place-items-center rounded-[9px] border bg-white/[0.02] ${tone}`}>
                     <Icon aria-hidden className="size-4" strokeWidth={1.75} />
                   </span>
-                  <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">
+                  <span className="truncate font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">
                     {cell.label}
                   </span>
                 </div>
 
-                <span aria-hidden="true" className="sys-tag absolute bottom-2.5 right-3">
+                <span aria-hidden="true" className="sys-tag absolute right-3 top-2.5">
                   SYS.{String(cellIndex + 1).padStart(2, '0')}
                 </span>
 

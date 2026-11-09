@@ -57,10 +57,14 @@ export function ActParadigm() {
       id="act-paradigm"
       className="act-anchor relative overflow-hidden border-b border-hairline bg-obsidian-soft py-20 sm:py-28"
     >
-      {/* Convergence: Act I's scattered grid becomes one line. Spectrum at 22%, feathered at
-          both ends, so it reads as the story drawing down the page. */}
-      <div aria-hidden="true" className="pod-spine pointer-events-none absolute inset-y-0 left-1/2 hidden w-px -translate-x-1/2 lg:block" />
-      <div className="shell relative grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)] lg:gap-16">
+      {/* Convergence: Act I's scattered grid becomes one line. A single 1px spine on the
+          centre line, one accent instead of nine, feathered at both ends so it reads as the
+          story drawing down the page rather than a divider. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 left-1/2 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-[var(--spectrum-accent)] to-transparent opacity-60 lg:block"
+      />
+      <div className="shell relative z-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)] lg:gap-16">
         <div className="grid content-start gap-10">
           <div className="fade-scale">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
