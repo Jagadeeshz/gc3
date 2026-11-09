@@ -71,7 +71,7 @@ export function ActPods() {
       <div className="shell grid gap-12 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:gap-16">
         <div className="stage rise">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
-            Act III
+            Act III — Capability pods
           </p>
           <h2 className="mt-4 font-display text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.06] tracking-[-0.02em] text-ghost">
             Six pods. Published prices.

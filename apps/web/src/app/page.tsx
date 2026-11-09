@@ -54,9 +54,9 @@ const FOOTER_NAV = [
   {
     heading: 'The story',
     links: [
-      { label: 'Act I', href: '#act-problem' },
-      { label: 'Act II', href: '#act-paradigm' },
-      { label: 'Act III', href: '#act-pods' },
+      { label: 'The bottleneck', href: '#act-problem' },
+      { label: 'The paradigm shift', href: '#act-paradigm' },
+      { label: 'Capability pods', href: '#act-pods' },
     ],
   },
   {
@@ -71,9 +71,9 @@ const FOOTER_NAV = [
 ] as const;
 
 const ACTS = [
-  { id: 'act-problem', label: 'I' },
-  { id: 'act-paradigm', label: 'II' },
-  { id: 'act-pods', label: 'III' },
+  { id: 'act-problem', label: 'I', title: 'The bottleneck' },
+  { id: 'act-paradigm', label: 'II', title: 'The paradigm shift' },
+  { id: 'act-pods', label: 'III', title: 'Capability pods' },
 ] as const;
 
 
@@ -145,40 +145,23 @@ export default function ScrollytellingHome() {
             </Link>
           </div>
 
-          {/* Proof band: a continuous left-to-right rail. The tiles are rendered twice so the
-              loop has no seam at the wrap point; the second set is aria-hidden so a screen
-              reader hears the four facts once. Hover or keyboard focus pauses it, and reduced
-              motion gets the static four-up grid instead of a scroll. */}
-          <div className="proof-marquee rise mt-12 overflow-hidden rounded-[12px] border border-hairline">
-            <div className="proof-track flex w-max">
-              {[0, 1].map((pass) => (
-                <dl
-                  key={pass}
-                  aria-hidden={pass === 1 ? 'true' : undefined}
-                  className="flex shrink-0"
-                >
-                  {[
-                    ['6', 'Capability pods'],
-                    ['48–120h', 'Delivery commitments'],
-                    ['1:1', 'Agent per specialist'],
-                    ['Monthly', 'No annual lock-in'],
-                  ].map(([value, label]) => (
-                    <div
-                      key={label}
-                      className="w-[210px] shrink-0 border-r border-hairline bg-obsidian-soft px-4 py-3.5 sm:w-[240px]"
-                    >
-                      <dd className="font-display text-[22px] font-semibold tabular-nums leading-none text-ghost">
-                        {value}
-                      </dd>
-                      <dt className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">
-                        {label}
-                      </dt>
-                    </div>
-                  ))}
-                </dl>
-              ))}
-            </div>
-          </div>
+          <dl className="rise mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[12px] border border-hairline bg-hairline sm:grid-cols-4">
+            {[
+              ['6', 'Capability pods'],
+              ['48–120h', 'Delivery commitments'],
+              ['1:1', 'Agent per specialist'],
+              ['Monthly', 'No annual lock-in'],
+            ].map(([value, label]) => (
+              <div key={label} className="bg-obsidian-soft px-4 py-3.5">
+                <dd className="font-display text-[22px] font-semibold tabular-nums leading-none text-ghost">
+                  {value}
+                </dd>
+                <dt className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">
+                  {label}
+                </dt>
+              </div>
+            ))}
+          </dl>
 
           <nav aria-label="Acts" className="rise mt-12 flex flex-wrap gap-x-6 gap-y-2">
             {ACTS.map((act) => (
@@ -190,6 +173,7 @@ export default function ScrollytellingHome() {
                 <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-300/70">
                   {act.label}
                 </span>
+                {act.title}
               </Link>
             ))}
           </nav>

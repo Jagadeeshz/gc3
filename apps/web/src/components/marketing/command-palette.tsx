@@ -35,9 +35,9 @@ interface Command {
 const STATIC_COMMANDS: readonly Command[] = [
   { id: 'sec-home', label: 'Home', hint: 'The story, in three acts', href: '/', group: 'Sections' },
   { id: 'sec-pricing', label: 'Pricing', hint: 'All six pods, published', href: '/pricing', group: 'Sections' },
-  { id: 'sec-problem', label: 'Act I', hint: 'The opening', href: '/#act-problem', group: 'Sections' },
+  { id: 'sec-problem', label: 'The bottleneck', hint: 'Act I', href: '/#act-problem', group: 'Sections' },
   { id: 'sec-paradigm', label: 'What GC³ is', hint: 'Act II', href: '/#act-paradigm', group: 'Sections' },
-  { id: 'sec-pods', label: 'Act III', hint: 'The pods', href: '/#act-pods', group: 'Sections' },
+  { id: 'sec-pods', label: 'Capability pods', hint: 'Act III', href: '/#act-pods', group: 'Sections' },
   { id: 'sec-login', label: 'Sign in', hint: 'Client portal', href: '/login', group: 'Account' },
 ];
 
