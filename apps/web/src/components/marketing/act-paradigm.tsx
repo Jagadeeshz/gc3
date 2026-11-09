@@ -68,7 +68,7 @@ export function ActParadigm() {
         <div className="grid content-start gap-10">
           <div className="fade-scale">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
-              Act II — The paradigm shift
+              Act II
             </p>
             <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3.4rem)] leading-[1.02] tracking-[-0.025em] text-ghost">
               Enterprise AI fails on

@@ -693,3 +693,32 @@ body {
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------ proof marquee
+   A continuous left-to-right rail. The track holds the four facts twice, so translating by
+   exactly -50% lands the second copy where the first began and the loop has no seam. */
+@keyframes proof-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.proof-track {
+  animation: proof-scroll 46s linear infinite;
+  will-change: transform;
+}
+
+.proof-marquee:hover .proof-track,
+.proof-marquee:focus-within .proof-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proof-track {
+    animation: none;
+    flex-wrap: wrap;
+  }
+}

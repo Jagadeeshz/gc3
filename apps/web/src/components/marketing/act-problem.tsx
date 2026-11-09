@@ -88,7 +88,7 @@ export function ActProblem() {
         <div className="grid content-start gap-10">
           <div className="fade-scale">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
-              Act I — The bottleneck
+              Act I
             </p>
             <h2 className="mt-4 font-display text-[clamp(1.9rem,3.6vw,3rem)] leading-[1.06] tracking-[-0.02em] text-ghost">
               Buying more AI has become the problem.
