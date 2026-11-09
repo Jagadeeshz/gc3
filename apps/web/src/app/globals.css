@@ -822,3 +822,64 @@ body {
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------ sculpture stage
+   CSS perspective, not WebGL: one still image on a tilted plane reads as depth at this size and
+   costs nothing at runtime. The tilt values are written to --rx / --ry by the pointer handler, so
+   movement never touches React state. No keyframes here — the composition is static. */
+.sculpture-stage {
+  perspective: 1100px;
+  perspective-origin: 50% 55%;
+}
+
+.sculpture-plane {
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 40px 70px rgba(0, 0, 0, 0.6));
+}
+
+/** The light behind the sculpture takes the hovered pod's colour. */
+.sculpture-halo {
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--glow, #ededed) 26%, transparent),
+    color-mix(in oklab, var(--glow, #ededed) 8%, transparent) 58%,
+    transparent 82%
+  );
+  filter: blur(26px);
+  transition: background 240ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sculpture-plane {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------------ landing: no motion
+   The landing page is static by requirement. Every autonomous animation is switched off at the
+   root of the page, which is safer than hunting each component: entrance rises, the proof
+   ticker, the pod hub's revolution and its turning ring. Hover transitions are left alone —
+   they are interactions, not motion, and the pod slides depend on them. */
+.landing .rise,
+.landing .fade-scale,
+.landing .proof-track,
+.landing .pod-ring,
+.landing .pod-counter,
+.landing .aurora-ring,
+.landing .pod-platform,
+.landing .scroll-progress-fill {
+  animation: none !important;
+}
+
+/* The ticker is laid out statically on the landing page: travel reset, and the duplicate set —
+   which exists only so the loop has no seam — hidden, since without a loop it just repeats the
+   facts twice across the row. */
+.landing .proof-track {
+  transform: none !important;
+}
+
+.landing .proof-track dl[aria-hidden='true'] {
+  display: none;
+}

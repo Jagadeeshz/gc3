@@ -4,7 +4,7 @@ import { ArrowDown, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { SessionGate } from '@/components/marketing/session-gate';
 import { SiteNav } from '@/components/marketing/site-nav';
 import { ScrollProgress } from '@/components/marketing/scroll-progress';
-import { HeroDiagram } from '@/components/marketing/hero-diagram';
+import { HeroSculpture } from '@/components/marketing/hero-sculpture';
 import { BentoGrid } from '@/components/marketing/bento-grid';
 import { PodCarousel } from '@/components/marketing/pod-carousel';
 import { CommandPalette } from '@/components/marketing/command-palette';
@@ -65,7 +65,7 @@ const FOOTER_NAV = [
 
 export default function ScrollytellingHome() {
   return (
-    <div className="min-h-dvh bg-obsidian">
+    <div className="landing min-h-dvh bg-obsidian">
       <SessionGate />
       <ScrollProgress />
       <CommandPalette />
@@ -76,11 +76,10 @@ export default function ScrollytellingHome() {
       <header className="relative overflow-hidden border-b border-hairline bg-obsidian">
         {/* The hero has no backdrop: flat obsidian, the type, and the diagram. */}
 
-        {/* The diagram is the only figure on the page: a fixed GC³ centre with the pods on an
-            ellipse. Hidden below lg — at phone width the copy needs the space more than a second
-            figure does. */}
-        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] -translate-y-[5%] items-center pr-[2%] lg:flex">
-          <HeroDiagram className="pointer-events-auto mx-auto max-w-[600px]" />
+        {/* The sculpture is the only figure on the page, on a 3D plane with the pod slides beside
+            it. Hidden below lg — at phone width the copy needs the space more than a figure does. */}
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-20 hidden w-[48%] items-center pb-16 pr-[4%] lg:flex">
+          <HeroSculpture className="pointer-events-auto w-full" />
         </div>
 
         <div className="shell relative flex min-h-[86svh] flex-col justify-center py-16">
@@ -90,9 +89,8 @@ export default function ScrollytellingHome() {
           </h1>
 
           <p className="rise mt-7 max-w-[48ch] text-[15px] leading-[1.8] text-ghost-muted lg:max-w-[46%]">
-            GC³ composes one pod around one outcome and sells it on one subscription — a standing
-            team, a monthly credit pool, and none of the procurement that used to sit between you and
-            the work. This page is the argument, in three acts.
+            One standing team. One monthly credit pool. One outcome. Everything you need to bypass
+            traditional procurement and accelerate execution, delivered through a single subscription.
           </p>
 
           <div className="rise mt-9 flex flex-wrap items-center gap-3">
@@ -147,6 +145,12 @@ export default function ScrollytellingHome() {
             </div>
           </div>
 
+        </div>
+
+        {/* Below lg the stage stacks under the copy: same component, smaller by the layout rather
+            than by a second implementation. */}
+        <div className="shell relative z-10 pb-12 lg:hidden">
+          <HeroSculpture />
         </div>
       </header>
 
