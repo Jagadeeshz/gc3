@@ -16,7 +16,7 @@ import { PlatformBand, PricingFaq } from '@/components/pricing/pricing-sections'
 import { QuantocosMark } from '@/components/brand/quantocos-mark';
 
 export const metadata: Metadata = {
-  title: 'GC³ — Global Capability Center 3.0',
+  title: 'Quantocos — Explore possibilities',
   description:
     'Enterprise AI does not fail on models; it fails on operations. GC³ composes one pod around one outcome and sells it on one subscription: one manager, specialists, and a published credit pool.',
 };
@@ -117,10 +117,6 @@ export default function ScrollytellingHome() {
         <HeroAurora />
 
         <div className="shell relative flex min-h-[86svh] flex-col justify-center py-16">
-          <p className="rise font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-300/90">
-            GC³ — Global Capability Center 3.0
-          </p>
-
           <h1 className="rise mt-5 max-w-[17ch] font-display text-[clamp(2.2rem,5vw,4.3rem)] leading-[1.0] tracking-[-0.03em] text-ghost lg:max-w-[52%]">
             Enterprise AI does not fail on models.
             <span className="mt-2 block text-ghost/60">It fails on operations.</span>

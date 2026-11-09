@@ -481,7 +481,8 @@ body {
   display: inline-block;
   font-size: 1.6em;
   font-style: italic;
-  font-weight: 700;
+  /* 800 with a real 700 face loaded: a synthetic bold smears the gradient edges. */
+  font-weight: 800;
   line-height: 0.82;
   letter-spacing: -0.02em;
   transform: translateY(0.055em);

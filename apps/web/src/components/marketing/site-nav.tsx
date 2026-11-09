@@ -81,7 +81,7 @@ export function SiteNav() {
                 <QuantocosMark size="md" />
               </span>
               <span className="mt-1 hidden font-mono text-[9px] uppercase tracking-[0.18em] text-ghost-muted sm:block">
-                Capability, composed
+                Explore possibilities
               </span>
             </span>
           </Link>
