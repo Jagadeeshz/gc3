@@ -65,7 +65,7 @@ export function ActParadigm() {
             </p>
             <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3.4rem)] leading-[1.02] tracking-[-0.025em] text-ghost">
               Enterprise AI fails on
-              <span className="block text-amber-300/90">operational bloat.</span>
+              <span className="block text-ghost/55">operational bloat.</span>
               <span className="block">Not on weak models.</span>
             </h2>
           </div>

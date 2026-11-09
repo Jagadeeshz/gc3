@@ -7,6 +7,46 @@
 @import '../styles/bindu/tokens.css';
 @import '../styles/bindu/components.css';
 
+/**
+ * BINDU ships as a *desktop app shell*, and two of its global assumptions are wrong for
+ * this project — page-patterns.md names this exact trap ("html{overflow:hidden} clips
+ * long scrolls; override to auto").
+ *
+ * The vendored stylesheet is left untouched so it can be re-copied from the skill
+ * without a merge; the corrections live here, next to the reason.
+ */
+html {
+  /* 13px is the desktop-product base. The marketing pages use the brand scale. */
+  font-size: 16px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+body {
+  /* Was `overflow: hidden` — that is what stopped the page scrolling. */
+  overflow: visible;
+  height: auto;
+  min-height: 100dvh;
+}
+
+/* The app-shell classes expect to own the viewport. Nothing here uses `.app`, but if a
+   surface ever does, it should scroll inside itself rather than lock the document. */
+.app {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.app__main {
+  overflow-y: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+
 /* Workspace packages live outside this app's source tree — Tailwind v4 only
    scans the CSS file's directory tree by default, so register them explicitly. */
 @source '../../../../packages/ui/src';
@@ -339,4 +379,19 @@
   .tilt-surface::after {
     transition: none;
   }
+}
+
+@theme {
+  /* BINDU colour discipline, applied to the palette names this codebase already uses.
+     Amber was doing two jobs: warning states AND decorative headings. Headings are now
+     solid shunya (rule 2), and what is left is genuinely status — which BINDU assigns to
+     the raga stops, not to gold. Emerald was the old brand accent; it maps to raga-teal,
+     the same hue family, because gold is reserved for CTAs. */
+  --color-amber-200: #fff2a8;
+  --color-amber-300: #ffdd00; /* raga-yellow */
+  --color-amber-400: #e6c700;
+  --color-emerald-200: #7effd9;
+  --color-emerald-300: #00ddaa; /* raga-teal */
+  --color-emerald-400: #00c79a;
+  --color-emerald-500: #00b289;
 }
