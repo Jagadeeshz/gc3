@@ -77,7 +77,7 @@ export default function RequestsPage() {
         </div>
         <Link
           href="/requests/new"
-          className="inline-flex min-h-11 items-center gap-2 rounded-[6px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-2.5 text-sm font-medium text-ink transition-[filter] hover:brightness-105"
+          className="inline-flex min-h-11 items-center gap-2 rounded-[12px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-2.5 text-sm font-medium text-ink transition-[filter] hover:brightness-105"
         >
           ＋ Create new
         </Link>
@@ -93,7 +93,7 @@ export default function RequestsPage() {
               'min-h-9 rounded-lg border px-3 py-1.5 text-xs transition-colors',
               filter === tab.key
                 ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200'
-                : 'border-[color:var(--bindu-surface-border)] bg-white/[0.03] text-slate-400 hover:text-slate-100',
+                : 'border-white/10 bg-white/[0.03] text-slate-400 hover:text-slate-100',
             ].join(' ')}
           >
             {tab.label}
@@ -113,7 +113,7 @@ export default function RequestsPage() {
       {loading ? (
         <p className="mt-6 text-sm text-slate-400">Loading requests…</p>
       ) : items.length === 0 ? (
-        <div className="mt-6 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-6">
+        <div className="mt-6 rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-6">
           <p className="text-sm text-slate-100">Nothing here yet.</p>
           <p className="mt-1 text-sm text-slate-400">
             {filter === 'ALL'
@@ -127,7 +127,7 @@ export default function RequestsPage() {
             <li key={item.id}>
               <Link
                 href={`/requests/${item.id}`}
-                className="block rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-4 transition-colors hover:border-emerald-400/30"
+                className="block rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-4 transition-colors hover:border-emerald-400/30"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">

@@ -96,7 +96,7 @@ export default function TeamPage() {
           { label: 'Active', value: active },
           { label: 'Invitations pending', value: invited },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-4">
+          <div key={stat.label} className="rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-4">
             <p className="text-[11px] uppercase tracking-[0.1em] text-slate-400">{stat.label}</p>
             <p className="mt-2 font-display text-[26px] font-semibold tabular-nums leading-none text-slate-100">
               {stat.value}
@@ -105,7 +105,7 @@ export default function TeamPage() {
         ))}
       </section>
 
-      <div className="overflow-hidden rounded-[6px] border border-[color:var(--bindu-surface-border)]">
+      <div className="overflow-hidden rounded-[12px] border border-white/10">
         <table className="w-full text-left text-xs">
           <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.12em] text-slate-400">
             <tr>
@@ -117,7 +117,7 @@ export default function TeamPage() {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.id} className="border-t border-[color:var(--bindu-surface-border)]">
+              <tr key={row.id} className="border-t border-white/10">
                 <td className="px-4 py-3">
                   <p className="text-sm text-slate-100">{row.user.fullName}</p>
                   <p className="mt-0.5 flex items-center gap-1.5 font-mono text-[10px] text-slate-400">
@@ -130,7 +130,7 @@ export default function TeamPage() {
                     {row.roles.map((role) => (
                       <span
                         key={role}
-                        className="rounded-full border border-[color:var(--bindu-surface-border)] bg-white/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-slate-400"
+                        className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-slate-400"
                       >
                         {ROLE_LABEL[role] ?? role}
                       </span>

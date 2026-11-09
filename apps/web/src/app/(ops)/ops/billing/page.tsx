@@ -141,7 +141,7 @@ export default function OpsBillingPage() {
 
   if (error && !overview) {
     return (
-      <div className="flex items-start gap-3 rounded-[8px] border border-red-400/30 bg-red-400/5 px-4 py-3 text-sm text-red-200">
+      <div className="flex items-start gap-3 rounded-[14px] border border-red-400/30 bg-red-400/5 px-4 py-3 text-sm text-red-200">
         <CircleAlert aria-hidden className="mt-0.5 size-4" strokeWidth={1.75} />
         {error}
       </div>
@@ -165,7 +165,7 @@ export default function OpsBillingPage() {
       </header>
 
       {notice ? (
-        <div className="rounded-[8px] border border-gold/30 bg-gold/5 px-4 py-2.5 text-xs text-gold-light">
+        <div className="rounded-[14px] border border-gold/30 bg-gold/5 px-4 py-2.5 text-xs text-gold-light">
           {notice}
         </div>
       ) : null}
@@ -200,7 +200,7 @@ export default function OpsBillingPage() {
           const Icon = card.icon;
 
           return (
-            <article key={card.label} className="rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-white/[0.02] p-4">
+            <article key={card.label} className="rounded-[14px] border border-white/10 bg-white/[0.02] p-4">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] text-muted">{card.label}</p>
                 <Icon aria-hidden className="size-4 text-gold-light" strokeWidth={1.75} />
@@ -214,7 +214,7 @@ export default function OpsBillingPage() {
 
       <section className="grid gap-3">
         <h2 className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">Tier mix</h2>
-        <div className="overflow-hidden rounded-2xl border border-[color:var(--bindu-surface-border)]">
+        <div className="overflow-hidden rounded-2xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.14em] text-muted">
               <tr>
@@ -226,7 +226,7 @@ export default function OpsBillingPage() {
             <tbody>
               {overview.byTier.length > 0 ? (
                 overview.byTier.map((row) => (
-                  <tr key={row.tierCode} className="border-t border-[color:var(--bindu-surface-border)]">
+                  <tr key={row.tierCode} className="border-t border-white/10">
                     <td className="px-4 py-3 text-warm">{row.tierName}</td>
                     <td className="px-4 py-3 text-right font-mono text-xs text-muted">
                       {row.organizations}
@@ -265,7 +265,7 @@ export default function OpsBillingPage() {
           </label>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-[color:var(--bindu-surface-border)]">
+        <div className="overflow-hidden rounded-2xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.14em] text-muted">
               <tr>
@@ -279,7 +279,7 @@ export default function OpsBillingPage() {
             </thead>
             <tbody>
               {overview.tenants.map((tenant) => (
-                <tr key={tenant.id} className="border-t border-[color:var(--bindu-surface-border)]">
+                <tr key={tenant.id} className="border-t border-white/10">
                   <td className="px-4 py-3 text-warm">{tenant.name}</td>
                   <td className="px-4 py-3">
                     <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
@@ -352,7 +352,7 @@ export default function OpsBillingPage() {
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-[color:var(--bindu-surface-border)]">
+        <div className="overflow-hidden rounded-2xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.14em] text-muted">
               <tr>
@@ -366,7 +366,7 @@ export default function OpsBillingPage() {
             </thead>
             <tbody>
               {overview.recent.map((invoice) => (
-                <tr key={invoice.id} className="border-t border-[color:var(--bindu-surface-border)]">
+                <tr key={invoice.id} className="border-t border-white/10">
                   <td className="px-4 py-3 font-mono text-xs text-warm">{invoice.number}</td>
                   <td className="px-4 py-3 text-xs text-muted">{invoice.organizationName}</td>
                   <td className="px-4 py-3">

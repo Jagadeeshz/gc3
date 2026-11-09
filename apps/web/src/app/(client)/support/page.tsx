@@ -123,7 +123,7 @@ export default function SupportPage() {
       {error ? <ErrorNote message={error} /> : null}
 
       {submitted ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[6px] border border-emerald-400/30 bg-emerald-400/5 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-emerald-400/30 bg-emerald-400/5 px-4 py-3">
           <p className="flex items-center gap-2 text-xs text-emerald-200">
             <CheckCircle2 aria-hidden className="size-4" strokeWidth={1.75} />
             Ticket {submitted.reference} raised — the team has been notified.
@@ -149,7 +149,7 @@ export default function SupportPage() {
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
                 placeholder="Short summary — e.g. Deliverable upload failing"
-                className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
               />
             </label>
 
@@ -162,7 +162,7 @@ export default function SupportPage() {
                 value={details}
                 onChange={(event) => setDetails(event.target.value)}
                 placeholder="What you expected, what happened, and anything you have already tried."
-                className="resize-y rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="resize-y rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
               />
             </label>
 
@@ -172,7 +172,7 @@ export default function SupportPage() {
                 <select
                   value={priority}
                   onChange={(event) => setPriority(event.target.value as ServiceRequestPriority)}
-                  className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
                 >
                   {PRIORITIES.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -187,7 +187,7 @@ export default function SupportPage() {
                 <select
                   value={categoryId}
                   onChange={(event) => setCategoryId(event.target.value)}
-                  className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
                 >
                   <option value="">General support</option>
                   {categories.map((category) => (
@@ -199,7 +199,7 @@ export default function SupportPage() {
               </label>
             </div>
 
-            <div className="flex items-center justify-between gap-3 border-t border-[color:var(--bindu-surface-border)] pt-4">
+            <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-4">
               <p className="text-[11px] text-slate-400">
                 {supportCategory?.slaDeliveryHours
                   ? `Support commitment: ${supportCategory.slaDeliveryHours} hours.`
@@ -248,7 +248,7 @@ export default function SupportPage() {
                   <li key={request.id}>
                     <Link
                       href={`/requests/${request.id}`}
-                      className="flex items-center justify-between gap-2 rounded-lg border border-[color:var(--bindu-surface-border)] px-3 py-2 transition-colors hover:border-gold/30"
+                      className="flex items-center justify-between gap-2 rounded-lg border border-white/10 px-3 py-2 transition-colors hover:border-gold/30"
                     >
                       <span className="min-w-0">
                         <span className="block truncate text-xs text-slate-100">{request.title}</span>

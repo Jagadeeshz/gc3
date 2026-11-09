@@ -150,7 +150,7 @@ export default function ServicesPage() {
       <PodPriceStrip token={token} />
 
       {created ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[6px] border border-emerald-400/30 bg-emerald-400/5 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-emerald-400/30 bg-emerald-400/5 px-4 py-3">
           <p className="flex items-center gap-2 text-xs text-emerald-200">
             <CheckCircle2 aria-hidden className="size-4" strokeWidth={1.75} />
             {created.reference} submitted — {created.title}
@@ -178,12 +178,12 @@ export default function ServicesPage() {
           {categories.map((category) => (
             <article
               key={category.id}
-              className="flex flex-col justify-between rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-4 transition-colors hover:border-emerald-400/30"
+              className="flex flex-col justify-between rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-4 transition-colors hover:border-emerald-400/30"
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="text-sm font-semibold text-slate-100">{category.name}</h2>
-                  <span className="shrink-0 rounded-full border border-[color:var(--bindu-surface-border)] px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-slate-400">
+                  <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-slate-400">
                     {category.slaDeliveryHours ? `${category.slaDeliveryHours}h SLA` : 'SLA default'}
                   </span>
                 </div>
@@ -195,7 +195,7 @@ export default function ServicesPage() {
               <button
                 type="button"
                 onClick={() => openForm(category)}
-                className="mt-4 inline-flex items-center justify-between rounded-lg border border-[color:var(--bindu-surface-border)] px-3 py-2 text-xs text-slate-100 transition-colors hover:border-emerald-400/35 hover:text-emerald-200"
+                className="mt-4 inline-flex items-center justify-between rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-100 transition-colors hover:border-emerald-400/35 hover:text-emerald-200"
               >
                 Request this service
                 <ArrowRight aria-hidden className="size-3.5" strokeWidth={1.75} />
@@ -219,8 +219,8 @@ export default function ServicesPage() {
           aria-labelledby="request-form-title"
           className="fixed inset-0 z-50 grid place-items-center bg-void/80 px-4 py-8 backdrop-blur-sm"
         >
-          <div className="w-full max-w-[560px] rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-graphite shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-[color:var(--bindu-surface-border)] px-5 py-4">
+          <div className="w-full max-w-[560px] rounded-[14px] border border-white/10 bg-graphite shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">
                   New service request
@@ -233,7 +233,7 @@ export default function ServicesPage() {
                 type="button"
                 onClick={() => setDraft(null)}
                 aria-label="Close"
-                className="rounded-lg border border-[color:var(--bindu-surface-border)] p-1.5 text-slate-400 transition-colors hover:text-slate-100"
+                className="rounded-lg border border-white/10 p-1.5 text-slate-400 transition-colors hover:text-slate-100"
               >
                 <X aria-hidden className="size-4" strokeWidth={1.75} />
               </button>
@@ -249,7 +249,7 @@ export default function ServicesPage() {
                       current ? { ...current, categoryId: event.target.value } : current,
                     )
                   }
-                  className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
                 >
                   <option value="">General request</option>
                   {categories.map((category) => (
@@ -271,7 +271,7 @@ export default function ServicesPage() {
                     setDraft((current) => (current ? { ...current, title: event.target.value } : current))
                   }
                   placeholder="What do you need delivered?"
-                  className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
                 />
               </label>
 
@@ -288,7 +288,7 @@ export default function ServicesPage() {
                     )
                   }
                   placeholder="Scope, audience, deadline, anything we should know."
-                  className="resize-y rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                  className="resize-y rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
                 />
               </label>
 
@@ -304,7 +304,7 @@ export default function ServicesPage() {
                         'rounded-lg border px-2.5 py-1 text-[11px] capitalize transition-colors',
                         draft.priority === priority
                           ? 'border-emerald-400/45 bg-emerald-400/15 text-emerald-200-light'
-                          : 'border-[color:var(--bindu-surface-border)] text-slate-400 hover:text-slate-100',
+                          : 'border-white/10 text-slate-400 hover:text-slate-100',
                       ].join(' ')}
                     >
                       {priority.toLowerCase()}
@@ -315,11 +315,11 @@ export default function ServicesPage() {
 
               {submitError ? <ErrorNote message={submitError} /> : null}
 
-              <div className="flex items-center justify-end gap-2 border-t border-[color:var(--bindu-surface-border)] pt-4">
+              <div className="flex items-center justify-end gap-2 border-t border-white/10 pt-4">
                 <button
                   type="button"
                   onClick={() => setDraft(null)}
-                  className="rounded-lg border border-[color:var(--bindu-surface-border)] px-3 py-2 text-xs text-slate-400 transition-colors hover:text-slate-100"
+                  className="rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400 transition-colors hover:text-slate-100"
                 >
                   Cancel
                 </button>
@@ -341,15 +341,15 @@ export default function ServicesPage() {
 
       <Panel title="How requests move" subtitle="The statuses you will see on your request">
         <ol className="grid gap-2 text-[11px] text-slate-400 sm:grid-cols-3">
-          <li className="rounded-lg border border-[color:var(--bindu-surface-border)] px-3 py-2">
+          <li className="rounded-lg border border-white/10 px-3 py-2">
             <span className="font-mono uppercase tracking-[0.1em] text-gold-light">Submitted</span> — we
             have it and will triage it shortly.
           </li>
-          <li className="rounded-lg border border-[color:var(--bindu-surface-border)] px-3 py-2">
+          <li className="rounded-lg border border-white/10 px-3 py-2">
             <span className="font-mono uppercase tracking-[0.1em] text-gold-light">In progress</span> — a
             delivery pod is working on it.
           </li>
-          <li className="rounded-lg border border-[color:var(--bindu-surface-border)] px-3 py-2">
+          <li className="rounded-lg border border-white/10 px-3 py-2">
             <span className="font-mono uppercase tracking-[0.1em] text-gold-light">In review</span> —
             deliverables are with you for approval.
           </li>

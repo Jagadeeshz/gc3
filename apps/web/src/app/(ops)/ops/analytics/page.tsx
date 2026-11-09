@@ -76,7 +76,7 @@ export default function AnalyticsPage() {
 
   if (error) {
     return (
-      <div className="flex items-start gap-3 rounded-[8px] border border-red-400/30 bg-red-400/5 px-4 py-3 text-sm text-red-200">
+      <div className="flex items-start gap-3 rounded-[14px] border border-red-400/30 bg-red-400/5 px-4 py-3 text-sm text-red-200">
         <CircleAlert aria-hidden className="mt-0.5 size-4" strokeWidth={1.75} />
         <div>
           {error}
@@ -166,7 +166,7 @@ export default function AnalyticsPage() {
           const Icon = card.icon;
 
           return (
-            <article key={card.label} className="rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-white/[0.02] p-4">
+            <article key={card.label} className="rounded-[14px] border border-white/10 bg-white/[0.02] p-4">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] text-muted">{card.label}</p>
                 <Icon aria-hidden className="size-4 text-gold-light" strokeWidth={1.75} />
@@ -178,7 +178,7 @@ export default function AnalyticsPage() {
         })}
       </section>
 
-      <section className="rounded-2xl border border-[color:var(--bindu-surface-border)] bg-white/[0.02] p-5">
+      <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-sm font-semibold text-warm">
             Request throughput — last 8 weeks
@@ -218,7 +218,7 @@ export default function AnalyticsPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-        <div className="rounded-2xl border border-[color:var(--bindu-surface-border)] bg-white/[0.02] p-5">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
           <h2 className="font-display text-sm font-semibold text-warm">Pod efficiency</h2>
           <p className="mt-1 text-[11px] text-muted">
             Punctuality is measured against the SLA commitment, not the requested due date.
@@ -239,7 +239,7 @@ export default function AnalyticsPage() {
               </thead>
               <tbody>
                 {report.pods.map((pod) => (
-                  <tr key={pod.podId} className="border-t border-[color:var(--bindu-surface-border)]">
+                  <tr key={pod.podId} className="border-t border-white/10">
                     <td className="py-2 text-warm">{pod.podName}</td>
                     <td className="py-2 text-right font-mono text-muted">{pod.openRequests}</td>
                     <td className="py-2 text-right font-mono text-muted">{pod.closedRequests}</td>
@@ -266,7 +266,7 @@ export default function AnalyticsPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-[color:var(--bindu-surface-border)] bg-white/[0.02] p-5">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
           <div className="flex items-center gap-2">
             <TrendingUp aria-hidden className="size-4 text-gold-light" strokeWidth={1.75} />
             <h2 className="font-display text-sm font-semibold text-warm">Tenant growth</h2>

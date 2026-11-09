@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { ArrowRight, Lock, TriangleAlert } from 'lucide-react';
 import Link from 'next/link';
+import { GradientKpi } from '@/components/portal/dashboard-kit';
 
 /**
  * Client workspace building blocks.
@@ -26,7 +27,7 @@ export function PageHeader({
   readonly actions?: ReactNode;
 }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-4 border-b border-[color:var(--bindu-surface-border)] pb-4">
+    <header className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-4">
       <div className="min-w-0">
         <p className="b-label">{eyebrow}</p>
         <h1 className="mt-1 font-display text-[26px] font-semibold leading-[1.1] tracking-[-0.01em] text-warm">
@@ -55,7 +56,7 @@ export function Panel({
   return (
     <section className={`b-panel b-panel--rim ${className}`}>
       {title ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[color:var(--bindu-surface-border)] px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-3">
           <div>
             <h2 className="text-sm font-semibold text-warm">{title}</h2>
             {subtitle ? <p className="mt-0.5 text-[11px] text-muted">{subtitle}</p> : null}
@@ -85,36 +86,18 @@ export function StatCard({
   readonly icon?: LucideIcon;
   readonly tone?: 'default' | 'positive' | 'warning' | 'critical';
 }) {
-  const toneClass =
+  // Tone picks the wash, so a page that already passes a tone gets the right colour without
+  // changing a single call site: every tab that renders a StatCard is upgraded in one place.
+  const tint =
     tone === 'positive'
-      ? 'text-emerald-300'
+      ? 'teal'
       : tone === 'warning'
-        ? 'text-amber-300'
+        ? 'gold'
         : tone === 'critical'
-          ? 'text-red-300'
-          : 'text-slate-100';
+          ? 'rose'
+          : 'violet';
 
-  const glow =
-    tone === 'positive'
-      ? 'shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_0_24px_-12px_rgba(16,185,129,0.55)]'
-      : tone === 'warning'
-        ? 'shadow-[0_0_0_1px_rgba(245,158,11,0.18),0_0_24px_-12px_rgba(245,158,11,0.55)]'
-        : tone === 'critical'
-          ? 'shadow-[0_0_0_1px_rgba(248,113,113,0.18),0_0_24px_-12px_rgba(248,113,113,0.5)]'
-          : '';
-
-  return (
-    <article className={`b-card p-3.5 transition-shadow ${glow}`}>
-      <div className="flex items-center justify-between gap-2">
-        <p className="b-label">{label}</p>
-        {Icon ? <Icon aria-hidden className="size-4 text-gold-light" strokeWidth={1.75} /> : null}
-      </div>
-      <p className={`mt-1.5 font-display text-[24px] font-semibold tabular-nums leading-none tracking-[-0.01em] ${toneClass}`}>
-        {value}
-      </p>
-      {hint ? <p className="mt-1 text-[11px] text-muted">{hint}</p> : null}
-    </article>
-  );
+  return <GradientKpi label={label} value={value} sub={hint} icon={Icon} tint={tint} />;
 }
 
 export function EmptyState({
@@ -129,7 +112,7 @@ export function EmptyState({
   readonly action?: { readonly href: string; readonly label: string };
 }) {
   return (
-    <div className="flex flex-col items-start gap-2 rounded-[6px] border border-dashed border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-1)] px-4 py-7">
+    <div className="flex flex-col items-start gap-2 rounded-[12px] border border-dashed border-white/10 bg-[rgba(8,11,18,0.5)] px-4 py-7">
       {Icon ? <Icon aria-hidden className="size-5 text-gold-light" strokeWidth={1.75} /> : null}
       <p className="text-sm font-medium text-warm">{title}</p>
       <p className="max-w-[58ch] text-xs text-muted">{body}</p>
@@ -214,7 +197,7 @@ export function RestrictedPanel({
   readonly label?: string;
 }) {
   return (
-    <div className="mx-auto mt-10 max-w-[520px] rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-6 text-center">
+    <div className="mx-auto mt-10 max-w-[520px] rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-6 text-center">
       <Lock aria-hidden className="mx-auto size-5 text-gold-light" strokeWidth={1.75} />
       <h2 className="mt-3 font-display text-lg font-semibold text-warm">{title}</h2>
       <p className="mt-2 text-sm text-muted">{body}</p>
@@ -231,7 +214,7 @@ export function RestrictedPanel({
 
 export function ErrorNote({ message }: { readonly message: string }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-[6px] border border-red-400/30 bg-red-400/5 px-4 py-3 text-xs text-red-200">
+    <div className="flex items-start gap-2.5 rounded-[12px] border border-red-400/30 bg-red-400/5 px-4 py-3 text-xs text-red-200">
       <TriangleAlert aria-hidden className="mt-0.5 size-4" strokeWidth={1.75} />
       {message}
     </div>

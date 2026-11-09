@@ -85,15 +85,15 @@ export default function ProfilePage() {
           </div>
 
           <dl className="mt-5 grid gap-3">
-            <div className="flex items-baseline justify-between border-b border-[color:var(--bindu-surface-border)] pb-2">
+            <div className="flex items-baseline justify-between border-b border-white/10 pb-2">
               <dt className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Account type</dt>
               <dd className="font-mono text-[11px] text-slate-100">{me?.kind ?? 'CLIENT'}</dd>
             </div>
-            <div className="flex items-baseline justify-between border-b border-[color:var(--bindu-surface-border)] pb-2">
+            <div className="flex items-baseline justify-between border-b border-white/10 pb-2">
               <dt className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Workspace</dt>
               <dd className="font-mono text-[11px] text-slate-100">{organization?.name ?? '—'}</dd>
             </div>
-            <div className="flex items-baseline justify-between border-b border-[color:var(--bindu-surface-border)] pb-2">
+            <div className="flex items-baseline justify-between border-b border-white/10 pb-2">
               <dt className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Roles here</dt>
               <dd className="font-mono text-[11px] text-slate-100">
                 {roles.length > 0 ? roles.map((role) => ROLE_LABEL[role] ?? role).join(' · ') : '—'}

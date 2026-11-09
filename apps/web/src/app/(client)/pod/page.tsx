@@ -131,7 +131,7 @@ export default function PodPage() {
             {metrics.open.map((request) => (
               <li
                 key={request.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-[6px] border border-[color:var(--bindu-surface-border)] px-3.5 py-2.5"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-white/10 px-3.5 py-2.5"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm text-slate-100">{request.title}</p>
