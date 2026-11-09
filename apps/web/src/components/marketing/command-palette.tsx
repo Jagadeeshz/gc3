@@ -170,7 +170,7 @@ export function CommandPalette() {
         role="dialog"
         aria-modal="true"
         aria-label="Command palette"
-        className="palette-in relative w-full max-w-[560px] overflow-hidden rounded-[8px] border border-emerald-400/25 bg-[color:var(--bindu-void-1)]/97 shadow-[0_40px_120px_-40px_rgba(0,0,0,0.9)]"
+        className="palette-in glass glass--dark relative w-full max-w-[560px] overflow-hidden rounded-[12px] shadow-[var(--bindu-shadow-modal)]"
       >
         <div className="flex items-center gap-2.5 border-b border-[color:var(--bindu-surface-border)] px-4 py-3">
           <Search aria-hidden className="size-4 shrink-0 text-emerald-300/80" strokeWidth={1.9} />

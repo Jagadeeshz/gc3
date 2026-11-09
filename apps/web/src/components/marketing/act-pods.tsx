@@ -130,7 +130,7 @@ export function ActPods() {
                   className={[
                     'group relative flex flex-col overflow-hidden rounded-[14px] border bg-obsidian-soft',
                     open
-                      ? 'pod-rim-active border-emerald-400/35'
+                      ? 'rim rim--spectrum pod-card-open border-emerald-400/35'
                       : 'border-hairline hover:border-emerald-400/25 hover:shadow-[0_20px_50px_-30px_rgba(16,185,129,0.45)]',
                   ].join(' ')}
                 >

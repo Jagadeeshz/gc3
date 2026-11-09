@@ -222,8 +222,8 @@ export default function ScrollytellingHome() {
       <BentoGrid />
 
       {/* -------------------------------------------------- the software + FAQ */}
-      <section className="border-b border-hairline bg-obsidian py-20 sm:py-24">
-        <div className="shell">
+      <section className="ambient ambient--teal border-b border-hairline bg-obsidian py-20 sm:py-24">
+        <div className="shell relative z-10">
           <PlatformBand />
         </div>
       </section>
@@ -235,7 +235,7 @@ export default function ScrollytellingHome() {
       </section>
 
       {/* ------------------------------------------------------------- closing */}
-      <section id="contact" className="relative overflow-hidden bg-obsidian py-20 sm:py-28">
+      <section id="contact" className="ambient ambient--soma relative overflow-hidden bg-obsidian py-20 sm:py-28">
         <div aria-hidden="true" className="blueprint pointer-events-none absolute inset-0 opacity-[0.18]" />
         <div className="shell relative grid gap-8">
           <div className="max-w-[58ch]">

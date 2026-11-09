@@ -94,7 +94,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="b-panel b-panel--rim p-6">
+        <div className="glass glass--heavy rim rim--soma w-full max-w-[420px] rounded-[8px] p-6 shadow-[var(--bindu-shadow-lg)]">
           <h1 className="font-display text-2xl tracking-[-0.01em] text-warm">Sign in</h1>
           <p className="mt-1 text-sm text-muted">
             Access your client workspace, service requests and deliverables.

@@ -416,6 +416,9 @@ body {
   background: var(--bindu-void-2);
   border: 1px solid var(--bindu-surface-border);
   border-radius: var(--bindu-r-desktop-lg);
+  /* Two layers by design: a tight shadow for definition, an inset top light so the panel
+     reads as lit from above. Void absorbs a single heavy shadow into nothing. */
+  box-shadow: var(--bindu-shadow-sm), var(--bindu-inset-top);
 }
 
 .b-panel--rim::before {
@@ -567,11 +570,14 @@ body {
 /* Bento - ledger. Structural hairlines, no shadow, no lift beyond a border change. */
 .ledger-card {
   border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: border-color 200ms var(--bindu-ease), background-color 200ms var(--bindu-ease);
+  box-shadow: var(--bindu-shadow-xs), var(--bindu-inset-top);
+  transition: border-color 200ms var(--bindu-ease), background-color 200ms var(--bindu-ease),
+    box-shadow 200ms var(--bindu-ease);
 }
 
 .ledger-card:hover,
 .ledger-card:focus-within {
+  box-shadow: var(--bindu-shadow-sm), var(--bindu-inset-top-strong);
   /* Neutral, not soma: gold is reserved for CTAs, and a ledger row does not light up gold
      when you point at it. */
   border-color: rgba(255, 255, 255, 0.2);
@@ -583,4 +589,30 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(250, 248, 242, 0.34);
+}
+
+/* Act III: the expanded pod is the only object in that section with depth. */
+.pod-card-open {
+  box-shadow: var(--bindu-shadow-md), var(--bindu-inset-top);
+}
+
+/* ------------------------------------------------------------------ glass, reinforced
+   The vendored .glass rules set backdrop-filter through custom properties. Restated here
+   with an explicit -webkit- pair because the shorthand resolved to `none` in Chromium on
+   the login card — the property is on the element but was not taking effect. Same tokens,
+   later in the cascade, so this wins without editing the vendored file. */
+.glass,
+.glass--light {
+  -webkit-backdrop-filter: var(--bindu-glass-blur-light);
+  backdrop-filter: var(--bindu-glass-blur-light);
+}
+
+.glass--dark {
+  -webkit-backdrop-filter: var(--bindu-glass-blur);
+  backdrop-filter: var(--bindu-glass-blur);
+}
+
+.glass--heavy {
+  -webkit-backdrop-filter: var(--bindu-glass-blur-heavy);
+  backdrop-filter: var(--bindu-glass-blur-heavy);
 }
