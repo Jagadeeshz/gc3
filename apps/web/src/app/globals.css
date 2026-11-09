@@ -694,3 +694,78 @@ body {
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------ pod hub
+   The pods section as a radial topology: a lit core, six platforms on the ring, arms between
+   them. A platform is a diamond cut with clip-path — border cannot follow a clip path, so the
+   rim is a second clipped layer sitting 1.5px proud of a dark face. That keeps the edge lit at
+   any size instead of relying on a border that clip-path would slice off. */
+.pod-core-glow {
+  background: radial-gradient(
+    closest-side,
+    rgba(0, 221, 170, 0.16),
+    rgba(123, 0, 255, 0.1) 55%,
+    transparent 78%
+  );
+  filter: blur(16px);
+}
+
+.pod-platform {
+  width: clamp(104px, 13vw, 138px);
+  aspect-ratio: 1;
+}
+
+/* The core is translucent so the glow behind it reads through, with a lit rim so it does not
+   dissolve into the void. */
+.pod-core {
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 55%),
+    rgba(12, 16, 32, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.4),
+    0 30px 80px -40px rgba(0, 221, 170, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+.pod-platform-tile::before,
+.pod-platform-tile::after {
+  content: '';
+  position: absolute;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+/* the lit rim */
+.pod-platform-tile::before {
+  inset: 0;
+  background: var(--bindu-spectrum-gradient);
+  opacity: 0.45;
+  transition: opacity 240ms ease;
+}
+
+/* the platform face, sitting 1.5px inside the rim */
+.pod-platform-tile::after {
+  inset: 1.5px;
+  background:
+    radial-gradient(120% 100% at 50% 0%, rgba(255, 255, 255, 0.06), transparent 60%),
+    linear-gradient(150deg, #111827, #0c1020);
+}
+
+.pod-platform:hover .pod-platform-tile::before,
+.pod-platform:focus-visible .pod-platform-tile::before {
+  opacity: 0.8;
+}
+
+.pod-platform-tile.is-active::before {
+  opacity: 1;
+}
+
+.pod-platform-tile {
+  filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.55));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pod-platform-tile::before {
+    transition: none;
+  }
+}
