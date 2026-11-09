@@ -527,23 +527,19 @@ body {
 /* Act I - operational sprawl. Two grids on mismatched pitches so the seams never line up,
    then a multi-stop mask that cuts the whole thing into disconnected patches. */
 .frag-grid {
+  /* 4rem grid, broken on purpose: a second copy sits 17px off the first, so no seam ever
+     meets and the surface reads as tiles that were laid by different people. The ellipse
+     mask from the brief then cuts it to a soft-edged patch behind the failure-mode cards
+     rather than a full-bleed pattern. */
   background-image:
     linear-gradient(to right, rgba(250, 248, 242, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(250, 248, 242, 0.05) 1px, transparent 1px),
-    linear-gradient(to right, rgba(255, 221, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 221, 0, 0.05) 1px, transparent 1px);
-  background-size: 58px 58px, 58px 58px, 118px 118px, 118px 118px;
-  background-position: 0 0, 0 0, 23px 31px, 23px 31px;
-  -webkit-mask-image:
-    radial-gradient(68% 62% at 22% 30%, #000 0%, transparent 58%),
-    radial-gradient(52% 58% at 78% 62%, #000 0%, transparent 56%),
-    radial-gradient(46% 46% at 46% 88%, #000 0%, transparent 62%);
-  mask-image:
-    radial-gradient(68% 62% at 22% 30%, #000 0%, transparent 58%),
-    radial-gradient(52% 58% at 78% 62%, #000 0%, transparent 56%),
-    radial-gradient(46% 46% at 46% 88%, #000 0%, transparent 62%);
-  -webkit-mask-composite: source-over;
-  mask-composite: add;
+    linear-gradient(to right, rgba(250, 248, 242, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(250, 248, 242, 0.035) 1px, transparent 1px);
+  background-size: 4rem 4rem, 4rem 4rem, 4rem 4rem, 4rem 4rem;
+  background-position: 0 0, 0 0, 17px 17px, 17px 17px;
+  -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%);
+  mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%);
 }
 
 /* Act II - convergence. One spine, spectrum at low opacity, feathered at both ends so it reads
