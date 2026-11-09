@@ -46,7 +46,7 @@ export function HeroAurora() {
       <div className="absolute inset-0 [background:radial-gradient(34%_32%_at_56%_72%,rgba(123,0,255,0.08),transparent_74%)]" />
 
       {/* desktop: the workforce, aurora behind it */}
-      <div className="absolute right-[-4%] top-1/2 hidden -translate-y-1/2 lg:block">
+      <div className="absolute right-[1%] top-1/2 hidden -translate-y-1/2 lg:block">
         <div className="relative aspect-square w-[clamp(380px,50vw,700px)]">
           <div className="aurora-core absolute inset-[8%] rounded-full opacity-[0.22]" />
 
@@ -81,11 +81,11 @@ export function HeroAurora() {
           <img
             src="/images/gc3-pod-workforce.png"
             alt=""
-            width={944}
-            height={697}
+            width={796}
+            height={484}
             loading="eager"
             decoding="async"
-            className="absolute bottom-[-2%] left-1/2 w-[104%] max-w-none -translate-x-1/2 [filter:drop-shadow(0_24px_60px_rgba(0,0,0,0.65))] [mask-image:linear-gradient(to_bottom,#000_78%,transparent_100%)]"
+            className="absolute bottom-[-2%] left-1/2 w-[100%] max-w-none -translate-x-1/2 [filter:drop-shadow(0_24px_60px_rgba(0,0,0,0.65))] [mask-image:linear-gradient(to_bottom,#000_78%,transparent_100%)]"
           />
         </div>
       </div>
@@ -98,8 +98,8 @@ export function HeroAurora() {
           <img
             src="/images/gc3-pod-workforce.png"
             alt=""
-            width={944}
-            height={697}
+            width={796}
+            height={484}
             loading="eager"
             decoding="async"
             className="relative w-full opacity-55 [mask-image:linear-gradient(to_bottom,#000_66%,transparent_100%)]"
