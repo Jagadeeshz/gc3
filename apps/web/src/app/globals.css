@@ -1,5 +1,12 @@
 @import 'tailwindcss';
 
+/* BINDU v4 — Quantocos/PRISM design system (skill: bindu-v4-design-system).
+   Tokens first, components second: components reference token names, so the order is
+   load-bearing. Everything below remaps the app's own theme names onto BINDU values
+   rather than restyling twenty files by hand. */
+@import '../styles/bindu/tokens.css';
+@import '../styles/bindu/components.css';
+
 /* Workspace packages live outside this app's source tree — Tailwind v4 only
    scans the CSS file's directory tree by default, so register them explicitly. */
 @source '../../../../packages/ui/src';
@@ -9,23 +16,26 @@
   Tailwind v4 reads @theme and generates utilities: bg-void, text-gold, etc.
 */
 @theme {
-  --color-void: #07080b;
-  --color-void-secondary: #0b0d12;
-  --color-graphite: #11141a;
-  --color-graphite-elevated: #171b22;
+  /* BINDU void family */
+  --color-void: #080b12;
+  --color-void-secondary: #0c1020;
+  --color-graphite: #111827;
+  --color-graphite-elevated: #1a2235;
 
-  --color-mineral: #f2efe7;
-  --color-stone: #e8e3d8;
-  --color-editorial: #faf8f3;
-  --color-warm: #f4f0e8;
+  /* BINDU shunya family */
+  --color-mineral: #f3f0e8;
+  --color-stone: #e6e2d6;
+  --color-editorial: #faf8f2;
+  --color-warm: #faf8f2;
 
   --color-ink: #111318;
   --color-ink-secondary: #474b52;
   --color-muted: #a7a9b0;
 
-  --color-gold: #d9b65d;
-  --color-gold-light: #e2c777;
-  --color-gold-deep: #a97818;
+  /* Soma gold — CTA surfaces only (hard rule 2) */
+  --color-gold: #c9911a;
+  --color-gold-light: #f2d582;
+  --color-gold-deep: #8b6410;
 
   --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-source-serif), ui-serif, Georgia, serif;
@@ -77,12 +87,13 @@
  * built on #090D16 with #1E293B hairlines and tabular figures.
  * ------------------------------------------------------------------ */
 @theme {
-  --color-obsidian: #090d16;
-  --color-obsidian-soft: #0b111c;
-  --color-obsidian-raised: #0e1523;
-  --color-hairline: #1e293b;
-  --color-ghost: #e8eef7;
-  --color-ghost-muted: #94a3b8;
+  /* The marketing/portal surface names, pointed at BINDU tokens. */
+  --color-obsidian: #080b12;
+  --color-obsidian-soft: #111827;
+  --color-obsidian-raised: #1a2235;
+  --color-hairline: #23293a;
+  --color-ghost: #faf8f2;
+  --color-ghost-muted: #a8a296;
 }
 
 /* One page container so every band lines up on the same 1240px rail. */

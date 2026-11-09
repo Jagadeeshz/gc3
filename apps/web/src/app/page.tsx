@@ -119,7 +119,7 @@ export default function ScrollytellingHome() {
 
           <h1 className="rise mt-5 max-w-[17ch] font-display text-[clamp(2.2rem,5vw,4.3rem)] leading-[1.0] tracking-[-0.03em] text-ghost lg:max-w-[52%]">
             Enterprise AI does not fail on models.
-            <span className="mt-2 block text-amber-300/90">It fails on operations.</span>
+            <span className="mt-2 block text-ghost/60">It fails on operations.</span>
           </h1>
 
           <p className="rise mt-7 max-w-[48ch] text-[15px] leading-[1.8] text-ghost-muted lg:max-w-[46%]">
@@ -181,8 +181,14 @@ export default function ScrollytellingHome() {
       </header>
 
       {/* ------------------------------------------------------------ the acts */}
+      <div className="spectrum-rule" aria-hidden="true" />
+
       <ActProblem />
+      <div className="spectrum-rule" aria-hidden="true" />
+
       <ActParadigm />
+      <div className="spectrum-rule" aria-hidden="true" />
+
       <ActPods />
 
       {/* ------------------------------------------------------------ carousel */}
@@ -204,6 +210,8 @@ export default function ScrollytellingHome() {
           <PodCarousel />
         </div>
       </section>
+
+      <div className="spectrum-rule" aria-hidden="true" />
 
       <BentoGrid />
 

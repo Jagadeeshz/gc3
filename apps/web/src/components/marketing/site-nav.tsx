@@ -103,7 +103,7 @@ export function SiteNav() {
             <button
               type="button"
               onClick={() => openBookDemo()}
-              className="rounded-full bg-emerald-300 px-4 py-2 text-[12.5px] font-semibold text-[#062014] transition-colors hover:bg-emerald-200"
+              className="rounded-full px-4 py-2 text-[12.5px] font-semibold transition-[filter] bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] text-[#080B12] hover:brightness-[1.08]"
             >
               Book a demo
             </button>
@@ -151,7 +151,7 @@ export function SiteNav() {
                   setOpen(false);
                   openBookDemo();
                 }}
-                className="mt-2 rounded-full bg-emerald-300 px-4 py-2.5 text-center text-[13px] font-semibold text-[#062014]"
+                className="mt-2 rounded-full px-4 py-2.5 text-center text-[13px] font-semibold bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] text-[#080B12] hover:brightness-[1.08]"
               >
                 Book a demo
               </button>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { IBM_Plex_Mono, Plus_Jakarta_Sans, Source_Serif_4 } from 'next/font/google';
+import { Cormorant_Garamond, DM_Mono, DM_Sans } from 'next/font/google';
 import { SessionProvider } from '@/lib/session-context';
 import './globals.css';
 
@@ -7,23 +7,25 @@ import './globals.css';
  * Brand type stack (01-brand-and-design-system): serif display, geometric sans
  * for body and controls, mono reserved for labels and metadata.
  */
-const plusJakarta = Plus_Jakarta_Sans({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  display: 'swap',
+  weight: ['300', '400', '500', '600'],
   variable: '--font-plus-jakarta',
-});
-
-const sourceSerif = Source_Serif_4({
-  subsets: ['latin'],
   display: 'swap',
-  variable: '--font-source-serif',
 });
 
-const plexMono = IBM_Plex_Mono({
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['600', '700'],
+  variable: '--font-source-serif',
+  display: 'swap',
+});
+
+const dmMono = DM_Mono({
   subsets: ['latin'],
   weight: ['400', '500'],
-  display: 'swap',
   variable: '--font-plex-mono',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -40,7 +42,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { readonly children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${plusJakarta.variable} ${sourceSerif.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${dmSans.variable} ${cormorant.variable} ${dmMono.variable}`}>
       <body className="min-h-dvh bg-void font-sans text-warm antialiased">
         <SessionProvider>{children}</SessionProvider>
       </body>

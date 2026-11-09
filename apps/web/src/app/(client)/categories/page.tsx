@@ -265,7 +265,7 @@ export default function CategoriesPage() {
             <button
               type="submit"
               disabled={busy}
-              className="min-h-10 rounded-[10px] border border-emerald-500/45 bg-[linear-gradient(180deg,#34D399_0%,#10B981_100%)] px-4 py-2 text-sm font-medium text-[#04140D] disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-10 rounded-[10px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-2 text-sm font-medium text-[#080B12] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {busy ? 'Saving…' : editingId ? 'Save changes' : 'Create category'}
             </button>

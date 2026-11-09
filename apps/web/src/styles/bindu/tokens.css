@@ -1,0 +1,359 @@
+:root {
+  /* ═══════════════════════════════════════════════════════════
+     1. BINDU v4.0 — COLOUR TOKENS
+     Source: BINDU v3.0 brand manual, unchanged
+     ═══════════════════════════════════════════════════════════ */
+
+  /* ── VOID family (5 dark grounds) ── */
+  --bindu-void:   #080B12;
+  --bindu-void-1: #0C1020;
+  --bindu-void-2: #111827;
+  --bindu-void-3: #1A2235;
+  --bindu-void-4: #243050;
+
+  /* ── SHUNYA family (5 light grounds) ── */
+  --bindu-shunya:   #FAF8F2;
+  --bindu-shunya-1: #F3F0E8;
+  --bindu-shunya-2: #E6E2D6;
+  --bindu-shunya-3: #CCC7B8;
+  --bindu-shunya-4: #A8A296;
+
+  /* ── SOMA GOLD (CTA buttons ONLY) ── */
+  --bindu-soma-light: #F2D582;
+  --bindu-soma-mid:   #C9911A;
+  --bindu-soma-deep:  #8B6410;
+  --bindu-soma-gradient: linear-gradient(120deg, #F2D582 0%, #C9911A 52%, #8B6410 100%);
+
+  /* ── SPECTRUM (bars, borders, orbital ring ONLY — 9-color rainbow) ── */
+  --bindu-spectrum-gradient: linear-gradient(90deg,
+    #7B00FF 0%, #3300FF 13%, #0055FF 24%, #0099FF 37%,
+    #00DDAA 50%, #AAFF00 63%, #FFDD00 73%, #FF8800 84%, #FF2200 100%);
+
+  /* ── RAGA ACCENT STOPS (9 colors — status / data / icons) ── */
+  --bindu-raga-violet: #7B00FF;
+  --bindu-raga-indigo: #3300FF;
+  --bindu-raga-blue:   #0055FF;
+  --bindu-raga-cyan:   #0099FF;
+  --bindu-raga-teal:   #00DDAA;
+  --bindu-raga-green:  #AAFF00;
+  --bindu-raga-yellow: #FFDD00;
+  --bindu-raga-orange: #FF8800;
+  --bindu-raga-red:    #FF2200;
+
+  /* ═══════════════════════════════════════════════════════════
+     2. SEMANTIC SURFACE TOKENS (v4.0 — expanded for desktop product)
+     Merged from bindu.css + prism.css + Quantocos showcase
+     ═══════════════════════════════════════════════════════════ */
+
+  /* ── Surface backgrounds (void family, mapped) ── */
+  --bindu-surface-window:   var(--bindu-void);       /* main backdrop */
+  --bindu-surface-sidebar:  var(--bindu-void-1);     /* sidebar / behind main */
+  --bindu-surface-panel:    var(--bindu-void-2);     /* card / panel forward */
+  --bindu-surface-raised:   var(--bindu-void-3);     /* raised card */
+  --bindu-surface-elevated: var(--bindu-void-4);     /* highest dark surface */
+  --bindu-surface-border:   rgba(250, 248, 242, 0.08);
+  --bindu-surface-border-strong: rgba(250, 248, 242, 0.14);
+
+  /* ── Interactive surface states (v4.0 — new) ── */
+  --bindu-surface-hover:   rgba(250, 248, 242, 0.04);
+  --bindu-surface-active:  rgba(250, 248, 242, 0.08);
+  --bindu-surface-selected: rgba(201, 145, 26, 0.12);
+
+  /* ── Text tokens (v4.0 — 4-tier opacity hierarchy) ── */
+  --bindu-text-primary:    rgba(250, 248, 242, 0.95);  /* primary */
+  --bindu-text-secondary:  rgba(250, 248, 242, 0.62);  /* secondary */
+  --bindu-text-tertiary:   rgba(250, 248, 242, 0.38);  /* tertiary */
+  --bindu-text-ghost:      rgba(250, 248, 242, 0.14);  /* disabled/placeholder */
+  --bindu-text-ink:        var(--bindu-void);           /* on shunya */
+  --bindu-text-ink-secondary: rgba(8, 11, 18, 0.60);   /* on shunya secondary */
+
+  /* ── State tokens ── */
+  --bindu-state-active-border: var(--bindu-raga-cyan);
+  --bindu-state-cta-fill:     var(--bindu-soma-mid);
+  --bindu-state-cta-hover:    var(--bindu-soma-light);
+  --bindu-state-cta-pressed:  var(--bindu-soma-deep);
+
+  /* ═══════════════════════════════════════════════════════════
+     3. BINDU v4.0 — TYPOGRAPHY
+     Brand: Cormorant Garamond 700 (display), DM Sans 300-600 (body), DM Mono (code)
+     Desktop: 13px base, 8-tier scale
+     ═══════════════════════════════════════════════════════════ */
+
+  --bindu-font-display: 'Cormorant Garamond', Georgia, serif;
+  --bindu-font-body:    'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --bindu-font-mono:    'DM Mono', 'Fira Code', monospace;
+
+  --bindu-heading-weight: 700;
+  --bindu-body-weight: 300;
+  --bindu-body-weight-medium: 400;
+  --bindu-body-weight-label: 500;
+  --bindu-body-weight-strong: 600;
+  --bindu-mono-weight: 400;
+  --bindu-mono-weight-medium: 500;
+
+  /* ── Hemachandra ×1.250 type scale (12 stops — brand scale) ── */
+  --bindu-t-xs:   0.512rem;   /*  8.2px — micro labels */
+  --bindu-t-sm:   0.640rem;   /* 10.2px — captions */
+  --bindu-t-base: 0.800rem;   /* 12.8px — small body */
+  --bindu-t-md:   1.000rem;   /* 16px   — default body */
+  --bindu-t-lg:   1.250rem;   /* 20px   — lead body */
+  --bindu-t-xl:   1.563rem;   /* 25px   — subheading */
+  --bindu-t-2xl:  1.953rem;   /* 31.2px — h4 */
+  --bindu-t-3xl:  2.441rem;   /* 39px   — h3 */
+  --bindu-t-4xl:  3.052rem;   /* 48.8px — h2 */
+  --bindu-t-5xl:  3.815rem;   /* 61px   — h1 */
+  --bindu-t-6xl:  4.768rem;   /* 76.3px — display */
+  --bindu-t-7xl:  5.960rem;   /* 95.4px — hero display */
+
+  /* ── Desktop product type scale (13px base — Apple pro-app) ── */
+  --bindu-t-desktop-micro:  10px;
+  --bindu-t-desktop-label:  11px;
+  --bindu-t-desktop-meta:   11px;
+  --bindu-t-desktop-body:   13px;
+  --bindu-t-desktop-body-lg: 15px;
+  --bindu-t-desktop-subhead: 17px;
+  --bindu-t-desktop-h4:     20px;
+  --bindu-t-desktop-h3:     24px;
+  --bindu-t-desktop-h2:     28px;
+  --bindu-t-desktop-h1:     34px;
+  --bindu-t-desktop-display: 44px;
+
+  --bindu-leading-tight:   1.15;
+  --bindu-leading-normal:  1.5;
+  --bindu-leading-relaxed: 1.7;
+
+  --bindu-tracking-tight:  -0.01em;
+  --bindu-tracking-normal:  0;
+  --bindu-tracking-label:   0.1em;
+  --bindu-tracking-brand:   0.18em;
+  --bindu-tracking-mono:    0.04em;
+
+  /* ═══════════════════════════════════════════════════════════
+     4. SPACING (8px grid — 8 stops)
+     ═══════════════════════════════════════════════════════════ */
+
+  --bindu-sp-1: 0.5rem;    /*  8px */
+  --bindu-sp-2: 1rem;       /* 16px */
+  --bindu-sp-3: 1.5rem;    /* 24px */
+  --bindu-sp-4: 2rem;      /* 32px */
+  --bindu-sp-5: 3rem;       /* 48px */
+  --bindu-sp-6: 4rem;       /* 64px */
+  --bindu-sp-7: 6rem;       /* 96px */
+  --bindu-sp-8: 8rem;       /* 128px */
+
+  /* Desktop tight spacing (4px base — Apple pro-app) */
+  --bindu-sp-d1: 4px;
+  --bindu-sp-d2: 8px;
+  --bindu-sp-d3: 12px;
+  --bindu-sp-d4: 16px;
+  --bindu-sp-d5: 24px;
+  --bindu-sp-d6: 32px;
+
+  /* ═══════════════════════════════════════════════════════════
+     5. RADIUS TOKENS (5 stops — brand scale + desktop)
+     ═══════════════════════════════════════════════════════════ */
+
+  --bindu-r-sm:   4px;
+  --bindu-r-md:   8px;
+  --bindu-r-lg:   16px;
+  --bindu-r-xl:   24px;
+  --bindu-r-full: 9999px;
+
+  /* Desktop tighter radii (Apple pro-app) */
+  --bindu-r-desktop-sm: 4px;
+  --bindu-r-desktop-md: 6px;
+  --bindu-r-desktop-lg: 8px;
+  --bindu-r-desktop-xl: 12px;
+  --bindu-r-desktop-full: 9999px;
+
+  /* ═══════════════════════════════════════════════════════════
+     6. SHADOWS (v4.0 — two-layer: tight + diffuse per elevation)
+     Merged from Apple HIG + Quantocos showcase
+     ═══════════════════════════════════════════════════════════ */
+
+  --bindu-shadow-xs:  0 1px 2px rgba(0,0,0,0.3);
+  --bindu-shadow-sm:  0 1px 3px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.25);
+  --bindu-shadow-md:  0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.25);
+  --bindu-shadow-lg:  0 8px 24px rgba(0,0,0,0.45), 0 4px 8px rgba(0,0,0,0.3);
+  --bindu-shadow-xl:  0 16px 48px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.35);
+  --bindu-shadow-modal: 0 24px 64px rgba(0,0,0,0.7), 0 8px 24px rgba(0,0,0,0.5);
+
+  /* ── Glow shadows (v4.0 — from Quantocos showcase) ── */
+  --bindu-shadow-glow-soma:   0 0 40px rgba(201,145,26,0.18), 0 0 80px rgba(201,145,26,0.07);
+  --bindu-shadow-glow-teal:   0 0 40px rgba(0,221,170,0.18), 0 0 80px rgba(0,221,170,0.07);
+  --bindu-shadow-glow-violet: 0 0 40px rgba(123,0,255,0.20), 0 0 80px rgba(123,0,255,0.08);
+  --bindu-shadow-glow-blue:   0 0 40px rgba(0,153,255,0.20), 0 0 80px rgba(0,153,255,0.08);
+
+  /* ── Inset highlight (top light — v4.0 desktop panels) ── */
+  --bindu-inset-top:        inset 0 1px 0 rgba(250,248,242,0.06);
+  --bindu-inset-top-strong: inset 0 1px 0 rgba(250,248,242,0.10);
+
+  /* ═══════════════════════════════════════════════════════════
+     7. GLASS MORPHISM (v4.0 — 3 tiers, merged from Quantocos)
+     For overlays, dropdowns, popovers, modals, login card.
+     NEVER on primary surface panels — void base only there.
+     ═══════════════════════════════════════════════════════════ */
+
+  --bindu-glass-dark:       rgba(12, 16, 32, 0.92);
+  --bindu-glass-dark-heavy: rgba(8, 11, 18, 0.88);
+  --bindu-glass-light:      rgba(8, 11, 18, 0.55);
+  --bindu-glass-blur:       blur(20px) saturate(1.5);
+  --bindu-glass-blur-heavy: blur(40px) saturate(1.8);
+  --bindu-glass-blur-light: blur(36px) saturate(1.6);
+  --bindu-glass-border:     rgba(250, 248, 242, 0.10);
+  --bindu-glass-border-strong: rgba(250, 248, 242, 0.14);
+
+  /* ═══════════════════════════════════════════════════════════
+     8. EDGE RIM LIGHTS (v4.0 — from Quantocos edge-lit cards)
+     BINDU law: spectrum on borders/rims only. These are rim lights.
+     ═══════════════════════════════════════════════════════════ */
+
+  --bindu-rim-neutral: rgba(255,255,255,0.12);
+  --bindu-rim-soma:    rgba(242,213,130,0.35);
+  --bindu-rim-spectrum-start: rgba(123,0,255,0.35);
+  --bindu-rim-spectrum-mid:   rgba(0,153,255,0.45);
+  --bindu-rim-spectrum-end:   rgba(255,136,0,0.35);
+  --bindu-rim-teal:    rgba(0,221,170,0.28);
+  --bindu-rim-violet:  rgba(123,0,255,0.30);
+  --bindu-rim-blue:    rgba(0,153,255,0.35);
+
+  /* ═══════════════════════════════════════════════════════════
+     9. AMBIENT GLOW BACKGROUNDS (v4.0 — from Quantocos + bindu.css)
+     Apply to ::before of position:relative containers.
+     BINDU law: spectrum on bars/borders/rims/ambient only.
+     ═══════════════════════════════════════════════════════════ */
+
+  /* Spectrum ambient — multi-color */
+  --bindu-ambient-spectrum:
+    radial-gradient(ellipse 35% 25% at 15% 20%, rgba(123,0,255,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 20% at 85% 25%, rgba(0,153,255,0.09) 0%, transparent 55%),
+    radial-gradient(ellipse 25% 20% at 50% 80%, rgba(0,221,170,0.08) 0%, transparent 60%);
+
+  /* Soma ambient — warm gold */
+  --bindu-ambient-soma:
+    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(201,145,26,0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 20% 80%, rgba(242,213,130,0.06) 0%, transparent 60%);
+
+  /* Teal ambient */
+  --bindu-ambient-teal:
+    radial-gradient(ellipse 55% 45% at 75% 40%, rgba(0,221,170,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 35% at 25% 65%, rgba(0,153,255,0.07) 0%, transparent 60%);
+
+  /* Violet ambient */
+  --bindu-ambient-violet:
+    radial-gradient(ellipse 70% 50% at 65% 30%, rgba(123,0,255,0.08) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 20% 80%, rgba(51,0,255,0.07) 0%, transparent 60%);
+
+  /* Blue ambient */
+  --bindu-ambient-blue:
+    radial-gradient(ellipse 70% 50% at 65% 30%, rgba(0,153,255,0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 20% 80%, rgba(123,0,255,0.07) 0%, transparent 60%);
+
+  /* Warm ambient (soma + violet) */
+  --bindu-ambient-warm:
+    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(242,213,130,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 10% 70%, rgba(123,0,255,0.08) 0%, transparent 60%);
+
+  /* ═══════════════════════════════════════════════════════════
+     10. MOTION (v4.0 — Apple cadence + Quantocos motion)
+     ═══════════════════════════════════════════════════════════ */
+
+  --bindu-ease:         cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --bindu-ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --bindu-ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --bindu-ease-enter:   cubic-bezier(0.16, 1, 0.3, 1);
+
+  --bindu-dur-fast:  120ms;
+  --bindu-dur-base:  200ms;
+  --bindu-dur-slow:  400ms;
+  --bindu-dur-enter: 700ms;
+  --bindu-dur-panel: 420ms;
+
+  /* ═══════════════════════════════════════════════════════════
+     11. Z-INDEX (v4.0 — desktop product)
+     ═══════════════════════════════════════════════════════════ */
+
+  --bindu-z-base: 0;
+  --bindu-z-raised: 10;
+  --bindu-z-overlay: 100;
+  --bindu-z-dropdown: 200;
+  --bindu-z-modal: 300;
+  --bindu-z-toast: 400;
+  --bindu-z-cmdk: 500;
+  --bindu-z-ceremonial: 1000;
+
+  /* ═══════════════════════════════════════════════════════════
+     12. LAYOUT DIMENSIONS (v4.0 — desktop product)
+     ═══════════════════════════════════════════════════════════ */
+
+  --bindu-topbar-h: 44px;
+  --bindu-sidebar-w: 220px;
+  --bindu-sidebar-w-collapsed: 48px;
+  --bindu-inspector-w: 280px;
+  --bindu-statusbar-h: 24px;
+  --bindu-control-h-sm: 24px;
+  --bindu-control-h: 30px;
+  --bindu-control-h-lg: 36px;
+  --bindu-row-h: 28px;
+  --bindu-row-h-lg: 36px;
+
+  /* ═══════════════════════════════════════════════════════════
+     13. Q MARK GEOMETRY (from brand manual)
+     ═══════════════════════════════════════════════════════════ */
+
+  --bindu-q-outer:  1R;
+  --bindu-q-inner:  0.773R;
+  --bindu-q-stroke: 0.227R;
+  --bindu-q-gap:    14deg;
+  --bindu-q-sphere: 0.293R;
+
+  /* ═══════════════════════════════════════════════════════════
+     14. UI DIRECTION C — SPATIAL / ORBITAL (from PRISM plan)
+     ═══════════════════════════════════════════════════════════ */
+
+  --direction-c-depth-recessed: 0;
+  --direction-c-depth-base: 1;
+  --direction-c-depth-raised: 2;
+  --direction-c-depth-overlay: 3;
+  --direction-c-depth-modal: 4;
+  --direction-c-depth-toast: 5;
+
+  --direction-c-shadow-raised: 0 1px 2px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.2);
+  --direction-c-shadow-overlay: 0 2px 4px rgba(0,0,0,0.5), 0 8px 16px rgba(0,0,0,0.3);
+  --direction-c-shadow-modal:   0 4px 8px rgba(0,0,0,0.6), 0 16px 32px rgba(0,0,0,0.4), 0 32px 64px rgba(0,0,0,0.3);
+
+  --direction-c-ring-size: 48px;
+  --direction-c-ring-stroke: 2px;
+  --direction-c-ring-color: var(--bindu-soma-mid);
+  --direction-c-ring-dur: 2400ms;
+  --direction-c-ring-blur: 0.5px;
+
+  /* ═══════════════════════════════════════════════════════════
+     15. UI DIRECTION D — SACRED GEOMETRY (from PRISM plan)
+     ═══════════════════════════════════════════════════════════ */
+
+  --direction-d-metatron-circles: 13;
+  --direction-d-metatron-radius: 64px;
+  --direction-d-metatron-grid: 192px;
+  --direction-d-metatron-hex-angle: 60deg;
+  --direction-d-canvas-hex-size: 24px;
+  --direction-d-canvas-hex-gap: 4px;
+  --direction-d-canvas-hex-stroke: var(--bindu-surface-border);
+  --direction-d-kolam-grid: 6;
+  --direction-d-kolam-dot: 1.5px;
+  --direction-d-kolam-spacing: 4px;
+  --direction-d-merkaba-dur: 3600ms;
+  --direction-d-merkaba-fill: var(--bindu-soma-mid);
+  --direction-d-merkaba-stroke: var(--bindu-soma-light);
+  --direction-d-merkaba-scale-start: 0.2;
+  --direction-d-merkaba-scale-mid: 1.0;
+  --direction-d-merkaba-scale-end: 1.4;
+  --direction-d-merkaba-fade-start: 80%;
+  --direction-d-pulse-dur: 600ms;
+  --direction-d-pulse-scale: 1.08;
+  --direction-d-pulse-color: var(--bindu-soma-light);
+  --direction-d-shimmer-dur: 900ms;
+  --direction-d-shimmer-color: var(--bindu-soma-light);
+  --direction-d-unfold-dur: 1200ms;
+  --direction-d-unfold-stroke: var(--bindu-soma-mid);
+}

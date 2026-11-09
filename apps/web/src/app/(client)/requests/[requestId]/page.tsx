@@ -749,7 +749,7 @@ export default function RequestDetailPage() {
             <button
               type="submit"
               disabled={busy !== null}
-              className="min-h-10 rounded-[10px] border border-emerald-500/45 bg-[linear-gradient(180deg,#34D399_0%,#10B981_100%)] px-4 py-2 text-sm font-medium text-[#04140D] disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-10 rounded-[10px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-2 text-sm font-medium text-[#080B12] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {busy === 'edit' ? 'Saving…' : 'Save changes'}
             </button>
@@ -863,7 +863,7 @@ export default function RequestDetailPage() {
             <button
               type="submit"
               disabled={busy !== null || draftComment.trim().length === 0}
-              className="w-fit min-h-9 rounded-lg border border-emerald-500/45 bg-[linear-gradient(180deg,#34D399_0%,#10B981_100%)] px-3.5 py-1.5 text-xs font-medium text-[#04140D] disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-fit min-h-9 rounded-lg border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-3.5 py-1.5 text-xs font-medium text-[#080B12] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {busy === 'comment' ? 'Posting…' : 'Post comment'}
             </button>
@@ -1036,7 +1036,7 @@ export default function RequestDetailPage() {
                 <button
                   type="submit"
                   disabled={busy !== null}
-                  className="rounded-md border border-emerald-500/45 bg-[linear-gradient(180deg,#34D399_0%,#10B981_100%)] px-3 py-1.5 text-[11px] font-medium text-ink disabled:opacity-50"
+                  className="rounded-md border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-3 py-1.5 text-[11px] font-medium text-ink disabled:opacity-50"
                 >
                   {busy === 'deliverable:create' ? 'Adding…' : 'Add deliverable'}
                 </button>
@@ -1198,7 +1198,7 @@ export default function RequestDetailPage() {
                         <button
                           type="submit"
                           disabled={busy !== null || attachFile === null}
-                          className="rounded-md border border-emerald-500/45 bg-[linear-gradient(180deg,#34D399_0%,#10B981_100%)] px-3 py-1.5 text-[11px] font-medium text-ink disabled:opacity-50"
+                          className="rounded-md border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-3 py-1.5 text-[11px] font-medium text-ink disabled:opacity-50"
                         >
                           {busy === `file:${deliverable.id}` ? 'Uploading…' : 'Upload'}
                         </button>
@@ -1284,7 +1284,7 @@ export default function RequestDetailPage() {
                         <button
                           type="submit"
                           disabled={busy !== null}
-                          className="rounded-md border border-emerald-500/45 bg-[linear-gradient(180deg,#34D399_0%,#10B981_100%)] px-3 py-1.5 text-[11px] font-medium text-ink disabled:opacity-50"
+                          className="rounded-md border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-3 py-1.5 text-[11px] font-medium text-ink disabled:opacity-50"
                         >
                           {busy === `deliverable:edit:${deliverable.id}`
                             ? 'Saving…'

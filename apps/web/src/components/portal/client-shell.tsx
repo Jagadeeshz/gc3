@@ -243,7 +243,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
       {/* role-aware primary action */}
       <Link
         href={primaryAction.href}
-        className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-400/45 bg-[linear-gradient(180deg,#34D399_0%,#10B981_100%)] px-3 py-2.5 text-[12.5px] font-semibold text-[#04140D] transition-colors hover:brightness-110"
+        className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-3 py-2.5 text-[12.5px] font-semibold text-[#080B12] transition-colors hover:brightness-[1.08]"
       >
         <ActionIcon aria-hidden className="size-4" strokeWidth={2.1} />
         {primaryAction.label}
@@ -328,7 +328,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
       {/* person */}
       <div className="rounded-xl border border-[#1E293B] bg-[#0B1220] p-2.5">
         <div className="flex items-center gap-2.5">
-          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(140deg,#34D399,#0EA5A0)] font-mono text-[10px] font-bold text-[#04140D]">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(140deg,#34D399,#0EA5A0)] font-mono text-[10px] font-bold text-[#080B12]">
             {initials}
           </span>
           <span className="min-w-0 flex-1">
