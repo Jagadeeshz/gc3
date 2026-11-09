@@ -769,3 +769,43 @@ body {
     transition: none;
   }
 }
+
+/* ------------------------------------------------------------------ the revolving ring
+   A slow turn (set per element from REVOLUTION_S) carrying the arms and the platforms as one
+   piece, with each platform counter-rotating at the same duration so its label stays upright.
+   Both animations start and pause together, so pausing never leaves a tile tilted. Hover or
+   focus pauses the whole thing: a moving target cannot be pointed at. */
+@keyframes pod-revolve {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pod-ring {
+  animation-name: pod-revolve;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.pod-counter {
+  animation-name: pod-revolve;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: reverse;
+  will-change: transform;
+}
+
+.pod-hub:hover .pod-ring,
+.pod-hub:hover .pod-counter,
+.pod-hub:focus-within .pod-ring,
+.pod-hub:focus-within .pod-counter {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pod-ring,
+  .pod-counter {
+    animation: none;
+  }
+}
