@@ -78,7 +78,7 @@ export default function ScrollytellingHome() {
 
         {/* The sculpture is the only figure on the page, on a 3D plane with the pod slides beside
             it. Hidden below lg — at phone width the copy needs the space more than a figure does. */}
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-20 hidden w-[48%] items-center pb-16 pr-[4%] lg:flex">
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-20 hidden w-[54%] items-center pb-14 pr-[3%] lg:flex">
           <HeroSculpture className="pointer-events-auto w-full" />
         </div>
 

@@ -836,23 +836,69 @@ body {
   transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
   transform-style: preserve-3d;
   transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
-  filter: drop-shadow(0 40px 70px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 40px 70px rgba(0, 0, 0, 0.55));
+}
+
+/* The plate is a lit sculpture on near-black. Screen blending drops the black and keeps the
+   light, so the artwork sits on the page with no rectangle and no mask cutting into it — the
+   whole render is on screen, the ground simply contributes nothing. */
+.sculpture-plate {
+  mix-blend-mode: screen;
 }
 
 /** The light behind the sculpture takes the hovered pod's colour. */
 .sculpture-halo {
   background: radial-gradient(
     closest-side,
-    color-mix(in oklab, var(--glow, #ededed) 26%, transparent),
-    color-mix(in oklab, var(--glow, #ededed) 8%, transparent) 58%,
+    color-mix(in oklab, var(--glow, #ededed) 20%, transparent),
+    color-mix(in oklab, var(--glow, #ededed) 6%, transparent) 58%,
     transparent 82%
   );
-  filter: blur(26px);
+  filter: blur(34px);
   transition: background 240ms linear;
 }
 
+/* ------------------------------------------------------------------ pod slides in 3D
+   The stack owns the perspective, so each slide can travel on Z toward the viewer and turn on Y.
+   That is what makes a hover feel like the card lifts out of the stack rather than blinking. */
+.slide-stack {
+  perspective: 760px;
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+}
+
+.slide-item {
+  transform-style: preserve-3d;
+}
+
+.slide-card {
+  transform: translateZ(0) rotateY(0deg);
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 200ms linear,
+    background-color 200ms linear;
+  will-change: transform;
+}
+
+.slide-card:hover,
+.slide-card:focus-visible,
+.slide-card.is-active {
+  transform: translateZ(34px) rotateY(-12deg) scale(1.02);
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.9);
+}
+
+@media (max-width: 1023px) {
+  /* the stack is horizontal under the sculpture, where a Y-turn would look like a glitch */
+  .slide-card:hover,
+  .slide-card:focus-visible,
+  .slide-card.is-active {
+    transform: translateZ(18px) scale(1.02);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .sculpture-plane {
+  .sculpture-plane,
+  .slide-card {
     transition: none;
   }
 }
