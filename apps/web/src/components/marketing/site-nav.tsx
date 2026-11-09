@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { openBookDemo } from './book-demo';
+import { QuantocosMark } from '@/components/brand/quantocos-mark';
 
 // The acts are the navigation: the page is a story, so the menu is its table of
 // contents. Anchors point at the act sections; pricing is a real route.
@@ -57,7 +58,7 @@ export function SiteNav() {
       <div className="border-b border-hairline/70 bg-obsidian">
         <div className="shell flex h-9 items-center justify-between gap-4">
           <p className="truncate font-mono text-[10px] uppercase tracking-[0.16em] text-ghost-muted">
-            Quantocos GC³ <span className="text-hairline">|</span> Global Cloud Capability Center
+            <QuantocosMark size="sm" /> <span className="text-hairline">·</span> Global Cloud Capability Center
           </p>
           <p className="hidden shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-ghost-muted sm:flex">
             <span className="size-1.5 rounded-full bg-emerald-400/80" aria-hidden="true" />
@@ -73,13 +74,11 @@ export function SiteNav() {
         ].join(' ')}
       >
         <div className="shell flex h-[72px] items-center justify-between gap-3 sm:gap-6">
-          <Link href="/" className="group flex shrink-0 items-center gap-2.5 sm:gap-3" aria-label="Quantocos GC³ home">
-            <span className="grid size-9 place-items-center rounded-[10px] border border-gold/35 bg-gold/10 font-display text-base font-semibold text-gold-light transition-colors duration-200 group-hover:border-gold/60">
-              Q
-            </span>
+          <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="Quantocos GC³ home">
+            
             <span className="leading-none">
               <span className="block whitespace-nowrap font-display text-[15px] tracking-[-0.01em] text-ghost sm:text-[17px]">
-                Quantocos <span className="text-gold-light">GC³</span>
+                <QuantocosMark size="md" />
               </span>
               <span className="mt-1 hidden font-mono text-[9px] uppercase tracking-[0.18em] text-ghost-muted sm:block">
                 Capability, composed

@@ -448,3 +448,28 @@ body {
   background: rgba(201, 145, 26, 0.12); /* --bindu-soma-mid at 12% — BINDU selected state */
   color: var(--bindu-shunya);
 }
+
+/* ------------------------------------------------------------------ Quantocos wordmark
+   The Q is painted with the spectrum gradient. This is the single sanctioned exception to
+   BINDU rule 3 (never gradient on text) and it is scoped to this class only — it is a
+   logotype, and the rule exists to keep prose readable. See
+   components/brand/quantocos-mark.tsx for the reasoning and the one-line alternative. */
+.qc-q {
+  background-image: var(--bindu-spectrum-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  /* A 15px glyph would otherwise compress all nine stops into a muddy violet-blue. At
+     240% the visible window shows four or five stops at a time, and the flow animation
+     walks the spectrum through it — the Q reads as rainbow rather than as a gradient
+     smudge. */
+  background-size: 240% 100%;
+  background-position: 0% 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .qc-q {
+    animation: prism-spectrum-flow 12s var(--bindu-ease) infinite;
+  }
+}
