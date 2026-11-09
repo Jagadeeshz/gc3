@@ -4,7 +4,6 @@ import { ArrowDown, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { SessionGate } from '@/components/marketing/session-gate';
 import { SiteNav } from '@/components/marketing/site-nav';
 import { ScrollProgress } from '@/components/marketing/scroll-progress';
-import { HeroParticles } from '@/components/marketing/hero-particles';
 import { HeroDiagram } from '@/components/marketing/hero-diagram';
 import { BentoGrid } from '@/components/marketing/bento-grid';
 import { PodCarousel } from '@/components/marketing/pod-carousel';
@@ -75,37 +74,11 @@ export default function ScrollytellingHome() {
 
       {/* ---------------------------------------------------------------- hero */}
       <header className="relative overflow-hidden border-b border-hairline bg-obsidian">
-        {/*
-         * The hero canvas: the GC³ hub render, cropped to remove its icon rail, at
-         * 55% over obsidian. Four overlays do the blending — a radial core, top and
-         * bottom fades, and side scrims — so the artwork dissolves into #090D16 at
-         * every edge instead of ending on a hard rectangle. The image itself carries
-         * no text, so nothing in it competes with the headline for contrast.
-         *
-         * blur(2px) + scale(1.04): the blur softens the render's fine detail so type
-         * stays dominant, and the scale hides the transparent fringe blur leaves at
-         * the edges. Both are compositor-only properties.
-         */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+        {/* The hero has no backdrop: flat obsidian, the type, and the diagram. */}
 
-          {/* Architectural staging: a 4.5% grid, then a soft core behind the headline.
-              Order matters — the grid sits under the vignette so the centre of the type block
-              stays clean. */}
-          <div className="arch-grid absolute inset-0" />
-          <div className="arch-vignette absolute inset-0" />
-          <div className="absolute inset-0 [background:radial-gradient(78%_64%_at_50%_42%,transparent_0%,var(--color-obsidian)_76%)]" />
-          <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-obsidian via-obsidian/70 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-obsidian via-obsidian/85 to-transparent" />
-          <div className="absolute inset-y-0 left-0 w-[46%] bg-gradient-to-r from-obsidian via-obsidian/55 to-transparent" />
-          <div className="absolute inset-y-0 right-0 w-[26%] bg-gradient-to-l from-obsidian/85 to-transparent" />
-        </div>
-
-        {/* The drifting prism field. Motion only — no content from the reference frame. */}
-        <HeroParticles />
-
-        {/* The diagram lives in the right-hand column: a fixed GC³ centre with the pods on an
-            ellipse around it. Hidden below lg — at phone width the copy needs the space more than
-            a second figure does. */}
+        {/* The diagram is the only figure on the page: a fixed GC³ centre with the pods on an
+            ellipse. Hidden below lg — at phone width the copy needs the space more than a second
+            figure does. */}
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] -translate-y-[5%] items-center pr-[2%] lg:flex">
           <HeroDiagram className="pointer-events-auto mx-auto max-w-[600px]" />
         </div>
