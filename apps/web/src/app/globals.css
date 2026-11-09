@@ -763,3 +763,35 @@ body {
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------ proof ticker
+   Content travels left to right. The track holds the four facts twice and starts at -50%, so
+   the first copy begins already off-stage and the second copy is standing where it will end:
+   translating to 0 lands copy two exactly where copy one started, which is what makes the loop
+   seamless. Hover or keyboard focus pauses it, and reduced motion lays the tiles out as a static
+   row rather than scrolling them. */
+@keyframes proof-scroll {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.proof-track {
+  animation: proof-scroll 52s linear infinite;
+  will-change: transform;
+}
+
+.proof-marquee:hover .proof-track,
+.proof-marquee:focus-within .proof-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proof-track {
+    animation: none;
+    flex-wrap: wrap;
+  }
+}

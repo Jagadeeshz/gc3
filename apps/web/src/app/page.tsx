@@ -131,23 +131,37 @@ export default function ScrollytellingHome() {
             </Link>
           </div>
 
-          <dl className="rise mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[12px] border border-hairline bg-hairline sm:grid-cols-4">
-            {[
-              ['6', 'Capability pods'],
-              ['48–120h', 'Delivery commitments'],
-              ['1:1', 'Agent per specialist'],
-              ['Monthly', 'No annual lock-in'],
-            ].map(([value, label]) => (
-              <div key={label} className="bg-obsidian-soft px-4 py-3.5">
-                <dd className="font-display text-[22px] font-semibold tabular-nums leading-none text-ghost">
-                  {value}
-                </dd>
-                <dt className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">
-                  {label}
-                </dt>
-              </div>
-            ))}
-          </dl>
+          {/* Proof rail: an infinite ticker travelling left to right. The four facts are rendered
+              twice and the track moves exactly half its width, so the second copy arrives where the
+              first began and the loop has no seam. The duplicate is aria-hidden — a screen reader
+              hears the four facts once. Hover or focus pauses it; reduced motion wraps the tiles
+              into a static block instead. */}
+          <div className="proof-marquee rise mt-12 overflow-hidden rounded-[12px] border border-hairline">
+            <div className="proof-track flex w-max">
+              {[0, 1].map((pass) => (
+                <dl key={pass} aria-hidden={pass === 1 ? 'true' : undefined} className="flex shrink-0">
+                  {[
+                    ['6', 'Capability pods'],
+                    ['48–120h', 'Delivery commitments'],
+                    ['1:1', 'Agent per specialist'],
+                    ['Monthly', 'No annual lock-in'],
+                  ].map(([value, label]) => (
+                    <div
+                      key={label}
+                      className="w-[236px] shrink-0 border-r border-hairline bg-obsidian-soft px-5 py-4 sm:w-[300px] lg:w-[330px]"
+                    >
+                      <dd className="font-display text-[24px] font-semibold tabular-nums leading-none text-ghost">
+                        {value}
+                      </dd>
+                      <dt className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">
+                        {label}
+                      </dt>
+                    </div>
+                  ))}
+                </dl>
+              ))}
+            </div>
+          </div>
 
         </div>
       </header>
