@@ -4,7 +4,7 @@ import { ArrowDown, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { SessionGate } from '@/components/marketing/session-gate';
 import { SiteNav } from '@/components/marketing/site-nav';
 import { ScrollProgress } from '@/components/marketing/scroll-progress';
-import { HeroSculpture } from '@/components/marketing/hero-sculpture';
+import { PodSlides } from '@/components/marketing/pod-slides';
 import { BentoGrid } from '@/components/marketing/bento-grid';
 import { PodCarousel } from '@/components/marketing/pod-carousel';
 import { CommandPalette } from '@/components/marketing/command-palette';
@@ -74,12 +74,22 @@ export default function ScrollytellingHome() {
 
       {/* ---------------------------------------------------------------- hero */}
       <header className="relative overflow-hidden border-b border-hairline bg-obsidian">
-        {/* The hero has no backdrop: flat obsidian, the type, and the diagram. */}
-
-        {/* The sculpture is the only figure on the page, on a 3D plane with the pod slides beside
-            it. Hidden below lg — at phone width the copy needs the space more than a figure does. */}
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-20 hidden w-[54%] items-center pb-14 pr-[3%] lg:flex">
-          <HeroSculpture className="pointer-events-auto w-full" />
+        {/* The supplied render, whole, as the hero ground. Screen blending drops its black so the
+            artwork sits in the page rather than on it, and the scrims carry the left column's
+            contrast — the type never sits on the brightest part of the plate. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <img
+            src="/images/gc3-sculpture.webp"
+            alt=""
+            width={1600}
+            height={748}
+            loading="eager"
+            decoding="async"
+            className="absolute inset-0 size-full object-cover object-[62%_42%] opacity-95 mix-blend-screen"
+          />
+          <div className="absolute inset-0 [background:linear-gradient(90deg,rgba(8,11,18,0.97)_0%,rgba(8,11,18,0.87)_34%,rgba(8,11,18,0.36)_62%,rgba(8,11,18,0.05)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-obsidian via-obsidian/80 to-transparent" />
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-obsidian/90 to-transparent" />
         </div>
 
         <div className="shell relative flex min-h-[86svh] flex-col justify-center py-16">
@@ -109,6 +119,8 @@ export default function ScrollytellingHome() {
               <ArrowUpRight aria-hidden className="size-3.5" strokeWidth={1.9} />
             </Link>
           </div>
+
+          <PodSlides className="rise mt-10" />
 
           {/* Proof rail: an infinite ticker travelling left to right. The four facts are rendered
               twice and the track moves exactly half its width, so the second copy arrives where the
@@ -147,11 +159,6 @@ export default function ScrollytellingHome() {
 
         </div>
 
-        {/* Below lg the stage stacks under the copy: same component, smaller by the layout rather
-            than by a second implementation. */}
-        <div className="shell relative z-10 pb-12 lg:hidden">
-          <HeroSculpture />
-        </div>
       </header>
 
       {/* ------------------------------------------------------------ the acts */}
