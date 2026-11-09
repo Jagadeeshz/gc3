@@ -67,9 +67,6 @@ export function ActParadigm() {
       <div className="shell relative z-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)] lg:gap-16">
         <div className="grid content-start gap-10">
           <div className="fade-scale">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
-              Act II — The paradigm shift
-            </p>
             <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3.4rem)] leading-[1.02] tracking-[-0.025em] text-ghost">
               Enterprise AI fails on
               <span className="block text-ghost/55">operational bloat.</span>

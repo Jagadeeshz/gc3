@@ -1,13 +1,11 @@
 /**
- * Hero background: the pod workforce standing in the void.
+ * Hero background: the prism aurora.
  *
- * The artwork is a keyed cutout of a marble figure group — a manager, specialists, and the
- * paired agent at the laptop — so the hero shows the thing being sold rather than an abstract
- * shape. The key was done offline in key-workforce.py: brightness × inverse-saturation, then
- * a morphological opening to drop the neon bars, then a crop at the plinth line to remove the
- * wordmark, the glass pedestals and the floor reflection.
+ * A rotating conic prism masked to a soft disc, spectrum rings and a scatter of particles.
+ * The figure group that briefly sat in front of it is gone; the hero carries type and light
+ * only.
  *
- * Around it runs the prism aurora — a rotating conic bloom, two spectrum rings and a scatter of
+ * The aurora — a rotating conic bloom, two spectrum rings and a scatter of
  * particles — held at low opacity so it reads as light on the figures rather than as a second
  * subject competing with them.
  *
@@ -48,7 +46,7 @@ export function HeroAurora() {
       {/* desktop: the workforce, aurora behind it */}
       <div className="absolute right-[1%] top-1/2 hidden -translate-y-1/2 lg:block">
         <div className="relative aspect-square w-[clamp(380px,50vw,700px)]">
-          <div className="aurora-core absolute inset-[8%] rounded-full opacity-[0.22]" />
+          <div className="aurora-core absolute inset-[10%] rounded-full opacity-[0.13]" />
 
           {RINGS.map((ring) => (
             <div key={ring.size} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -76,38 +74,13 @@ export function HeroAurora() {
             />
           ))}
 
-          {/* The figures sit in front of the aurora, masked at the base so the cutout dissolves
-              into the void instead of ending on a hard line. */}
-          <img
-            src="/images/gc3-pod-workforce.png"
-            alt=""
-            width={796}
-            height={484}
-            loading="eager"
-            decoding="async"
-            className="absolute bottom-[-2%] left-1/2 w-[100%] max-w-none -translate-x-1/2 [filter:drop-shadow(0_24px_60px_rgba(0,0,0,0.65))] [mask-image:linear-gradient(to_bottom,#000_78%,transparent_100%)]"
-          />
         </div>
       </div>
 
-      {/* mobile: the group at reduced scale, no rings and no particles — a 600px orbit on a
-          phone is noise behind the type */}
-      <div className="absolute inset-x-0 bottom-0 lg:hidden">
-        <div className="relative mx-auto w-[112%] max-w-none translate-x-[2%]">
-          <div className="aurora-core absolute inset-x-[12%] top-8 aspect-square rounded-full opacity-[0.18]" />
-          <img
-            src="/images/gc3-pod-workforce.png"
-            alt=""
-            width={796}
-            height={484}
-            loading="eager"
-            decoding="async"
-            className="relative w-full opacity-55 [mask-image:linear-gradient(to_bottom,#000_66%,transparent_100%)]"
-          />
-          {/* Scrim: at phone width the act links sit over the marble, so the artwork has to
-              give way rather than the type losing contrast. */}
-          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-obsidian via-obsidian/85 to-transparent" />
-        </div>
+      {/* mobile: the bloom alone — the figure group is gone from the composition, so the
+          phone keeps only the light behind the type */}
+      <div className="absolute inset-0 lg:hidden">
+        <div className="aurora-core absolute left-1/2 -top-10 aspect-square w-[clamp(300px,92vw,460px)] -translate-x-1/2 rounded-full opacity-30" />
       </div>
     </div>
   );

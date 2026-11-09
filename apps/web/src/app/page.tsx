@@ -52,14 +52,6 @@ const FOOTER_NAV = [
     ],
   },
   {
-    heading: 'The story',
-    links: [
-      { label: 'The bottleneck', href: '#act-problem' },
-      { label: 'The paradigm shift', href: '#act-paradigm' },
-      { label: 'Capability pods', href: '#act-pods' },
-    ],
-  },
-  {
     heading: 'Portal',
     links: [
       { label: 'Sign in', href: '/login' },
@@ -68,12 +60,6 @@ const FOOTER_NAV = [
       { label: 'Start a conversation', href: '#contact' },
     ],
   },
-] as const;
-
-const ACTS = [
-  { id: 'act-problem', label: 'I', title: 'The bottleneck' },
-  { id: 'act-paradigm', label: 'II', title: 'The paradigm shift' },
-  { id: 'act-pods', label: 'III', title: 'Capability pods' },
 ] as const;
 
 
@@ -163,20 +149,6 @@ export default function ScrollytellingHome() {
             ))}
           </dl>
 
-          <nav aria-label="Acts" className="rise mt-12 flex flex-wrap gap-x-6 gap-y-2">
-            {ACTS.map((act) => (
-              <Link
-                key={act.id}
-                href={`#${act.id}`}
-                className="group inline-flex items-baseline gap-2 text-[11px] text-ghost-muted transition-colors hover:text-ghost"
-              >
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-300/70">
-                  {act.label}
-                </span>
-                {act.title}
-              </Link>
-            ))}
-          </nav>
         </div>
       </header>
 

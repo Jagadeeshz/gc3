@@ -661,8 +661,9 @@ body {
     #7b00ff 300deg
   );
   /* Blur turns the cone into a bloom; the mask keeps the disc from ending on a hard edge. */
-  filter: blur(42px) saturate(1.15);
-  opacity: 0.3;
+  filter: blur(58px) saturate(1.1);
+  /* No opacity here: this rule is unlayered, so it would beat every opacity utility on the
+     element and silently pin every instance to one value. Callers set their own. */
   animation: aurora-spin 96s linear infinite;
   -webkit-mask-image: radial-gradient(closest-side, #000 40%, rgba(0, 0, 0, 0.55) 72%, transparent 100%);
   mask-image: radial-gradient(closest-side, #000 40%, rgba(0, 0, 0, 0.55) 72%, transparent 100%);
