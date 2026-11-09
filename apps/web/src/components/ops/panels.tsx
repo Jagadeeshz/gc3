@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { BarSeries, ChartPanel, GradientKpi, LineSeries } from '@/components/portal/dashboard-kit';
 import Link from 'next/link';
 import {
   AlertTriangle,
@@ -220,10 +221,62 @@ export function OverviewPanel({ token }: { readonly token: string }) {
   return (
     <div className="grid gap-4">
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Open requests" value={data.totals.openRequests} icon={Clock} hint={`${num(data.totals.unassignedRequests)} unassigned`} tone={data.totals.openRequests > 0 ? 'warning' : 'default'} />
-        <StatCard label="SLA at risk" value={data.totals.slaAtRisk} icon={AlertTriangle} hint={`${num(data.totals.slaBreached)} already breached`} tone={data.totals.slaBreached > 0 ? 'critical' : data.totals.slaAtRisk > 0 ? 'warning' : 'default'} />
-        <StatCard label="Client accounts" value={data.totals.organizations} icon={BadgeCheck} hint={`${num(data.totals.pods)} delivery pods`} />
-        <StatCard label="Released deliverables" value={data.totals.releasedDeliverables} icon={Download} hint={`${num(data.totals.blockedRequests)} requests blocked`} tone="positive" />
+        <GradientKpi
+          tint="teal"
+          icon={Clock}
+          label="Open requests"
+          value={num(data.totals.openRequests)}
+          sub={`${num(data.totals.unassignedRequests)} unassigned · ${num(data.totals.blockedRequests)} blocked`}
+          trailing="platform"
+        />
+        <GradientKpi
+          tint={data.totals.slaBreached > 0 ? 'rose' : data.totals.slaAtRisk > 0 ? 'gold' : 'sky'}
+          icon={AlertTriangle}
+          label="SLA at risk"
+          value={num(data.totals.slaAtRisk)}
+          sub={`${num(data.totals.slaBreached)} already breached`}
+          trailing="commitments"
+        />
+        <GradientKpi
+          tint="violet"
+          icon={BadgeCheck}
+          label="Client accounts"
+          value={num(data.totals.organizations)}
+          sub={`${num(data.totals.pods)} delivery pods`}
+          trailing="tenants"
+        />
+        <GradientKpi
+          tint="prism"
+          icon={Download}
+          label="Released deliverables"
+          value={num(data.totals.releasedDeliverables)}
+          sub={`${num(data.totals.overdueRequests)} requests overdue`}
+          trailing="released"
+        />
+      </section>
+
+      {/* Per-tenant shape of the platform: where the open work sits and where the commitments are
+          at risk. Both are the same array the directory below renders, read twice. */}
+      <section className="grid gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <ChartPanel title="Open requests per account" value={`${num(data.totals.openRequests)} total`}>
+          <BarSeries
+            tint="teal"
+            data={data.organizations.slice(0, 8).map((org) => ({
+              label: org.name.split(' ')[0] ?? org.name,
+              value: org.openRequests,
+            }))}
+          />
+        </ChartPanel>
+
+        <ChartPanel title="SLA risk per account" value={`${num(data.totals.slaAtRisk)} at risk`}>
+          <LineSeries
+            tint="gold"
+            data={data.organizations.slice(0, 8).map((org) => ({
+              label: org.name.split(' ')[0] ?? org.name,
+              value: org.slaAtRisk,
+            }))}
+          />
+        </ChartPanel>
       </section>
 
       <Panel title="Client accounts" subtitle="Open work per tenant" action={<Link href="/ops?tab=client-accounts" className="text-[11px] text-emerald-300 hover:underline">Directory</Link>}>

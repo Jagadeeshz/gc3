@@ -725,7 +725,7 @@ body {
 }
 
 /* ------------------------------------------------------------------ the revolving ring
-   A slow turn (set per element from REVOLUTION_S) carrying the arms and the platforms as one
+   A slow turn carrying the arms and the platforms as one
    piece, with each platform counter-rotating at the same duration so its label stays upright.
    Both animations start and pause together, so pausing never leaves a tile tilted. Hover or
    focus pauses the whole thing: a moving target cannot be pointed at. */
@@ -800,31 +800,6 @@ body {
    Cards orbit on an ellipse and counter-rotate so their labels stay upright — the centre is the
    only fixed thing, because a rotating label in the middle of a rotating figure is just noise.
    Hover/focus pauses the orbit so a card can be read. */
-.diagram-ring {
-  animation-name: pod-revolve;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  will-change: transform;
-}
-
-.diagram-counter {
-  animation-name: pod-revolve;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  animation-direction: reverse;
-  will-change: transform;
-}
-
-.hero-diagram:hover .diagram-ring,
-.hero-diagram:hover .diagram-counter {
-  animation-play-state: paused;
-}
-
-.hero-rays {
-  transform-origin: 50% 50%;
-  animation: pod-revolve 260s linear infinite;
-}
-
 .hub-core {
   background:
     radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.06), transparent 58%),

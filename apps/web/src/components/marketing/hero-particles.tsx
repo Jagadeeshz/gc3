@@ -310,7 +310,7 @@ export function HeroParticles() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 size-full opacity-40 [mask-image:radial-gradient(70%_62%_at_66%_50%,#000_38%,rgba(0,0,0,0.55)_66%,transparent_100%)] md:opacity-45"
+      className="pointer-events-none absolute inset-0 size-full opacity-30 [mask-image:radial-gradient(70%_62%_at_66%_50%,#000_38%,rgba(0,0,0,0.55)_66%,transparent_100%)] md:opacity-32"
     />
   );
 }

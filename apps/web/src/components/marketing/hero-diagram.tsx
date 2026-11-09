@@ -41,7 +41,6 @@ const ICONS: Record<string, LucideIcon> = {
 const CARD_ANGLES = [-90, -30, 30, 90, 150, 210] as const;
 
 const RAY_COUNT = 18;
-const REVOLUTION_S = 84;
 
 /** An ellipse, not a circle: the column is taller than it is wide at most viewports. */
 const RADIUS_X = 36;
@@ -56,6 +55,8 @@ const place = (index: number): { left: string; top: string } => {
   };
 };
 
+const RAY_COLOURS = ['#ff2200', '#ff8800', '#ffdd00', '#aaff00', '#00ddaa', '#0099ff', '#3300ff', '#7b00ff'];
+
 const RAYS = Array.from({ length: RAY_COUNT }, (_, index) => {
   const degrees = (360 / RAY_COUNT) * index + 6;
   const radians = (degrees * Math.PI) / 180;
@@ -69,6 +70,7 @@ const RAYS = Array.from({ length: RAY_COUNT }, (_, index) => {
     x2: 50 + Math.cos(radians) * outer,
     y2: 50 + Math.sin(radians) * outer,
     strong: index % 3 === 0,
+    colour: RAY_COLOURS[index % RAY_COLOURS.length] ?? '#00ddaa',
   };
 });
 
@@ -96,8 +98,18 @@ export function HeroDiagram({ className }: { readonly className?: string }) {
 
   return (
     <div className={`hero-diagram relative aspect-square w-full ${className ?? ''}`}>
+      {/* Transparent prism disc: the colour of the mark, at the opacity of a light source. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-[8%] rounded-full opacity-[0.24] blur-[2px] [background:conic-gradient(from_210deg,#ff2200,#ff8800,#ffdd00,#aaff00,#00ddaa,#0099ff,#3300ff,#7b00ff,#ff2200)]"
+        style={{
+          maskImage: 'radial-gradient(closest-side, transparent 42%, #000 62%, transparent 88%)',
+          WebkitMaskImage: 'radial-gradient(closest-side, transparent 42%, #000 62%, transparent 88%)',
+        }}
+      />
+
       {/* ray burst, behind everything */}
-      <svg aria-hidden="true" viewBox="0 0 100 100" className="hero-rays absolute inset-0 size-full">
+      <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute inset-0 size-full">
         {RAYS.map((ray) => (
           <line
             key={ray.id}
@@ -105,7 +117,7 @@ export function HeroDiagram({ className }: { readonly className?: string }) {
             y1={ray.y1}
             x2={ray.x2}
             y2={ray.y2}
-            stroke="var(--bindu-rim-spectrum-mid)"
+            stroke={ray.colour}
             strokeWidth={ray.strong ? 0.26 : 0.14}
             strokeOpacity={ray.strong ? 0.7 : 0.34}
             strokeLinecap="round"
@@ -117,12 +129,11 @@ export function HeroDiagram({ className }: { readonly className?: string }) {
       <div aria-hidden="true" className="absolute inset-[19%] rounded-full border border-white/10" />
       <div
         aria-hidden="true"
-        className="diagram-ring absolute inset-[31%] rounded-full border border-dashed border-[color:var(--bindu-rim-spectrum-mid)] opacity-50"
-        style={{ animationDuration: '120s' }}
+        className="absolute inset-[31%] rounded-full border border-dashed border-[color:var(--bindu-rim-spectrum-mid)] opacity-50"
       />
 
-      {/* the revolving cards */}
-      <div className="diagram-ring absolute inset-0" style={{ animationDuration: `${REVOLUTION_S}s` }}>
+      {/* the cards, held still: the figure reads as a diagram, not a carousel */}
+      <div className="absolute inset-0">
         {pods.map((pod, index) => {
           const Icon = ICONS[pod.code] ?? Compass;
 
@@ -132,10 +143,7 @@ export function HeroDiagram({ className }: { readonly className?: string }) {
               style={place(index)}
               className="absolute -translate-x-1/2 -translate-y-1/2"
             >
-              <div
-                className="diagram-counter"
-                style={{ animationDuration: `${REVOLUTION_S}s` }}
-              >
+              <div>
                 <div className="flex w-[118px] items-center gap-2 rounded-[10px] border border-hairline bg-obsidian-soft/85 px-2.5 py-2 backdrop-blur-sm transition-colors hover:border-[color:var(--bindu-rim-spectrum-mid)] sm:w-[126px]">
                   <span className="grid size-6 shrink-0 place-items-center rounded-[6px] border border-hairline bg-obsidian">
                     <Icon aria-hidden className="size-3 text-ghost-muted" strokeWidth={1.8} />

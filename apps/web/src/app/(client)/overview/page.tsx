@@ -49,6 +49,12 @@ import {
   requestStatusTone,
 } from '@/components/portal/status';
 import { timeAgo } from '@/components/portal/kit';
+import {
+  BarSeries,
+  ChartPanel,
+  GradientKpi,
+  LineSeries,
+} from '@/components/portal/dashboard-kit';
 
 /**
  * Client overview — one route, two dashboards.
@@ -308,73 +314,96 @@ function OwnerDashboard({
 
   return (
     <>
-      {/* executive stats */}
+      {/* Executive metrics. Same figures as before, tinted per metric so the row reads as a
+          dashboard rather than four identical boxes. */}
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <GlassCard interactive className="p-4">
-          <div className="flex items-start justify-between">
-            <span className="grid size-8 place-items-center rounded-lg bg-emerald-400/12 text-emerald-300">
-              <Sparkles aria-hidden className="size-4" strokeWidth={1.9} />
-            </span>
-            <Pill label={workspace.subscription?.subscription.status ?? 'no plan'} tone="positive" />
-          </div>
-          <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">Active subscription</p>
-          <p className="mt-1 font-display text-[22px] font-semibold leading-none text-ghost">
-            {workspace.subscription?.tier.name ?? '—'}
-          </p>
-          <p className="mt-1.5 text-[11px] text-ghost-muted">
-            {workspace.subscription
+        <GradientKpi
+          tint="violet"
+          icon={Sparkles}
+          label="Active subscription"
+          value={workspace.subscription?.tier.name ?? '—'}
+          sub={
+            workspace.subscription
               ? `${formatMoney(workspace.subscription.tier.monthlyPriceCents, workspace.subscription.tier.currency)} / month`
-              : 'No plan attached'}
-          </p>
-        </GlassCard>
+              : 'No plan attached'
+          }
+          trailing={workspace.subscription?.subscription.status ?? 'none'}
+        />
 
-        <GlassCard interactive className="p-4">
-          <div className="flex items-start justify-between">
-            <span className="grid size-8 place-items-center rounded-lg bg-emerald-400/12 text-emerald-300">
-              <Gauge aria-hidden className="size-4" strokeWidth={1.9} />
-            </span>
-            <Pill label={requestMeter?.state ?? 'n/a'} tone={requestMeter?.state === 'EXCEEDED' ? 'danger' : requestMeter?.state === 'WARNING' ? 'warning' : 'positive'} />
-          </div>
-          <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">Requests this period</p>
-          <p className="mt-1 font-display text-[22px] font-semibold leading-none tabular-nums text-ghost">
-            {requestMeter ? `${requestMeter.quantity} / ${requestMeter.included}` : '—'}
-          </p>
-          <p className="mt-1.5 text-[11px] text-ghost-muted">
-            {requestMeter ? `${requestMeter.remaining} left in ${workspace.subscription?.period.label}` : 'Usage not metered'}
-          </p>
-        </GlassCard>
+        <GradientKpi
+          tint={requestMeter?.state === 'EXCEEDED' ? 'rose' : requestMeter?.state === 'WARNING' ? 'gold' : 'teal'}
+          icon={Gauge}
+          label="Requests this period"
+          value={requestMeter ? `${requestMeter.quantity} / ${requestMeter.included}` : '—'}
+          sub={
+            requestMeter
+              ? `${requestMeter.remaining} left in ${workspace.subscription?.period.label}`
+              : 'Usage not metered'
+          }
+          trailing={requestMeter?.state ?? 'n/a'}
+        />
 
-        <GlassCard interactive className="p-4">
-          <div className="flex items-start justify-between">
-            <span className="grid size-8 place-items-center rounded-lg bg-amber-400/12 text-amber-300">
-              <Timer aria-hidden className="size-4" strokeWidth={1.9} />
-            </span>
-            <Pill label={`${open.length} open`} tone="neutral" />
-          </div>
-          <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">Delivery commitments</p>
-          <p className="mt-1 font-display text-[22px] font-semibold leading-none tabular-nums text-ghost">
-            {atRisk.length} <span className="text-[13px] font-normal text-ghost-muted">past target</span>
-          </p>
-          <p className="mt-1.5 text-[11px] text-ghost-muted">
-            {atRisk.length === 0 ? 'Everything open is inside its commitment' : 'Escalated to the pod lead automatically'}
-          </p>
-        </GlassCard>
+        <GradientKpi
+          tint={atRisk.length > 0 ? 'gold' : 'sky'}
+          icon={Timer}
+          label="Delivery commitments"
+          value={`${atRisk.length} past target`}
+          sub={atRisk.length === 0 ? 'Everything open is inside its commitment' : 'Escalated to the pod lead automatically'}
+          trailing={`${open.length} open`}
+        />
 
-        <GlassCard interactive className="p-4">
-          <div className="flex items-start justify-between">
-            <span className="grid size-8 place-items-center rounded-lg bg-emerald-400/12 text-emerald-300">
-              <CreditCard aria-hidden className="size-4" strokeWidth={1.9} />
-            </span>
-            {latestInvoice ? <Pill label={invoiceStatusLabel(latestInvoice.status)} tone={invoiceStatusTone(latestInvoice.status)} /> : null}
-          </div>
-          <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">Latest invoice</p>
-          <p className="mt-1 font-display text-[22px] font-semibold leading-none tabular-nums text-ghost">
-            {latestInvoice ? formatMoney(latestInvoice.totalCents, latestInvoice.currency) : '—'}
-          </p>
-          <p className="mt-1.5 text-[11px] text-ghost-muted">
-            {latestInvoice ? `${latestInvoice.number} · ${formatDate(latestInvoice.periodStart)}` : 'Nothing billed yet'}
-          </p>
-        </GlassCard>
+        <GradientKpi
+          tint="prism"
+          icon={CreditCard}
+          label="Latest invoice"
+          value={latestInvoice ? formatMoney(latestInvoice.totalCents, latestInvoice.currency) : '—'}
+          sub={latestInvoice ? `${latestInvoice.number} · ${formatDate(latestInvoice.periodStart)}` : 'Nothing billed yet'}
+          trailing={latestInvoice ? invoiceStatusLabel(latestInvoice.status) : undefined}
+        />
+      </section>
+
+      {/* Two panels under the metrics: where the open work sits, and what has been billed.
+          Both read from the same data the cards above use — no second source, no mock series. */}
+      <section className="grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        <ChartPanel
+          title="Open requests by stage"
+          value={`${open.length} open`}
+          action={
+            <Link href="/requests" className="text-[10px] text-white/50 hover:text-white/80">
+              All requests
+            </Link>
+          }
+        >
+          <BarSeries
+            tint="teal"
+            data={columns.map((column) => ({
+              label: column.title,
+              value: workspace.requests.filter((request) => column.statuses.includes(request.status)).length,
+            }))}
+          />
+        </ChartPanel>
+
+        <ChartPanel title="Billed by month" value={latestInvoice ? formatMoney(latestInvoice.totalCents, latestInvoice.currency) : undefined}>
+          <LineSeries
+            tint="violet"
+            data={Array.from({ length: 6 }, (_, index) => {
+              const date = new Date();
+              date.setMonth(date.getMonth() - (5 - index));
+              const key = `${date.getFullYear()}-${date.getMonth()}`;
+              const total = workspace.invoices
+                .filter((invoice) => {
+                  const issued = new Date(invoice.periodStart);
+                  return `${issued.getFullYear()}-${issued.getMonth()}` === key;
+                })
+                .reduce((sum, invoice) => sum + invoice.totalCents, 0);
+
+              return {
+                label: date.toLocaleDateString('en-GB', { month: 'short' }),
+                value: Math.round(total / 100),
+              };
+            })}
+          />
+        </ChartPanel>
       </section>
 
       {usage.length > 0 ? (

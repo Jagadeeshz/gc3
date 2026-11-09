@@ -106,7 +106,7 @@ export default function ScrollytellingHome() {
         {/* The diagram lives in the right-hand column: a fixed GC³ centre with the pods on an
             ellipse around it. Hidden below lg — at phone width the copy needs the space more than
             a second figure does. */}
-        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] items-center pr-[2%] lg:flex">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] -translate-y-[5%] items-center pr-[2%] lg:flex">
           <HeroDiagram className="pointer-events-auto mx-auto max-w-[600px]" />
         </div>
 
