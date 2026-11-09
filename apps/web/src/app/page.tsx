@@ -5,6 +5,7 @@ import { SessionGate } from '@/components/marketing/session-gate';
 import { SiteNav } from '@/components/marketing/site-nav';
 import { ScrollProgress } from '@/components/marketing/scroll-progress';
 import { HeroParticles } from '@/components/marketing/hero-particles';
+import { HeroDiagram } from '@/components/marketing/hero-diagram';
 import { BentoGrid } from '@/components/marketing/bento-grid';
 import { PodCarousel } from '@/components/marketing/pod-carousel';
 import { CommandPalette } from '@/components/marketing/command-palette';
@@ -101,6 +102,13 @@ export default function ScrollytellingHome() {
 
         {/* The drifting prism field. Motion only — no content from the reference frame. */}
         <HeroParticles />
+
+        {/* The diagram lives in the right-hand column: a fixed GC³ centre with the pods on an
+            ellipse around it. Hidden below lg — at phone width the copy needs the space more than
+            a second figure does. */}
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] items-center pr-[2%] lg:flex">
+          <HeroDiagram className="pointer-events-auto mx-auto max-w-[600px]" />
+        </div>
 
         <div className="shell relative flex min-h-[86svh] flex-col justify-center py-16">
           <h1 className="rise mt-5 max-w-[17ch] font-display text-[clamp(2.2rem,5vw,4.3rem)] leading-[1.0] tracking-[-0.03em] text-ghost lg:max-w-[52%]">

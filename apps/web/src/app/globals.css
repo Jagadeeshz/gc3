@@ -795,3 +795,51 @@ body {
     flex-wrap: wrap;
   }
 }
+
+/* ------------------------------------------------------------------ hero diagram
+   Cards orbit on an ellipse and counter-rotate so their labels stay upright — the centre is the
+   only fixed thing, because a rotating label in the middle of a rotating figure is just noise.
+   Hover/focus pauses the orbit so a card can be read. */
+.diagram-ring {
+  animation-name: pod-revolve;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.diagram-counter {
+  animation-name: pod-revolve;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: reverse;
+  will-change: transform;
+}
+
+.hero-diagram:hover .diagram-ring,
+.hero-diagram:hover .diagram-counter {
+  animation-play-state: paused;
+}
+
+.hero-rays {
+  transform-origin: 50% 50%;
+  animation: pod-revolve 260s linear infinite;
+}
+
+.hub-core {
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.06), transparent 58%),
+    rgba(12, 16, 32, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45),
+    0 24px 70px -38px rgba(0, 221, 170, 0.5);
+  backdrop-filter: blur(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diagram-ring,
+  .diagram-counter,
+  .hero-rays {
+    animation: none;
+  }
+}

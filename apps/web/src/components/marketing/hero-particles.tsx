@@ -128,6 +128,11 @@ export function HeroParticles() {
     let started = 0;
     let running = false;
     let visible = true;
+    // Cursor response: specks within this radius are pushed out of the way and slide back.
+    const pointer = { x: 0, y: 0, active: false };
+    const POINTER_RADIUS = 130;
+    const POINTER_RADIUS_SQ = POINTER_RADIUS * POINTER_RADIUS;
+    const POINTER_PUSH = 26;
 
     const resize = (): void => {
       const box = canvas.getBoundingClientRect();
@@ -182,8 +187,21 @@ export function HeroParticles() {
             0.11 * Math.sin(3 * (speck.angle + seconds * 0.08) + speck.phase * 0.4);
           const radial = speck.radius * wobble;
 
-          const x = centreX + Math.cos(angle) * radial * radiusX;
-          const y = centreY + Math.sin(angle) * radial * radiusY;
+          let x = centreX + Math.cos(angle) * radial * radiusX;
+          let y = centreY + Math.sin(angle) * radial * radiusY;
+
+          if (pointer.active) {
+            const dx = x - pointer.x;
+            const dy = y - pointer.y;
+            const distanceSq = dx * dx + dy * dy;
+            // Squared-distance test first: Math.hypot per speck cost ~35fps at this count.
+            if (distanceSq < POINTER_RADIUS_SQ && distanceSq > 0.000001) {
+              const distance = Math.sqrt(distanceSq);
+              const force = (1 - distance / POINTER_RADIUS) ** 2;
+              x += (dx / distance) * force * POINTER_PUSH;
+              y += (dy / distance) * force * POINTER_PUSH;
+            }
+          }
 
           // thin the field towards the rim, so the body has a soft boundary
           context.globalAlpha = speck.alpha * (1 - radial * 0.8);
@@ -255,6 +273,24 @@ export function HeroParticles() {
       }
     };
 
+    const onPointerMove = (event: PointerEvent): void => {
+      const box = canvas.getBoundingClientRect();
+      pointer.x = event.clientX - box.left;
+      pointer.y = event.clientY - box.top;
+      pointer.active =
+        pointer.x > -POINTER_RADIUS &&
+        pointer.x < box.width + POINTER_RADIUS &&
+        pointer.y > -POINTER_RADIUS &&
+        pointer.y < box.height + POINTER_RADIUS;
+    };
+
+    const onPointerLeave = (): void => {
+      pointer.active = false;
+    };
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerleave', onPointerLeave);
+
     window.addEventListener('resize', onResize);
     document.addEventListener('visibilitychange', onVisibility);
     reduced.addEventListener('change', onMotionChange);
@@ -262,6 +298,8 @@ export function HeroParticles() {
     return () => {
       stop();
       observer.disconnect();
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerleave', onPointerLeave);
       window.removeEventListener('resize', onResize);
       document.removeEventListener('visibilitychange', onVisibility);
       reduced.removeEventListener('change', onMotionChange);
@@ -272,7 +310,7 @@ export function HeroParticles() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 size-full opacity-60 [mask-image:radial-gradient(70%_62%_at_66%_50%,#000_38%,rgba(0,0,0,0.55)_66%,transparent_100%)] md:opacity-100"
+      className="pointer-events-none absolute inset-0 size-full opacity-40 [mask-image:radial-gradient(70%_62%_at_66%_50%,#000_38%,rgba(0,0,0,0.55)_66%,transparent_100%)] md:opacity-45"
     />
   );
 }
