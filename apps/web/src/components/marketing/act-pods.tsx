@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, Bot, ChevronDown, Clock, Crown, Users, UserRound } from 'lucide-react';
 import type { CapabilityPod } from '@gc3/types';
 import { fetchPods } from '@/lib/api-client';
+import { TiltCard } from './tilt-card';
 
 /**
  * Act III — the pods, in motion.
@@ -123,13 +124,14 @@ export function ActPods() {
                 .filter(Boolean);
 
               return (
-                <article
+                <TiltCard
+                  as="article"
                   key={pod.code}
                   className={[
-                    'expand-card group relative flex flex-col overflow-hidden rounded-[14px] border bg-obsidian-soft transition-[border-color,transform,box-shadow] duration-300 ease-out',
+                    'group relative flex flex-col overflow-hidden rounded-[14px] border bg-obsidian-soft',
                     open
                       ? 'border-emerald-400/35 shadow-[0_24px_60px_-32px_rgba(16,185,129,0.55)]'
-                      : 'border-hairline hover:-translate-y-0.5 hover:border-emerald-400/25 hover:shadow-[0_20px_50px_-30px_rgba(16,185,129,0.45)]',
+                      : 'border-hairline hover:border-emerald-400/25 hover:shadow-[0_20px_50px_-30px_rgba(16,185,129,0.45)]',
                   ].join(' ')}
                 >
                   {/* Top edge light: the card reads as lit, not flat. */}
@@ -281,7 +283,7 @@ export function ActPods() {
                       </div>
                     </div>
                   </div>
-                </article>
+                </TiltCard>
               );
             })
           )}

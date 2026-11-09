@@ -275,3 +275,57 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ------------------------------------------------------------------ pod card tilt
+   Pointer-driven 3D tilt with a light source that follows the cursor. The angles and
+   the highlight position arrive as custom properties written by components/marketing/
+   tilt-card.tsx — no React re-render per pointer event, and the whole effect is a
+   transform plus one gradient, so it stays on the compositor. */
+.tilt-surface {
+  position: relative;
+  transform-style: preserve-3d;
+  transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg))
+    translate3d(0, 0, 0);
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 260ms ease, box-shadow 260ms ease;
+  will-change: transform;
+}
+
+/* The moving highlight. Sits above the card surface, below the content. */
+.tilt-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    260px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(52, 211, 153, 0.16),
+    rgba(52, 211, 153, 0.05) 42%,
+    transparent 68%
+  );
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.tilt-surface:hover::after,
+.tilt-surface:focus-within::after {
+  opacity: 1;
+}
+
+/* Keep the card's own content above the highlight. */
+.tilt-surface > * {
+  position: relative;
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt-surface {
+    transform: none;
+  }
+
+  .tilt-surface::after {
+    transition: none;
+  }
+}
