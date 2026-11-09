@@ -774,6 +774,7 @@ body {
    translating to 0 lands copy two exactly where copy one started, which is what makes the loop
    seamless. Hover or keyboard focus pauses it, and reduced motion lays the tiles out as a static
    row rather than scrolling them. */
+/* Left to right: the pod band, which starts half-travelled and arrives at rest. */
 @keyframes proof-scroll {
   from {
     transform: translate3d(-50%, 0, 0);
@@ -783,8 +784,19 @@ body {
   }
 }
 
+/* Right to left: the proof band. Starts at rest and travels half the track, so the second copy
+   of the four facts slides in from the right edge as the first leaves the left. */
+@keyframes proof-scroll-rtl {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
 .proof-track {
-  animation: proof-scroll 52s linear infinite;
+  animation: proof-scroll-rtl 52s linear infinite;
   will-change: transform;
 }
 
@@ -922,7 +934,7 @@ body {
    still moves, by request. The duplicate set stays visible for the same reason it exists: without
    it the loop shows a gap at the wrap. */
 .landing .proof-track {
-  animation: proof-scroll 52s linear infinite !important;
+  animation: proof-scroll-rtl 52s linear infinite !important;
 }
 
 .landing .proof-marquee:hover .proof-track {
