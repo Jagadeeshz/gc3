@@ -462,52 +462,6 @@ body {
   color: var(--bindu-shunya);
 }
 
-/* ------------------------------------------------------------------ Quantocos wordmark
-   The Q is painted with the spectrum gradient. This is the single sanctioned exception to
-   BINDU rule 3 (never gradient on text) and it is scoped to this class only — it is a
-   logotype, and the rule exists to keep prose readable. See
-   components/brand/quantocos-mark.tsx for the reasoning and the one-line alternative. */
-.qc-q {
-  /*
-   * The Quantocos ring, not BINDU's spectrum bar: red → orange → yellow → green → cyan →
-   * blue → violet, wrapping around the glyph like the orbital in the company mark. A conic
-   * gradient is what makes it read as a ring rather than a left-to-right stripe, and the
-   * start angle is set so red sits at the top-right, matching the reference.
-   *
-   * Sized and slanted to sit above the rest of the wordmark: the Q is the logo's anchor,
-   * so it runs ~1.5x the cap height of the following letters. It is inline-block with a
-   * small baseline nudge, otherwise the larger glyph drags the whole lockup down.
-   */
-  display: inline-block;
-  font-size: 1.6em;
-  font-style: italic;
-  /* 800 with a real 700 face loaded: a synthetic bold smears the gradient edges. */
-  font-weight: 800;
-  line-height: 0.82;
-  letter-spacing: -0.02em;
-  transform: translateY(0.055em);
-  /*
-   * A conic gradient was the first attempt and it failed at glyph scale: a 22px letter
-   * only ever intersects one arc of the ring, so the Q rendered green. A 135° linear
-   * sweep puts the ring's whole hue run across the letterform — red, orange, yellow,
-   * green, cyan, blue, violet — which is what reads as "rainbow" at this size.
-   */
-  background-image: linear-gradient(
-    172deg,
-    #ff2200 0%,
-    #ff8800 16%,
-    #ffdd00 30%,
-    #aaff00 44%,
-    #00ddaa 58%,
-    #0099ff 71%,
-    #0055ff 84%,
-    #7b00ff 100%
-  );
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-}
 
 /* ------------------------------------------------------------------ architectural staging
    Background layers for the landing page. All are compositor-only (background-image, mask,

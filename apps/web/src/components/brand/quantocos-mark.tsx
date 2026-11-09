@@ -1,18 +1,16 @@
+import { QuantocosQ } from './quantocos-q';
+
 /**
- * The Quantocos wordmark.
+ * The Quantocos wordmark: the ring mark, then the name.
  *
- * The Q carries the spectrum gradient; the remaining letters stay solid shunya. This is
- * the one place in the product where gradient paint touches a glyph, and it is a
- * deliberate, requested brand exception to BINDU hard rule 3 ("never gradient on text"):
+ * The Q used to be a text glyph with the spectrum gradient painted on it, which is why it never
+ * matched the company mark — the real one is a ring with a chrome sphere closing the break, not
+ * a letter. It is drawn as SVG now (see quantocos-q.tsx) and set alongside the word instead of
+ * standing in for its first letter.
  *
- *   · it is a *logotype*, not body copy or a heading — the rule exists so prose stays
- *     legible, and a single 6–22px glyph is not prose;
- *   · the gradient is the sanctioned spectrum asset, not a decorative blend;
- *   · it is scoped by class, so it cannot leak onto a heading by accident.
- *
- * If the rule is ever enforced without exception, the fix is one line here: render the Q
- * as an SVG path with a spectrum gradient fill (rule 4 permits logo artwork as a file)
- * and drop `.qc-q` from globals.css. Nothing else in the app depends on this.
+ * The mark is optical, not typographic: the sphere sits at the baseline, so the ring is centred
+ * on the word's x-height rather than its baseline. Hence `items-center` and a small downward
+ * nudge on the ring instead of baseline alignment.
  */
 export function QuantocosMark({
   className,
@@ -21,24 +19,23 @@ export function QuantocosMark({
 }: {
   readonly className?: string;
   readonly size?: 'sm' | 'md' | 'lg';
-  /** Renders the “GC³” product suffix after the company name. */
+  /** Renders the "GC³" product suffix after the company name. */
   readonly withSuffix?: boolean;
 }) {
-  const scale = {
-    sm: 'text-[13px]',
-    md: 'text-[15px]',
-    lg: 'text-[18px]',
+  const { text, mark } = {
+    sm: { text: 'text-[13px]', mark: 18 },
+    md: { text: 'text-[15px]', mark: 21 },
+    lg: { text: 'text-[18px]', mark: 25 },
   }[size];
 
   return (
     <span
-      className={`inline-flex items-baseline font-sans font-medium tracking-[-0.01em] leading-none text-warm ${scale}${className ? ` ${className}` : ''}`}
+      className={`inline-flex items-center gap-[3px] font-sans font-medium tracking-[-0.01em] leading-none text-warm ${text}${className ? ` ${className}` : ''}`}
     >
-      {/* Screen readers get the name once, from the label below. */}
-      <span aria-hidden="true" className="qc-q">
-        Q
+      <QuantocosQ size={mark} className="shrink-0 translate-y-[1px]" />
+      <span aria-hidden="true" className="font-medium italic">
+        uantocos
       </span>
-      <span aria-hidden="true" className="font-medium italic">uantocos</span>
       {withSuffix ? (
         <span aria-hidden="true" className="ml-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-muted">
           GC³
