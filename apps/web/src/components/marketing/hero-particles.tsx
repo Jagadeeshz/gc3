@@ -10,18 +10,16 @@ import { useEffect, useRef } from 'react';
  * the whole thing reads as a body rather than as scattered dots. Only the motion is taken —
  * none of the frame's content (its nav, its headline, its CTA) exists here.
  *
- * Canvas rather than CSS: a few thousand independently drifting specks is not something a
- * stylesheet can do. The loop is deliberately cheap —
- *   · one path per colour, not per particle
- *   · positions from arithmetic, no noise library
- *   · device pixel ratio capped at 2
- *   · the loop stops when the hero scrolls out of view or the tab is hidden
- * so it holds frame rate on a laptop with no discrete GPU.
+ * Canvas rather than CSS: a few thousand specks in a lobed cloud is not something a stylesheet
+ * can express. It is drawn in one pass — one path per colour band, positions from arithmetic, no
+ * noise library, device pixel ratio capped at 2 — and then left alone.
  *
  * Colour is the prism spectrum, index by angle, so the cloud turns through the palette as it
  * rotates instead of settling on one hue the way the reference's gold/violet does.
  *
- * `prefers-reduced-motion` paints a single still frame and never starts the loop.
+ * The field does not animate. It is painted once, repainted on resize, and repainted when the
+ * pointer moves through it — nothing here runs per frame on its own, so the hero costs one paint
+ * and the swirl is gone. Cursor response survives because it is the only motion left.
  */
 
 const SPECTRUM = [
@@ -118,21 +116,17 @@ export function HeroParticles() {
     const context = canvas.getContext('2d', { alpha: true });
     if (!context) return;
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     const specks = buildSpecks(window.innerWidth < 768 ? 1800 : 6400);
 
     let width = 0;
     let height = 0;
     let dpr = 1;
-    let frame = 0;
-    let started = 0;
-    let running = false;
-    let visible = true;
-    // Cursor response: specks within this radius are pushed out of the way and slide back.
+    // The field does not move on its own. It moves when the pointer does, and then it settles.
     const pointer = { x: 0, y: 0, active: false };
     const POINTER_RADIUS = 130;
     const POINTER_RADIUS_SQ = POINTER_RADIUS * POINTER_RADIUS;
     const POINTER_PUSH = 26;
+    let queued = 0;
 
     const resize = (): void => {
       const box = canvas.getBoundingClientRect();
@@ -194,7 +188,6 @@ export function HeroParticles() {
             const dx = x - pointer.x;
             const dy = y - pointer.y;
             const distanceSq = dx * dx + dy * dy;
-            // Squared-distance test first: Math.hypot per speck cost ~35fps at this count.
             if (distanceSq < POINTER_RADIUS_SQ && distanceSq > 0.000001) {
               const distance = Math.sqrt(distanceSq);
               const force = (1 - distance / POINTER_RADIUS) ** 2;
@@ -222,87 +215,55 @@ export function HeroParticles() {
       context.globalCompositeOperation = 'source-over';
     };
 
-    const loop = (now: number): void => {
-      if (!started) started = now;
-      draw((now - started) / 1000);
-      if (running) frame = window.requestAnimationFrame(loop);
-    };
-
-    const start = (): void => {
-      if (running || reduced.matches) return;
-      running = true;
-      frame = window.requestAnimationFrame(loop);
-    };
-
-    const stop = (): void => {
-      running = false;
-      window.cancelAnimationFrame(frame);
-    };
-
     resize();
     draw(0);
 
-    if (!reduced.matches) start();
+    // Static: one frame, repainted on resize. The field is artwork now, not motion.
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        visible = entries[0]?.isIntersecting ?? true;
-        if (visible) start();
-        else stop();
-      },
-      { threshold: 0 },
-    );
-    observer.observe(canvas);
-
-    const onVisibility = (): void => {
-      if (document.hidden) stop();
-      else if (visible) start();
-    };
 
     const onResize = (): void => {
       resize();
       draw(0);
     };
 
-    const onMotionChange = (): void => {
-      if (reduced.matches) {
-        stop();
+    /** Coalesce pointer moves into one repaint per frame — never a loop, never a queue. */
+    const repaint = (): void => {
+      if (queued) return;
+      queued = window.requestAnimationFrame(() => {
+        queued = 0;
         draw(0);
-      } else if (visible) {
-        start();
-      }
+      });
     };
 
     const onPointerMove = (event: PointerEvent): void => {
       const box = canvas.getBoundingClientRect();
-      pointer.x = event.clientX - box.left;
-      pointer.y = event.clientY - box.top;
-      pointer.active =
-        pointer.x > -POINTER_RADIUS &&
-        pointer.x < box.width + POINTER_RADIUS &&
-        pointer.y > -POINTER_RADIUS &&
-        pointer.y < box.height + POINTER_RADIUS;
-    };
+      const x = event.clientX - box.left;
+      const y = event.clientY - box.top;
+      const inside =
+        x > -POINTER_RADIUS && x < box.width + POINTER_RADIUS &&
+        y > -POINTER_RADIUS && y < box.height + POINTER_RADIUS;
 
-    const onPointerLeave = (): void => {
-      pointer.active = false;
-    };
+      if (!inside) {
+        if (pointer.active) {
+          pointer.active = false;
+          repaint();
+        }
+        return;
+      }
 
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerleave', onPointerLeave);
+      pointer.x = x;
+      pointer.y = y;
+      pointer.active = true;
+      repaint();
+    };
 
     window.addEventListener('resize', onResize);
-    document.addEventListener('visibilitychange', onVisibility);
-    reduced.addEventListener('change', onMotionChange);
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
 
     return () => {
-      stop();
-      observer.disconnect();
+      if (queued) window.cancelAnimationFrame(queued);
       window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerleave', onPointerLeave);
       window.removeEventListener('resize', onResize);
-      document.removeEventListener('visibilitychange', onVisibility);
-      reduced.removeEventListener('change', onMotionChange);
     };
   }, []);
 
