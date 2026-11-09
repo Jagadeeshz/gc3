@@ -65,7 +65,7 @@ export default function SettingsPage() {
             ].map((row) => (
               <div
                 key={row.label}
-                className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#1E293B] pb-2"
+                className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[color:var(--bindu-surface-border)] pb-2"
               >
                 <dt className="text-[11px] uppercase tracking-[0.1em] text-slate-400">{row.label}</dt>
                 <dd className="font-mono text-[11px] text-slate-100">{row.value}</dd>
@@ -122,7 +122,7 @@ export default function SettingsPage() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-2 rounded-[10px] border border-[#1E293B] px-3 py-3 text-xs text-slate-100 transition-colors hover:border-gold/40"
+                className="flex items-center gap-2 rounded-[6px] border border-[color:var(--bindu-surface-border)] px-3 py-3 text-xs text-slate-100 transition-colors hover:border-gold/40"
               >
                 <Icon aria-hidden className="size-3.5 text-gold-light" strokeWidth={1.75} />
                 {item.label}

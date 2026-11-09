@@ -171,7 +171,7 @@ export function PortalShell({
 
   return (
     <div className={`grid min-h-dvh lg:grid-cols-[248px_1fr] ${isOps ? 'bg-void' : 'bg-[#090D16]'} `}>
-      <aside className={`flex flex-col gap-6 px-4 py-5 ${isOps ? 'border-r border-white/10 bg-void-secondary' : 'border-r border-[#1E293B] bg-[#0B1120]'}`}>
+      <aside className={`flex flex-col gap-6 px-4 py-5 ${isOps ? 'border-r border-[color:var(--bindu-surface-border)] bg-void-secondary' : 'border-r border-[color:var(--bindu-surface-border)] bg-[#0B1120]'}`}>
         {/*
           The brand leads home: clients to their dashboard, staff back to the
           console. Client users never see an /ops href here — for them this
@@ -179,7 +179,7 @@ export function PortalShell({
           workspace (request detail lives under (client)) is not stranded there.
         */}
         <Link href={isStaff ? '/ops' : '/overview'} className="flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-[10px] border border-gold/35 bg-gold/10 font-display text-lg font-semibold text-gold-light">
+          <span className="grid size-10 place-items-center rounded-[6px] border border-gold/35 bg-gold/10 font-display text-lg font-semibold text-gold-light">
             G
           </span>
           <span className="leading-tight">
@@ -211,7 +211,7 @@ export function PortalShell({
             </select>
           </label>
         ) : (
-          <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-graphite px-3 py-2">
+          <div className="flex items-center gap-2 rounded-lg border border-[color:var(--bindu-surface-border)] bg-graphite px-3 py-2">
             <Building2 aria-hidden className="size-4 text-gold-light" strokeWidth={1.75} />
             <span className="truncate text-sm text-warm">{organization?.name ?? 'No tenant'}</span>
           </div>
@@ -272,7 +272,7 @@ export function PortalShell({
                   >
                     <Icon
                       aria-hidden
-                      className={`size-4 ${active ? 'text-emerald-300' : 'text-slate-500 group-hover:text-slate-300'}`}
+                      className={`size-4 ${active ? 'text-[color:var(--bindu-soma-light)]' : 'text-slate-500 group-hover:text-slate-300'}`}
                       strokeWidth={1.75}
                     />
                     {item.label}
@@ -308,7 +308,7 @@ export function PortalShell({
           </nav>
         ) : null}
 
-        <div className="mt-auto border-t border-white/10 pt-4">
+        <div className="mt-auto border-t border-[color:var(--bindu-surface-border)] pt-4">
           <p className="truncate text-xs text-warm">{session.actor.fullName}</p>
           <p className="truncate font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
             {roleLabel}
@@ -328,7 +328,7 @@ export function PortalShell({
       </aside>
 
       <div className="min-w-0">
-        <header className={`sticky top-0 z-10 flex h-16 items-center justify-between border-b px-6 backdrop-blur ${isOps ? 'border-white/10 bg-void/85' : 'border-[#1E293B] bg-[#090D16]/85'}`}>
+        <header className={`sticky top-0 z-10 flex h-16 items-center justify-between border-b px-6 backdrop-blur ${isOps ? 'border-[color:var(--bindu-surface-border)] bg-void/85' : 'border-[color:var(--bindu-surface-border)] bg-[#090D16]/85'}`}>
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
             {isOps ? 'Platform operations' : (organization?.name ?? 'No tenant selected')}
           </span>

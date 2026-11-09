@@ -94,7 +94,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="rounded-[14px] border border-white/10 bg-graphite/85 p-6 shadow-[0_1px_0_rgba(255,255,255,0.06)_inset]">
+        <div className="b-panel b-panel--rim p-6">
           <h1 className="font-display text-2xl tracking-[-0.01em] text-warm">Sign in</h1>
           <p className="mt-1 text-sm text-muted">
             Access your client workspace, service requests and deliverables.
@@ -110,7 +110,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@company.com"
-                className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+                className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-3)] px-3 py-2.5 text-[13px] text-warm placeholder:text-muted/60 transition-shadow focus:border-[color:var(--bindu-soma-light)] focus:outline-none focus:ring-1 focus:ring-[color:var(--bindu-soma-light)]"
               />
             </label>
 
@@ -123,7 +123,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="••••••••••••"
-                className="rounded-lg border border-white/12 bg-graphite-elevated px-3 py-2.5 text-sm text-warm placeholder:text-muted/60 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+                className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-3)] px-3 py-2.5 text-[13px] text-warm placeholder:text-muted/60 transition-shadow focus:border-[color:var(--bindu-soma-light)] focus:outline-none focus:ring-1 focus:ring-[color:var(--bindu-soma-light)]"
               />
             </label>
 
@@ -148,7 +148,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="mt-1 inline-flex min-h-11 items-center justify-center rounded-[10px] border border-gold-deep/40 bg-[linear-gradient(180deg,#E2C777_0%,#D9B65D_100%)] px-4 py-3 text-sm font-medium text-ink transition-[filter] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-1 inline-flex min-h-11 items-center justify-center rounded-[6px] border border-gold-deep/40 bg-[linear-gradient(180deg,#E2C777_0%,#D9B65D_100%)] px-4 py-3 text-sm font-medium text-ink transition-[filter] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Signing in…' : 'Sign in'}
             </button>

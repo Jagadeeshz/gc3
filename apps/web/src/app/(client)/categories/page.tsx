@@ -205,7 +205,7 @@ export default function CategoriesPage() {
 
       {canManage ? (
         <form
-          className="mt-5 rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-5"
+          className="mt-5 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-5"
           onSubmit={onSubmit}
         >
           <h2 className="text-sm font-semibold text-slate-100">
@@ -222,7 +222,7 @@ export default function CategoriesPage() {
                 value={form.name}
                 onChange={(event) => setForm({ ...form, name: event.target.value })}
                 placeholder="Cloud Migration"
-                className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+                className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
               />
             </label>
 
@@ -235,7 +235,7 @@ export default function CategoriesPage() {
                 onChange={(event) => setForm({ ...form, slug: event.target.value })}
                 placeholder="cloud-migration"
                 pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 font-mono text-xs text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+                className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 font-mono text-xs text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
               />
             </label>
           </div>
@@ -247,7 +247,7 @@ export default function CategoriesPage() {
               value={form.description}
               onChange={(event) => setForm({ ...form, description: event.target.value })}
               placeholder="What kind of work belongs here?"
-              className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+              className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
             />
           </label>
 
@@ -256,7 +256,7 @@ export default function CategoriesPage() {
               type="checkbox"
               checked={form.isActive}
               onChange={(event) => setForm({ ...form, isActive: event.target.checked })}
-              className="size-4 rounded border-white/20 bg-[#0B1220] accent-gold"
+              className="size-4 rounded border-white/20 bg-[color:var(--bindu-void-2)] accent-gold"
             />
             Active — offered when raising a request
           </label>
@@ -265,7 +265,7 @@ export default function CategoriesPage() {
             <button
               type="submit"
               disabled={busy}
-              className="min-h-10 rounded-[10px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-2 text-sm font-medium text-[#080B12] disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-10 rounded-[6px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-2 text-sm font-medium text-[#080B12] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {busy ? 'Saving…' : editingId ? 'Save changes' : 'Create category'}
             </button>
@@ -274,7 +274,7 @@ export default function CategoriesPage() {
                 type="button"
                 onClick={resetForm}
                 disabled={busy}
-                className="min-h-10 rounded-[10px] border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-100 hover:bg-white/10 disabled:opacity-60"
+                className="min-h-10 rounded-[6px] border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-100 hover:bg-white/10 disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -282,7 +282,7 @@ export default function CategoriesPage() {
           </div>
         </form>
       ) : (
-        <p className="mt-5 rounded-[12px] border border-[#1E293B] bg-[#0B1220] px-4 py-3 text-xs text-slate-400">
+        <p className="mt-5 rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-4 py-3 text-xs text-slate-400">
           You can use the catalogue when raising requests. Managing it is limited to platform admins
           and operations managers.
         </p>
@@ -291,7 +291,7 @@ export default function CategoriesPage() {
       {loading ? (
         <p className="mt-6 text-sm text-slate-400">Loading categories…</p>
       ) : categories.length === 0 ? (
-        <p className="mt-6 rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-5 text-sm text-slate-400">
+        <p className="mt-6 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-5 text-sm text-slate-400">
           No categories yet{canManage ? ' — create the first one above.' : '.'}
         </p>
       ) : (
@@ -299,7 +299,7 @@ export default function CategoriesPage() {
           {categories.map((category) => (
             <li
               key={category.id}
-              className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4"
+              className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">

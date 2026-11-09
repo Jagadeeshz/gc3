@@ -139,8 +139,8 @@ export default function MessagesPage() {
         />
       ) : (
         <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
-          <aside className="overflow-hidden rounded-[12px] border border-[#1E293B]">
-            <p className="border-b border-[#1E293B] bg-white/[0.03] px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-slate-400">
+          <aside className="overflow-hidden rounded-[6px] border border-[color:var(--bindu-surface-border)]">
+            <p className="border-b border-[color:var(--bindu-surface-border)] bg-white/[0.03] px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-slate-400">
               Conversations
             </p>
             <ul className="max-h-[520px] overflow-y-auto">
@@ -168,10 +168,10 @@ export default function MessagesPage() {
             </ul>
           </aside>
 
-          <section className="flex min-h-[520px] flex-col overflow-hidden rounded-[12px] border border-[#1E293B]">
+          <section className="flex min-h-[520px] flex-col overflow-hidden rounded-[6px] border border-[color:var(--bindu-surface-border)]">
             {selected ? (
               <>
-                <header className="border-b border-[#1E293B] bg-white/[0.03] px-5 py-3">
+                <header className="border-b border-[color:var(--bindu-surface-border)] bg-white/[0.03] px-5 py-3">
                   <p className="text-sm font-semibold text-slate-100">{selected.title}</p>
                   <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-slate-400">
                     {selected.reference} · {requestStatusLabel(selected.status)} · opened{' '}
@@ -195,10 +195,10 @@ export default function MessagesPage() {
                           <li
                             key={comment.id}
                             className={[
-                              'max-w-[85%] rounded-[10px] border px-3.5 py-2.5',
+                              'max-w-[85%] rounded-[6px] border px-3.5 py-2.5',
                               mine
                                 ? 'ml-auto border-gold/25 bg-gold/[0.07]'
-                                : 'border-[#1E293B] bg-white/[0.03]',
+                                : 'border-[color:var(--bindu-surface-border)] bg-white/[0.03]',
                             ].join(' ')}
                           >
                             <p className="text-[10px] uppercase tracking-[0.1em] text-slate-400">
@@ -213,14 +213,14 @@ export default function MessagesPage() {
                   )}
                 </div>
 
-                <form onSubmit={send} className="border-t border-[#1E293B] px-4 py-3">
+                <form onSubmit={send} className="border-t border-[color:var(--bindu-surface-border)] px-4 py-3">
                   <div className="flex items-end gap-2">
                     <textarea
                       value={draft}
                       onChange={(event) => setDraft(event.target.value)}
                       rows={2}
                       placeholder="Write a reply…"
-                      className="flex-1 resize-none rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                      className="flex-1 resize-none rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
                     />
                     <button
                       type="submit"

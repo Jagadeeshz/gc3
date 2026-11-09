@@ -121,7 +121,7 @@ export default function SubscriptionPage() {
           </Link>
         }
       />
-      <div className="flex flex-wrap items-start gap-2 rounded-[10px] border border-[#1E293B] bg-[#0B1220]/60 px-3.5 py-3">
+      <div className="flex flex-wrap items-start gap-2 rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)]/60 px-3.5 py-3">
         <Info aria-hidden className="mt-0.5 size-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} />
         <p className="text-[11px] leading-relaxed text-slate-400">
           <span className="text-slate-200">Two price models, both real.</span> This workspace bills
@@ -158,7 +158,7 @@ export default function SubscriptionPage() {
               { label: 'API calls included', value: `${tier.apiCallsIncluded.toLocaleString('en-IN')}` },
               { label: 'Seats included', value: `${tier.seatsIncluded}` },
             ].map((row) => (
-              <div key={row.label} className="flex items-baseline justify-between gap-3 border-b border-[#1E293B] pb-2">
+              <div key={row.label} className="flex items-baseline justify-between gap-3 border-b border-[color:var(--bindu-surface-border)] pb-2">
                 <dt className="text-[11px] text-slate-400">{row.label}</dt>
                 <dd className="font-mono text-xs tabular-nums text-slate-100">{row.value}</dd>
               </div>
@@ -207,7 +207,7 @@ export default function SubscriptionPage() {
             <p className="text-xs text-slate-400">No other plans are published.</p>
           ) : (
             otherTiers.map((candidate) => (
-              <article key={candidate.id} className="rounded-[10px] border border-[#1E293B] px-4 py-4">
+              <article key={candidate.id} className="rounded-[6px] border border-[color:var(--bindu-surface-border)] px-4 py-4">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold text-slate-100">{candidate.name}</p>
                   <Layers aria-hidden className="size-3.5 text-gold-light" strokeWidth={1.75} />
@@ -258,7 +258,7 @@ export default function SubscriptionPage() {
             </thead>
             <tbody>
               {invoices.items.map((invoice) => (
-                <tr key={invoice.id} className="border-t border-[#1E293B]">
+                <tr key={invoice.id} className="border-t border-[color:var(--bindu-surface-border)]">
                   <td className="py-2.5 font-mono text-slate-100">{invoice.number}</td>
                   <td className="py-2.5 text-slate-400">{invoice.periodStart.slice(0, 10)}</td>
                   <td className="py-2.5">

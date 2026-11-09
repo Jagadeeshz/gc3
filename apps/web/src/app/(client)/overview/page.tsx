@@ -92,7 +92,7 @@ function GlassCard({
 }) {
   return (
     <div
-      className={`rounded-xl border border-white/[0.07] bg-white/[0.025] backdrop-blur-sm ${
+      className={`rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-white/[0.025] backdrop-blur-sm ${
         interactive
           ? 'transition-[transform,border-color,background-color] duration-300 hover:-translate-y-0.5 hover:border-emerald-400/30 hover:bg-white/[0.045] motion-reduce:hover:translate-y-0'
           : ''
@@ -226,13 +226,13 @@ export default function ClientOverviewPage() {
   if (workspace.loading) {
     return (
       <div className="grid gap-4">
-        <div className="h-16 animate-pulse rounded-xl bg-white/[0.03]" />
+        <div className="h-16 animate-pulse rounded-[8px] bg-white/[0.03]" />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-xl bg-white/[0.03]" />
+            <div key={i} className="h-28 animate-pulse rounded-[8px] bg-white/[0.03]" />
           ))}
         </div>
-        <div className="h-64 animate-pulse rounded-xl bg-white/[0.03]" />
+        <div className="h-64 animate-pulse rounded-[8px] bg-white/[0.03]" />
       </div>
     );
   }
@@ -255,7 +255,7 @@ export default function ClientOverviewPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-slate-400">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--bindu-surface-border)] bg-white/[0.03] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-slate-400">
             <CalendarClock aria-hidden className="size-3" strokeWidth={2} />
             {now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
           </span>
@@ -264,7 +264,7 @@ export default function ClientOverviewPage() {
       </header>
 
       {workspace.error ? (
-        <p className="rounded-xl border border-red-400/30 bg-red-400/[0.07] px-4 py-3 text-[12px] text-red-300">
+        <p className="rounded-[8px] border border-red-400/30 bg-red-400/[0.07] px-4 py-3 text-[12px] text-red-300">
           {workspace.error}
         </p>
       ) : null}
@@ -407,14 +407,14 @@ function OwnerDashboard({
             const items = workspace.requests.filter((request) => column.statuses.includes(request.status));
 
             return (
-              <div key={column.key} className="rounded-xl border border-white/[0.06] bg-[#080d15] p-2.5">
+              <div key={column.key} className="rounded-[8px] border border-white/[0.06] bg-[color:var(--bindu-void-1)] p-2.5">
                 <div className="mb-2 flex items-center justify-between px-1">
                   <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">{column.title}</span>
                   <span className="font-mono text-[10px] tabular-nums text-slate-400">{items.length}</span>
                 </div>
                 <div className="grid gap-2">
                   {items.length === 0 ? (
-                    <p className="rounded-lg border border-dashed border-white/[0.07] px-3 py-6 text-center text-[11px] text-slate-600">
+                    <p className="rounded-lg border border-dashed border-[color:var(--bindu-surface-border)] px-3 py-6 text-center text-[11px] text-slate-600">
                       Nothing here
                     </p>
                   ) : (
@@ -530,7 +530,7 @@ function TeamPermissions({
         {workspace.membership.map((member) => (
           <li key={member.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
             <div className="flex min-w-0 items-center gap-2.5">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(140deg,#34D399,#0EA5A0)] font-mono text-[10px] font-bold text-[#04140D]">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(140deg,#34D399,#0EA5A0)] font-mono text-[10px] font-bold text-[color:var(--bindu-void)]">
                 {member.user.fullName.split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase()}
               </span>
               <div className="min-w-0">
@@ -560,7 +560,7 @@ function TeamPermissions({
                     disabled={pending || locked}
                     onClick={() => void toggle(member, permission.role)}
                     className={`group inline-flex items-center gap-2 rounded-full border px-2 py-1 transition-colors disabled:opacity-50 ${
-                      on ? 'border-emerald-400/40 bg-emerald-400/10' : 'border-white/10 bg-white/[0.03] hover:border-white/20'
+                      on ? 'border-emerald-400/40 bg-emerald-400/10' : 'border-[color:var(--bindu-surface-border)] bg-white/[0.03] hover:border-white/20'
                     }`}
                   >
                     <span
@@ -726,7 +726,7 @@ function MemberDashboard({
                           setCommenting(commenting === item.id ? null : item.id);
                           setDraft('');
                         }}
-                        className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-2 py-1 text-[10.5px] text-slate-300 transition-colors hover:border-emerald-400/35 hover:text-emerald-200"
+                        className="inline-flex items-center gap-1 rounded-lg border border-[color:var(--bindu-surface-border)] px-2 py-1 text-[10.5px] text-slate-300 transition-colors hover:border-emerald-400/35 hover:text-emerald-200"
                       >
                         <MessageSquare aria-hidden className="size-3" strokeWidth={2} />
                         Comment
@@ -743,7 +743,7 @@ function MemberDashboard({
                         maxLength={2000}
                         placeholder="What needs changing?"
                         aria-label={`Comment on ${item.title}`}
-                        className="w-full resize-none rounded-lg border border-[#1E293B] bg-[#080f19] px-2.5 py-2 text-[11.5px] text-slate-100 placeholder:text-slate-600 focus:border-emerald-400/50 focus:outline-none"
+                        className="w-full resize-none rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-1)] px-2.5 py-2 text-[11.5px] text-slate-100 placeholder:text-slate-600 focus:border-emerald-400/50 focus:outline-none"
                       />
                       <div className="mt-1.5 flex items-center justify-between">
                         <button

@@ -146,7 +146,7 @@ export function CommandPalette() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open the command palette"
-        className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-[#0a111c]/90 px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-emerald-200 backdrop-blur-md transition-colors hover:border-emerald-400/60 hover:bg-emerald-400/10"
+        className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-[color:var(--bindu-void-2)]/90 px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-emerald-200 backdrop-blur-md transition-colors hover:border-emerald-400/60 hover:bg-emerald-400/10"
       >
         <Command aria-hidden className="size-3.5" strokeWidth={1.9} />
         <span className="hidden sm:inline">Search</span>
@@ -170,9 +170,9 @@ export function CommandPalette() {
         role="dialog"
         aria-modal="true"
         aria-label="Command palette"
-        className="palette-in relative w-full max-w-[560px] overflow-hidden rounded-[14px] border border-emerald-400/25 bg-[#080f19]/97 shadow-[0_40px_120px_-40px_rgba(0,0,0,0.9)]"
+        className="palette-in relative w-full max-w-[560px] overflow-hidden rounded-[8px] border border-emerald-400/25 bg-[color:var(--bindu-void-1)]/97 shadow-[0_40px_120px_-40px_rgba(0,0,0,0.9)]"
       >
-        <div className="flex items-center gap-2.5 border-b border-[#1E293B] px-4 py-3">
+        <div className="flex items-center gap-2.5 border-b border-[color:var(--bindu-surface-border)] px-4 py-3">
           <Search aria-hidden className="size-4 shrink-0 text-emerald-300/80" strokeWidth={1.9} />
           <input
             ref={inputRef}
@@ -200,7 +200,7 @@ export function CommandPalette() {
             aria-expanded="true"
             className="w-full bg-transparent text-[13px] text-slate-100 placeholder:text-slate-500 focus:outline-none"
           />
-          <kbd className="shrink-0 rounded border border-[#1E293B] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-slate-500">
+          <kbd className="shrink-0 rounded border border-[color:var(--bindu-surface-border)] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-slate-500">
             esc
           </kbd>
         </div>
@@ -247,7 +247,7 @@ export function CommandPalette() {
           )}
         </ul>
 
-        <div className="flex items-center justify-between border-t border-[#1E293B] px-4 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">
+        <div className="flex items-center justify-between border-t border-[color:var(--bindu-surface-border)] px-4 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">
           <span>↑↓ move · ↵ open · esc close</span>
           <span>{matches.length} result{matches.length === 1 ? '' : 's'}</span>
         </div>

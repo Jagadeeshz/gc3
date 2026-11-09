@@ -395,3 +395,56 @@ body {
   --color-emerald-400: #00c79a;
   --color-emerald-500: #00b289;
 }
+
+/* ---------------------------------------------------------------- BINDU desktop mode
+   The portal and staff console are dense product surfaces, so they take BINDU's desktop
+   numbers, not the marketing scale: 8px panel radii, 6px cards, 1px borders at 8% shunya,
+   and a rim light on the top edge instead of a drop shadow (void absorbs shadow, so
+   elevation reads through borders and rims). */
+.b-panel {
+  position: relative;
+  background: var(--bindu-void-2);
+  border: 1px solid var(--bindu-surface-border);
+  border-radius: var(--bindu-r-desktop-lg);
+}
+
+.b-panel--rim::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--bindu-rim-neutral) 30%,
+    rgba(255, 255, 255, 0.25) 50%,
+    var(--bindu-rim-neutral) 70%,
+    transparent 100%
+  );
+}
+
+.b-card {
+  background: var(--bindu-void-2);
+  border: 1px solid var(--bindu-surface-border);
+  border-radius: var(--bindu-r-desktop-md);
+}
+
+.b-divide {
+  border-color: var(--bindu-surface-border);
+}
+
+.b-label {
+  font-family: var(--bindu-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bindu-text-tertiary);
+}
+
+.b-active-row {
+  background: rgba(201, 145, 26, 0.12); /* --bindu-soma-mid at 12% — BINDU selected state */
+  color: var(--bindu-shunya);
+}

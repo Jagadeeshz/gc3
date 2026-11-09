@@ -61,7 +61,7 @@ export default function DeliveriesPage() {
             value: history?.latestReleasedAt ? formatDate(history.latestReleasedAt) : '—',
           },
         ].map((metric) => (
-          <div key={metric.label} className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4">
+          <div key={metric.label} className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-4">
             <p className="text-xs text-slate-400">{metric.label}</p>
             <strong className="mt-2 block font-display text-2xl text-slate-100">{metric.value}</strong>
           </div>
@@ -80,7 +80,7 @@ export default function DeliveriesPage() {
       {loading ? (
         <p className="mt-6 text-sm text-slate-400">Loading delivery history…</p>
       ) : !history || history.entries.length === 0 ? (
-        <div className="mt-6 rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-6">
+        <div className="mt-6 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-6">
           <p className="text-sm text-slate-100">Nothing has been released yet.</p>
           <p className="mt-1 text-sm text-slate-400">
             Deliverables appear here once the GC3 team releases them after sign-off.
@@ -91,7 +91,7 @@ export default function DeliveriesPage() {
           {history.entries.map((entry) => (
             <li
               key={entry.deliverableId}
-              className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4"
+              className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">

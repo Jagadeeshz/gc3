@@ -69,7 +69,7 @@ export default function KnowledgePage() {
             <Link
               key={entry.href}
               href={entry.href}
-              className="group flex flex-col gap-2 rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4 transition-colors hover:border-emerald-400/30"
+              className="group flex flex-col gap-2 rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-4 transition-colors hover:border-emerald-400/30"
             >
               <Icon aria-hidden className="size-4 text-gold-light" strokeWidth={1.75} />
               <h2 className="text-sm font-semibold text-slate-100">{entry.title}</h2>

@@ -148,7 +148,7 @@ export default function DeliverablesPage() {
           { label: 'Awaiting review', value: totals.awaiting },
           { label: 'Approved or released', value: Math.max(totals.approved, released) },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4">
+          <div key={stat.label} className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-4">
             <p className="text-[11px] uppercase tracking-[0.1em] text-slate-400">{stat.label}</p>
             <p className="mt-2 font-display text-[26px] font-semibold tabular-nums leading-none text-slate-100">
               {stat.value}
@@ -184,7 +184,7 @@ export default function DeliverablesPage() {
                 {deliverables.map((deliverable) => (
                   <li
                     key={deliverable.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-[#1E293B] px-3.5 py-2.5"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-[6px] border border-[color:var(--bindu-surface-border)] px-3.5 py-2.5"
                   >
                     <div className="min-w-0">
                       <p className="flex items-center gap-2 text-sm text-slate-100">
@@ -215,7 +215,7 @@ export default function DeliverablesPage() {
                           type="button"
                           onClick={() => void download(deliverable)}
                           disabled={busy === deliverable.id}
-                          className="inline-flex items-center gap-1 rounded-lg border border-[#1E293B] px-2 py-1 text-[10px] text-slate-100 transition-colors hover:border-emerald-400/35 hover:text-emerald-200 disabled:opacity-50"
+                          className="inline-flex items-center gap-1 rounded-lg border border-[color:var(--bindu-surface-border)] px-2 py-1 text-[10px] text-slate-100 transition-colors hover:border-emerald-400/35 hover:text-emerald-200 disabled:opacity-50"
                         >
                           <Download aria-hidden className="size-3" strokeWidth={1.9} />
                           {busy === deliverable.id ? 'Fetching…' : 'Download'}

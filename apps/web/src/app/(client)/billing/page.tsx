@@ -136,7 +136,7 @@ export default function BillingPage() {
 
   if (error && !plan) {
     return (
-      <div className="flex items-start gap-3 rounded-xl border border-red-400/30 bg-red-400/5 px-4 py-3 text-sm text-red-200">
+      <div className="flex items-start gap-3 rounded-[8px] border border-red-400/30 bg-red-400/5 px-4 py-3 text-sm text-red-200">
         <CircleAlert aria-hidden className="mt-0.5 size-4" strokeWidth={1.75} />
         {error}
       </div>
@@ -160,7 +160,7 @@ export default function BillingPage() {
         </p>
       </header>
 
-      <p className="flex flex-wrap items-center gap-1.5 rounded-[10px] border border-[#1E293B] bg-[#0B1220]/60 px-3.5 py-2.5 text-[11px] text-slate-400">
+      <p className="flex flex-wrap items-center gap-1.5 rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)]/60 px-3.5 py-2.5 text-[11px] text-slate-400">
         <Info aria-hidden className="size-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} />
         Invoices price the metered platform plan. Capability pods and their credit pools are the
         commercial catalogue —{' '}
@@ -171,13 +171,13 @@ export default function BillingPage() {
       </p>
 
       {notice ? (
-        <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.07] px-4 py-2.5 text-xs text-amber-200">
+        <div className="rounded-[8px] border border-amber-400/30 bg-amber-400/[0.07] px-4 py-2.5 text-xs text-amber-200">
           {notice}
         </div>
       ) : null}
 
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <article className="rounded-2xl border border-[#1E293B] bg-[#0B1220]/60 p-5">
+        <article className="rounded-2xl border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)]/60 p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">Plan</p>
@@ -207,7 +207,7 @@ export default function BillingPage() {
           </p>
         </article>
 
-        <article className="rounded-2xl border border-[#1E293B] bg-[#0B1220]/60 p-5">
+        <article className="rounded-2xl border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)]/60 p-5">
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">
             Change your plan
           </p>
@@ -234,7 +234,7 @@ export default function BillingPage() {
             return (
               <article
                 key={meter.key}
-                className="rounded-xl border border-[#1E293B] bg-[#0B1220]/60 p-4"
+                className="rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)]/60 p-4"
               >
                 <p className="text-xs text-slate-400">
                   {meter.key === 'REQUESTS'
@@ -269,7 +269,7 @@ export default function BillingPage() {
         </div>
 
         {invoices && invoices.items.length > 0 ? (
-          <div className="overflow-hidden rounded-2xl border border-[#1E293B]">
+          <div className="overflow-hidden rounded-2xl border border-[color:var(--bindu-surface-border)]">
             <table className="w-full text-left text-sm">
               <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.14em] text-slate-400">
                 <tr>
@@ -283,7 +283,7 @@ export default function BillingPage() {
               </thead>
               <tbody>
                 {invoices.items.map((invoice) => (
-                  <tr key={invoice.id} className="border-t border-[#1E293B]">
+                  <tr key={invoice.id} className="border-t border-[color:var(--bindu-surface-border)]">
                     <td className="px-4 py-3">
                       <button
                         type="button"
@@ -344,7 +344,7 @@ export default function BillingPage() {
       </section>
 
       {openInvoice ? (
-        <section className="rounded-2xl border border-[#1E293B] bg-[#0B1220]/60 p-5">
+        <section className="rounded-2xl border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)]/60 p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">
@@ -378,7 +378,7 @@ export default function BillingPage() {
             </thead>
             <tbody>
               {openInvoice.lineItems.map((line) => (
-                <tr key={line.id} className="border-t border-[#1E293B]">
+                <tr key={line.id} className="border-t border-[color:var(--bindu-surface-border)]">
                   <td className="py-2 pr-3 text-slate-100">{line.description}</td>
                   <td className="py-2 text-right font-mono text-slate-400">{line.quantity}</td>
                   <td className="py-2 text-right font-mono text-slate-400">
@@ -390,7 +390,7 @@ export default function BillingPage() {
                 </tr>
               ))}
             </tbody>
-            <tfoot className="border-t border-[#1E293B] text-slate-100">
+            <tfoot className="border-t border-[color:var(--bindu-surface-border)] text-slate-100">
               <tr>
                 <td className="py-2" colSpan={3}>
                   Subtotal

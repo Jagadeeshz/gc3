@@ -85,7 +85,7 @@ export default function NewRequestPage() {
       </p>
 
       <form
-        className="mt-6 grid gap-4 rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-6"
+        className="mt-6 grid gap-4 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-6"
         onSubmit={(event) => {
           event.preventDefault();
           void submit('SUBMITTED');
@@ -100,7 +100,7 @@ export default function NewRequestPage() {
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="e.g. Provision a staging cluster"
-            className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+            className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
           />
         </label>
 
@@ -114,7 +114,7 @@ export default function NewRequestPage() {
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             placeholder="What needs to happen, for whom, and by when?"
-            className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+            className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
           />
         </label>
 
@@ -123,7 +123,7 @@ export default function NewRequestPage() {
           <select
             value={priority}
             onChange={(event) => setPriority(event.target.value as ServiceRequestPriority)}
-            className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+            className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
           >
             {PRIORITIES.map((value) => (
               <option key={value} value={value}>
@@ -138,7 +138,7 @@ export default function NewRequestPage() {
           <select
             value={categoryId}
             onChange={(event) => setCategoryId(event.target.value)}
-            className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+            className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
           >
             <option value="">No category</option>
             {categories.map((category) => (
@@ -167,7 +167,7 @@ export default function NewRequestPage() {
           <button
             type="submit"
             disabled={saving !== null}
-            className="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-3 text-sm font-medium text-ink transition-[filter] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 items-center justify-center rounded-[6px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-3 text-sm font-medium text-ink transition-[filter] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving === 'SUBMITTED' ? 'Submitting…' : 'Submit request'}
           </button>
@@ -175,7 +175,7 @@ export default function NewRequestPage() {
             type="button"
             onClick={() => void submit('DRAFT')}
             disabled={saving !== null}
-            className="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 items-center justify-center rounded-[6px] border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving === 'DRAFT' ? 'Saving…' : 'Save as draft'}
           </button>

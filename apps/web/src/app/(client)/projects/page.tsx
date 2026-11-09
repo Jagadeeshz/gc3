@@ -100,7 +100,7 @@ export default function ProjectsPage() {
           { label: 'Active now', value: summary.active },
           { label: 'Deliverables released', value: summary.delivered },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4">
+          <div key={stat.label} className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-4">
             <p className="text-[11px] uppercase tracking-[0.1em] text-slate-400">{stat.label}</p>
             <p className="mt-2 font-display text-[26px] font-semibold tabular-nums leading-none text-slate-100">
               {stat.value}
@@ -117,7 +117,7 @@ export default function ProjectsPage() {
           action={{ href: '/services', label: 'Browse services' }}
         />
       ) : (
-        <div className="overflow-hidden rounded-[12px] border border-[#1E293B]">
+        <div className="overflow-hidden rounded-[6px] border border-[color:var(--bindu-surface-border)]">
           <table className="w-full text-left text-xs">
             <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.12em] text-slate-400">
               <tr>
@@ -134,7 +134,7 @@ export default function ProjectsPage() {
                 const released = deliverables.filter((item) => item.status === 'RELEASED').length;
 
                 return (
-                  <tr key={request.id} className="border-t border-[#1E293B] hover:bg-[#0B1220]/60">
+                  <tr key={request.id} className="border-t border-[color:var(--bindu-surface-border)] hover:bg-[color:var(--bindu-void-2)]/60">
                     <td className="px-4 py-3">
                       <p className="text-sm text-slate-100">{request.title}</p>
                       <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-slate-400">

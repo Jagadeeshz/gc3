@@ -95,7 +95,7 @@ export default function OpsPage() {
 
   if (!persona) {
     return (
-      <div className="mx-auto mt-10 max-w-[520px] rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-6 text-center">
+      <div className="mx-auto mt-10 max-w-[520px] rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-6 text-center">
         <CircleSlash aria-hidden className="mx-auto size-6 text-amber-300" strokeWidth={1.75} />
         <h1 className="mt-3 font-display text-lg text-slate-100">No staff workspace for this account</h1>
         <p className="mt-2 text-[12px] leading-relaxed text-slate-400">
@@ -136,7 +136,7 @@ export default function OpsPage() {
               <span className="size-1.5 rounded-full bg-current" />
               {OPS_BACKING_LABEL[active.backing]}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#1E293B] px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-400">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--bindu-surface-border)] px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-400">
               <ShieldCheck aria-hidden className="size-3" strokeWidth={1.75} />
               {role}
             </span>
@@ -144,7 +144,7 @@ export default function OpsPage() {
         </div>
 
         {active.note ? (
-          <p className="flex items-start gap-1.5 rounded-[10px] border border-amber-400/20 bg-amber-400/[0.06] px-3 py-2 text-[11px] leading-relaxed text-amber-200/90">
+          <p className="flex items-start gap-1.5 rounded-[6px] border border-amber-400/20 bg-amber-400/[0.06] px-3 py-2 text-[11px] leading-relaxed text-amber-200/90">
             <Info aria-hidden className="mt-0.5 size-3 shrink-0" strokeWidth={1.75} />
             {active.note}
           </p>
@@ -153,7 +153,7 @@ export default function OpsPage() {
         {/* Tab strip — this persona's tabs, in the order the workspace defines. */}
         <nav
           aria-label={`${OPS_PERSONA_LABEL[persona]} sections`}
-          className="flex flex-wrap gap-1 border-b border-[#1E293B] pb-2"
+          className="flex flex-wrap gap-1 border-b border-[color:var(--bindu-surface-border)] pb-2"
         >
           {tabs.map((tab) => {
             const Icon = tab.icon;

@@ -170,7 +170,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
           type="button"
           onClick={() => setSwitcherOpen((open) => !open)}
           aria-expanded={switcherOpen}
-          className="flex w-full items-center gap-2.5 rounded-xl border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-left transition-colors hover:border-emerald-400/30"
+          className="flex w-full items-center gap-2.5 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-left transition-colors hover:border-emerald-400/30"
         >
           <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-emerald-400/12 text-emerald-300">
             <Building2 aria-hidden className="size-4" strokeWidth={1.9} />
@@ -189,7 +189,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
         </button>
 
         {switcherOpen ? (
-          <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 overflow-hidden rounded-xl border border-[#1E293B] bg-[#0B1220] shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]">
+          <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 overflow-hidden rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]">
             {(session?.organizations ?? []).map((org) => (
               <button
                 key={org.id}
@@ -215,7 +215,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
           <p className="mb-1.5 px-1 font-mono text-[9px] uppercase tracking-[0.14em] text-slate-600">
             Preview as
           </p>
-          <div role="tablist" aria-label="Preview role" className="grid grid-cols-2 gap-1 rounded-xl border border-[#1E293B] bg-[#080f19] p-1">
+          <div role="tablist" aria-label="Preview role" className="grid grid-cols-2 gap-1 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-1)] p-1">
             {(['owner', 'member'] as const).map((option) => {
               const selected = mode === option;
 
@@ -243,7 +243,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
       {/* role-aware primary action */}
       <Link
         href={primaryAction.href}
-        className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-3 py-2.5 text-[12.5px] font-semibold text-[#080B12] transition-colors hover:brightness-[1.08]"
+        className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-3 py-2.5 text-[12.5px] font-semibold text-[#080B12] transition-colors hover:brightness-[1.08]"
       >
         <ActionIcon aria-hidden className="size-4" strokeWidth={2.1} />
         {primaryAction.label}
@@ -268,7 +268,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
                       aria-current={active ? 'page' : undefined}
                       className={`group relative flex items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[12.5px] transition-colors ${
                         active
-                          ? 'bg-emerald-400/10 text-emerald-200'
+                          ? 'b-active-row'
                           : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200'
                       }`}
                     >
@@ -326,7 +326,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
       </nav>
 
       {/* person */}
-      <div className="rounded-xl border border-[#1E293B] bg-[#0B1220] p-2.5">
+      <div className="rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-2.5">
         <div className="flex items-center gap-2.5">
           <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(140deg,#34D399,#0EA5A0)] font-mono text-[10px] font-bold text-[#080B12]">
             {initials}
@@ -371,7 +371,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
       </div>
 
       <div className="lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
-        <aside className="sticky top-0 hidden h-dvh border-r border-hairline bg-[#080d15] lg:block">
+        <aside className="sticky top-0 hidden h-dvh border-r border-hairline bg-[color:var(--bindu-void-1)] lg:block">
           {rail}
         </aside>
 
@@ -383,7 +383,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
               onClick={() => setDrawerOpen(false)}
               className="absolute inset-0 bg-obsidian/80 backdrop-blur-sm"
             />
-            <div className="palette-in absolute left-0 top-0 h-full w-[280px] border-r border-hairline bg-[#080d15]">
+            <div className="palette-in absolute left-0 top-0 h-full w-[280px] border-r border-hairline bg-[color:var(--bindu-void-1)]">
               <div className="flex justify-end px-3 pt-3">
                 <button
                   type="button"

@@ -137,7 +137,7 @@ export function BookDemoDialog() {
   if (!open) return null;
 
   const field =
-    'w-full rounded-[10px] border border-[#1E293B] bg-[#080f19] px-3.5 py-2.5 text-[13px] text-slate-100 placeholder:text-slate-500 transition-colors focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/15';
+    'w-full rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-1)] px-3.5 py-2.5 text-[13px] text-slate-100 placeholder:text-slate-500 transition-colors focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/15';
   const label =
     'mb-1.5 block font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500';
 
@@ -154,7 +154,7 @@ export function BookDemoDialog() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="demo-title"
-        className="palette-in relative w-full max-w-[640px] overflow-hidden rounded-[16px] border border-emerald-400/20 bg-[#0b111c] p-6 shadow-[0_50px_140px_-50px_rgba(0,0,0,0.95)] sm:p-8"
+        className="palette-in relative w-full max-w-[640px] overflow-hidden rounded-[16px] border border-emerald-400/20 bg-[color:var(--bindu-void-2)] p-6 shadow-[0_50px_140px_-50px_rgba(0,0,0,0.95)] sm:p-8"
       >
         <button
           type="button"

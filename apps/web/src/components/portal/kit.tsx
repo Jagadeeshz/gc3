@@ -26,13 +26,13 @@ export function PageHeader({
   readonly actions?: ReactNode;
 }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-4 border-b border-[#1E293B] pb-5">
+    <header className="flex flex-wrap items-end justify-between gap-4 border-b border-[color:var(--bindu-surface-border)] pb-4">
       <div className="min-w-0">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{eyebrow}</p>
-        <h1 className="mt-1.5 font-display text-2xl font-semibold tracking-[-0.01em] text-warm">
+        <p className="b-label">{eyebrow}</p>
+        <h1 className="mt-1 font-display text-[26px] font-semibold leading-[1.1] tracking-[-0.01em] text-warm">
           {title}
         </h1>
-        {description ? <p className="mt-1.5 max-w-[62ch] text-sm text-muted">{description}</p> : null}
+        {description ? <p className="mt-1 max-w-[68ch] text-[13px] leading-relaxed text-muted">{description}</p> : null}
       </div>
       {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </header>
@@ -53,9 +53,9 @@ export function Panel({
   readonly children: ReactNode;
 }) {
   return (
-    <section className={`rounded-[14px] border border-[#1E293B] bg-[#0B1220]/80 ${className}`}>
+    <section className={`b-panel b-panel--rim ${className}`}>
       {title ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1E293B] px-5 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[color:var(--bindu-surface-border)] px-4 py-3">
           <div>
             <h2 className="text-sm font-semibold text-warm">{title}</h2>
             {subtitle ? <p className="mt-0.5 text-[11px] text-muted">{subtitle}</p> : null}
@@ -63,7 +63,7 @@ export function Panel({
           {action}
         </div>
       ) : null}
-      <div className="p-5">{children}</div>
+      <div className="p-4">{children}</div>
     </section>
   );
 }
@@ -104,15 +104,15 @@ export function StatCard({
           : '';
 
   return (
-    <article className={`rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4 transition-shadow ${glow}`}>
+    <article className={`b-card p-3.5 transition-shadow ${glow}`}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] uppercase tracking-[0.1em] text-muted">{label}</p>
+        <p className="b-label">{label}</p>
         {Icon ? <Icon aria-hidden className="size-4 text-gold-light" strokeWidth={1.75} /> : null}
       </div>
-      <p className={`mt-2 font-display text-[26px] font-semibold tabular-nums leading-none tracking-[-0.01em] ${toneClass}`}>
+      <p className={`mt-1.5 font-display text-[24px] font-semibold tabular-nums leading-none tracking-[-0.01em] ${toneClass}`}>
         {value}
       </p>
-      {hint ? <p className="mt-1.5 text-[11px] text-muted">{hint}</p> : null}
+      {hint ? <p className="mt-1 text-[11px] text-muted">{hint}</p> : null}
     </article>
   );
 }
@@ -129,7 +129,7 @@ export function EmptyState({
   readonly action?: { readonly href: string; readonly label: string };
 }) {
   return (
-    <div className="flex flex-col items-start gap-2 rounded-[12px] border border-dashed border-[#1E293B] bg-[#0B1220]/40 px-5 py-8">
+    <div className="flex flex-col items-start gap-2 rounded-[6px] border border-dashed border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-1)] px-4 py-7">
       {Icon ? <Icon aria-hidden className="size-5 text-gold-light" strokeWidth={1.75} /> : null}
       <p className="text-sm font-medium text-warm">{title}</p>
       <p className="max-w-[58ch] text-xs text-muted">{body}</p>
@@ -214,7 +214,7 @@ export function RestrictedPanel({
   readonly label?: string;
 }) {
   return (
-    <div className="mx-auto mt-10 max-w-[520px] rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-6 text-center">
+    <div className="mx-auto mt-10 max-w-[520px] rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-6 text-center">
       <Lock aria-hidden className="mx-auto size-5 text-gold-light" strokeWidth={1.75} />
       <h2 className="mt-3 font-display text-lg font-semibold text-warm">{title}</h2>
       <p className="mt-2 text-sm text-muted">{body}</p>
@@ -231,7 +231,7 @@ export function RestrictedPanel({
 
 export function ErrorNote({ message }: { readonly message: string }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-[10px] border border-red-400/30 bg-red-400/5 px-4 py-3 text-xs text-red-200">
+    <div className="flex items-start gap-2.5 rounded-[6px] border border-red-400/30 bg-red-400/5 px-4 py-3 text-xs text-red-200">
       <TriangleAlert aria-hidden className="mt-0.5 size-4" strokeWidth={1.75} />
       {message}
     </div>

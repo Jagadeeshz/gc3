@@ -666,7 +666,7 @@ export default function RequestDetailPage() {
           { label: 'Submitted', value: formatDate(request.submittedAt) },
           { label: 'Due', value: formatDate(request.dueAt) },
         ].map((item) => (
-          <div key={item.label} className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-3.5">
+          <div key={item.label} className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-3.5">
             <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
               {item.label}
             </p>
@@ -677,7 +677,7 @@ export default function RequestDetailPage() {
 
       {editing ? (
         <form
-          className="mt-5 rounded-[14px] border border-emerald-400/25 bg-[#0B1220] p-5"
+          className="mt-5 rounded-[8px] border border-emerald-400/25 bg-[color:var(--bindu-void-2)] p-5"
           onSubmit={onSaveEdit}
         >
           <h2 className="text-sm font-semibold text-slate-100">Edit request</h2>
@@ -690,7 +690,7 @@ export default function RequestDetailPage() {
               maxLength={200}
               value={editForm.title}
               onChange={(event) => setEditForm({ ...editForm, title: event.target.value })}
-              className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+              className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
             />
           </label>
 
@@ -703,7 +703,7 @@ export default function RequestDetailPage() {
               maxLength={20_000}
               value={editForm.description}
               onChange={(event) => setEditForm({ ...editForm, description: event.target.value })}
-              className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+              className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
             />
           </label>
 
@@ -718,7 +718,7 @@ export default function RequestDetailPage() {
                     priority: event.target.value as ServiceRequestPriority,
                   })
                 }
-                className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
               >
                 {(['LOW', 'NORMAL', 'HIGH', 'URGENT'] as ServiceRequestPriority[]).map((value) => (
                   <option key={value} value={value}>
@@ -733,7 +733,7 @@ export default function RequestDetailPage() {
               <select
                 value={editForm.categoryId}
                 onChange={(event) => setEditForm({ ...editForm, categoryId: event.target.value })}
-                className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
               >
                 <option value="">No category</option>
                 {categories.map((category) => (
@@ -749,7 +749,7 @@ export default function RequestDetailPage() {
             <button
               type="submit"
               disabled={busy !== null}
-              className="min-h-10 rounded-[10px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-2 text-sm font-medium text-[#080B12] disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-10 rounded-[6px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-2 text-sm font-medium text-[#080B12] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {busy === 'edit' ? 'Saving…' : 'Save changes'}
             </button>
@@ -760,14 +760,14 @@ export default function RequestDetailPage() {
                 setActionError(null);
               }}
               disabled={busy !== null}
-              className="min-h-10 rounded-[10px] border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-100 hover:bg-white/10 disabled:opacity-60"
+              className="min-h-10 rounded-[6px] border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-100 hover:bg-white/10 disabled:opacity-60"
             >
               Cancel
             </button>
           </div>
         </form>
       ) : (
-        <section className="mt-5 rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-5">
+        <section className="mt-5 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-5">
           <h2 className="text-sm font-semibold text-slate-100">Description</h2>
           <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-400">
             {request.description}
@@ -791,7 +791,7 @@ export default function RequestDetailPage() {
       ) : null}
 
       {nextStatuses.length > 0 ? (
-        <section className="mt-5 rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-5">
+        <section className="mt-5 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-5">
           <h2 className="text-sm font-semibold text-slate-100">Move this request</h2>
           <p className="mt-1 text-xs text-slate-400">
             Only transitions the workflow allows are offered; the API rejects the rest with 409.
@@ -813,7 +813,7 @@ export default function RequestDetailPage() {
       ) : null}
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[1.3fr_1fr]">
-        <section className="rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-5">
+        <section className="rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-5">
           <h2 className="text-sm font-semibold text-slate-100">Comments</h2>
 
           {comments.length === 0 ? (
@@ -823,7 +823,7 @@ export default function RequestDetailPage() {
               {comments.map((comment) => (
                 <li
                   key={comment.id}
-                  className="rounded-[10px] border border-[#1E293B] bg-[#0B1220]/60 px-3.5 py-3"
+                  className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)]/60 px-3.5 py-3"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
@@ -843,7 +843,7 @@ export default function RequestDetailPage() {
               value={draftComment}
               onChange={(event) => setDraftComment(event.target.value)}
               placeholder={commentIsInternal ? 'Add an internal note…' : 'Add a comment…'}
-              className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+              className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
             />
             {canWriteInternal ? (
               <label className="flex items-center gap-2 text-xs text-slate-400">
@@ -851,7 +851,7 @@ export default function RequestDetailPage() {
                   type="checkbox"
                   checked={commentIsInternal}
                   onChange={(event) => setCommentIsInternal(event.target.checked)}
-                  className="size-4 rounded border-white/20 bg-[#0B1220] accent-gold"
+                  className="size-4 rounded border-white/20 bg-[color:var(--bindu-void-2)] accent-gold"
                 />
                 Internal note — hidden from the client
               </label>
@@ -872,7 +872,7 @@ export default function RequestDetailPage() {
 
         {/* Internal checklist — staff only. The API refuses this path to clients. */}
         {isStaff ? (
-          <section className="rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-5">
+          <section className="rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-5">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-semibold text-slate-100">Internal tasks</h2>
               <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
@@ -894,7 +894,7 @@ export default function RequestDetailPage() {
                   return (
                     <li
                       key={task.id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#1E293B] bg-void/40 px-3 py-2"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[color:var(--bindu-surface-border)] bg-void/40 px-3 py-2"
                     >
                       <div className="min-w-0">
                         <p className="truncate text-xs text-slate-100">{task.title}</p>
@@ -912,7 +912,7 @@ export default function RequestDetailPage() {
                           onChange={(event) =>
                             void assignTask(task.id, event.target.value || null)
                           }
-                          className="rounded border border-[#1E293B] bg-void px-1.5 py-1 text-[10px] text-slate-100 focus:border-emerald-400/60 focus:outline-none disabled:opacity-50"
+                          className="rounded border border-[color:var(--bindu-surface-border)] bg-void px-1.5 py-1 text-[10px] text-slate-100 focus:border-emerald-400/60 focus:outline-none disabled:opacity-50"
                         >
                           <option value="">Unassigned</option>
                           {staff.map((candidate) => (
@@ -929,7 +929,7 @@ export default function RequestDetailPage() {
                           onChange={(event) =>
                             void setTaskStatus(task.id, event.target.value as TaskStatus)
                           }
-                          className="rounded border border-[#1E293B] bg-void px-1.5 py-1 text-[10px] uppercase tracking-[0.06em] text-slate-100 focus:border-emerald-400/60 focus:outline-none disabled:opacity-50"
+                          className="rounded border border-[color:var(--bindu-surface-border)] bg-void px-1.5 py-1 text-[10px] uppercase tracking-[0.06em] text-slate-100 focus:border-emerald-400/60 focus:outline-none disabled:opacity-50"
                         >
                           {(['TODO', 'IN_PROGRESS', 'BLOCKED', 'DONE', 'CANCELLED'] as TaskStatus[]).map(
                             (status) => (
@@ -955,7 +955,7 @@ export default function RequestDetailPage() {
                   setTaskDraft((draft) => ({ ...draft, title: event.target.value }))
                 }
                 placeholder="Break out a work item…"
-                className="min-w-0 flex-1 rounded-lg border border-[#1E293B] bg-void px-3 py-2 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                className="min-w-0 flex-1 rounded-lg border border-[color:var(--bindu-surface-border)] bg-void px-3 py-2 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
               />
               <select
                 aria-label="Assign the new task to"
@@ -963,7 +963,7 @@ export default function RequestDetailPage() {
                 onChange={(event) =>
                   setTaskDraft((draft) => ({ ...draft, assigneeId: event.target.value }))
                 }
-                className="rounded-lg border border-[#1E293B] bg-void px-2 py-2 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-void px-2 py-2 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
               >
                 <option value="">Unassigned</option>
                 {staff.map((candidate) => (
@@ -983,7 +983,7 @@ export default function RequestDetailPage() {
           </section>
         ) : null}
 
-        <section className="rounded-[14px] border border-[#1E293B] bg-[#0B1220] p-5">
+        <section className="rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-5">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-slate-100">Deliverables</h2>
             {canCreateDeliverable && !showDeliverableForm ? (
@@ -999,7 +999,7 @@ export default function RequestDetailPage() {
 
           {canCreateDeliverable && showDeliverableForm ? (
             <form
-              className="mt-3 grid gap-2 rounded-[10px] border border-emerald-400/25 bg-[#0B1220]/60 p-3"
+              className="mt-3 grid gap-2 rounded-[6px] border border-emerald-400/25 bg-[color:var(--bindu-void-2)]/60 p-3"
               onSubmit={onCreateDeliverable}
             >
               <input
@@ -1011,7 +1011,7 @@ export default function RequestDetailPage() {
                   setDeliverableForm({ ...deliverableForm, title: event.target.value })
                 }
                 placeholder="Deliverable title"
-                className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
               />
               <input
                 maxLength={1000}
@@ -1020,7 +1020,7 @@ export default function RequestDetailPage() {
                   setDeliverableForm({ ...deliverableForm, description: event.target.value })
                 }
                 placeholder="Short description (optional)"
-                className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
               />
               <input
                 type="url"
@@ -1030,7 +1030,7 @@ export default function RequestDetailPage() {
                   setDeliverableForm({ ...deliverableForm, fileUrl: event.target.value })
                 }
                 placeholder="https://files.example.com/output.pdf (optional)"
-                className="rounded-lg border border-[#1E293B] bg-[#0B1220] px-3 py-2 font-mono text-xs text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2 font-mono text-xs text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
               />
               <div className="flex gap-2">
                 <button
@@ -1062,7 +1062,7 @@ export default function RequestDetailPage() {
               {deliverables.map((deliverable) => (
                 <li
                   key={deliverable.id}
-                  className="rounded-[10px] border border-[#1E293B] bg-[#0B1220]/60 px-3.5 py-3"
+                  className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)]/60 px-3.5 py-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -1188,7 +1188,7 @@ export default function RequestDetailPage() {
                         value={attachNote}
                         onChange={(event) => setAttachNote(event.target.value)}
                         placeholder="Why this file (optional, recorded on the version)"
-                        className="rounded-md border border-[#1E293B] bg-[#0B1220] px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                        className="rounded-md border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
                       />
                       <p className="text-[11px] text-slate-400">
                         The bytes are stored and hashed on arrival. If this deliverable has already
@@ -1235,7 +1235,7 @@ export default function RequestDetailPage() {
                           })
                         }
                         placeholder="Title"
-                        className="rounded-md border border-[#1E293B] bg-[#0B1220] px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                        className="rounded-md border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
                       />
                       <input
                         maxLength={1000}
@@ -1247,7 +1247,7 @@ export default function RequestDetailPage() {
                           })
                         }
                         placeholder="Description"
-                        className="rounded-md border border-[#1E293B] bg-[#0B1220] px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                        className="rounded-md border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
                       />
                       <input
                         type="url"
@@ -1260,7 +1260,7 @@ export default function RequestDetailPage() {
                           })
                         }
                         placeholder="https://files.example.com/replacement.pdf"
-                        className="rounded-md border border-[#1E293B] bg-[#0B1220] px-2.5 py-1.5 font-mono text-[11px] text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                        className="rounded-md border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-2.5 py-1.5 font-mono text-[11px] text-slate-100 focus:border-emerald-400/60 focus:outline-none"
                       />
                       <input
                         maxLength={500}
@@ -1272,7 +1272,7 @@ export default function RequestDetailPage() {
                           })
                         }
                         placeholder="Why this changed (optional, recorded on the version)"
-                        className="rounded-md border border-[#1E293B] bg-[#0B1220] px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                        className="rounded-md border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
                       />
                       {deliverable.status === 'APPROVED' || deliverable.status === 'RELEASED' ? (
                         <p className="text-[11px] text-gold-light">
