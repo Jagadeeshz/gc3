@@ -4,7 +4,6 @@ import { ArrowDown, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { SessionGate } from '@/components/marketing/session-gate';
 import { SiteNav } from '@/components/marketing/site-nav';
 import { ScrollProgress } from '@/components/marketing/scroll-progress';
-import { PodSlides } from '@/components/marketing/pod-slides';
 import { BentoGrid } from '@/components/marketing/bento-grid';
 import { PodCarousel } from '@/components/marketing/pod-carousel';
 import { CommandPalette } from '@/components/marketing/command-palette';
@@ -15,6 +14,7 @@ import { ActPods } from '@/components/marketing/act-pods';
 import { PlatformBand, PricingFaq } from '@/components/pricing/pricing-sections';
 import { QuantocosMark } from '@/components/brand/quantocos-mark';
 
+import { PodMarquee } from '@/components/marketing/pod-slides';
 export const metadata: Metadata = {
   title: 'Quantocos — Explore possibilities',
   description:
@@ -85,10 +85,10 @@ export default function ScrollytellingHome() {
             height={748}
             loading="eager"
             decoding="async"
-            className="absolute inset-0 size-full object-cover object-[62%_42%] opacity-95 mix-blend-screen"
+            className="absolute inset-0 size-full object-cover object-[62%_42%] opacity-95 mix-blend-screen [transform:translate(2.5%,-4%)_scale(1.06)]"
           />
           <div className="absolute inset-0 [background:linear-gradient(90deg,rgba(8,11,18,0.97)_0%,rgba(8,11,18,0.87)_34%,rgba(8,11,18,0.36)_62%,rgba(8,11,18,0.05)_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-obsidian via-obsidian/80 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-[46%] bg-gradient-to-t from-obsidian via-obsidian/92 to-transparent" />
           <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-obsidian/90 to-transparent" />
         </div>
 
@@ -120,7 +120,8 @@ export default function ScrollytellingHome() {
             </Link>
           </div>
 
-          <PodSlides className="rise mt-10" />
+          {/* The pods, as a band of type crossing the page. No boxes, no boundaries. */}
+          <PodMarquee className="rise mt-10" />
 
           {/* Proof rail: an infinite ticker travelling left to right. The four facts are rendered
               twice and the track moves exactly half its width, so the second copy arrives where the

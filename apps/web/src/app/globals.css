@@ -910,7 +910,6 @@ body {
    they are interactions, not motion, and the pod slides depend on them. */
 .landing .rise,
 .landing .fade-scale,
-.landing .proof-track,
 .landing .pod-ring,
 .landing .pod-counter,
 .landing .aurora-ring,
@@ -919,13 +918,33 @@ body {
   animation: none !important;
 }
 
-/* The ticker is laid out statically on the landing page: travel reset, and the duplicate set —
-   which exists only so the loop has no seam — hidden, since without a loop it just repeats the
-   facts twice across the row. */
+/* The proof ticker keeps its motion on the landing page — it is the one thing on the page that
+   still moves, by request. The duplicate set stays visible for the same reason it exists: without
+   it the loop shows a gap at the wrap. */
 .landing .proof-track {
-  transform: none !important;
+  animation: proof-scroll 52s linear infinite !important;
 }
 
-.landing .proof-track dl[aria-hidden='true'] {
-  display: none;
+.landing .proof-marquee:hover .proof-track {
+  animation-play-state: paused !important;
+}
+
+/* ------------------------------------------------------------------ pod band
+   Same mechanics as the proof ticker: two copies, half the track's width, so the wrap has no
+   seam. It is the second thing on the page that moves, and it pauses on hover so a line can be
+   read. No borders anywhere — the band is type on the plate, not a container of cards. */
+.pod-track {
+  animation: proof-scroll 64s linear infinite;
+  will-change: transform;
+}
+
+.pod-marquee:hover .pod-track,
+.pod-marquee:focus-within .pod-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pod-track {
+    animation: none;
+  }
 }
