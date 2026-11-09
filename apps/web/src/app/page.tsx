@@ -136,7 +136,10 @@ export default function ScrollytellingHome() {
               first began and the loop has no seam. The duplicate is aria-hidden — a screen reader
               hears the four facts once. Hover or focus pauses it; reduced motion wraps the tiles
               into a static block instead. */}
-          <div className="proof-marquee rise mt-12 overflow-hidden rounded-[12px] border border-hairline">
+          <div
+            className="proof-marquee rise relative mt-12 overflow-hidden"
+            style={{ marginLeft: 'calc(50% - 50vw)', marginRight: 'calc(50% - 50vw)' }}
+          >
             <div className="proof-track flex w-max">
               {[0, 1].map((pass) => (
                 <dl key={pass} aria-hidden={pass === 1 ? 'true' : undefined} className="flex shrink-0">
@@ -148,7 +151,7 @@ export default function ScrollytellingHome() {
                   ].map(([value, label]) => (
                     <div
                       key={label}
-                      className="w-[236px] shrink-0 border-r border-hairline bg-obsidian-soft px-5 py-4 sm:w-[300px] lg:w-[330px]"
+                      className="w-[236px] shrink-0 px-6 py-4 sm:w-[300px] lg:w-[340px]"
                     >
                       <dd className="font-display text-[24px] font-semibold tabular-nums leading-none text-ghost">
                         {value}
