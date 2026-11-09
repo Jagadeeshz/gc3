@@ -18,7 +18,7 @@ import { PodMarquee } from '@/components/marketing/pod-slides';
 export const metadata: Metadata = {
   title: 'Quantocos — Explore possibilities',
   description:
-    'Your problem, our solution. GC³ composes one pod around one outcome and sells it on one subscription: one manager, specialists, and a published credit pool.',
+    'Your challenges, our solutions. GC³ composes one pod around one outcome and sells it on one subscription: one manager, specialists, and a published credit pool.',
 };
 
 /**
@@ -94,8 +94,8 @@ export default function ScrollytellingHome() {
 
         <div className="shell relative flex min-h-[86svh] flex-col justify-center py-16">
           <h1 className="rise mt-5 max-w-[17ch] font-display text-[clamp(2.2rem,5vw,4.3rem)] leading-[1.0] tracking-[-0.03em] text-ghost lg:max-w-[52%]">
-            Your Problem
-            <span className="mt-2 block text-ghost/60">Our Solution</span>
+            Your Challenges.
+            <span className="mt-2 block text-ghost/60">Our Solutions.</span>
           </h1>
 
           <p className="rise mt-7 max-w-[48ch] text-[15px] leading-[1.8] text-ghost-muted lg:max-w-[46%]">
