@@ -36,6 +36,38 @@ const SPECTRUM = [
   '#FF2200',
 ];
 
+/** Interpolate the spectrum into a continuous wheel, so bands blend instead of stepping. */
+const BANDS = 24;
+
+const hexToRgb = (hex: string): [number, number, number] => {
+  const value = hex.replace('#', '');
+  return [
+    parseInt(value.slice(0, 2), 16),
+    parseInt(value.slice(2, 4), 16),
+    parseInt(value.slice(4, 6), 16),
+  ];
+};
+
+const BAND_COLOURS = (() => {
+  const stops = SPECTRUM.map(hexToRgb);
+  const out: string[] = [];
+
+  for (let band = 0; band < BANDS; band += 1) {
+    const position = (band / BANDS) * stops.length;
+    const from = stops[Math.floor(position) % stops.length]!;
+    const to = stops[(Math.floor(position) + 1) % stops.length]!;
+    const mix = position - Math.floor(position);
+
+    out.push(
+      `rgb(${Math.round(from[0] + (to[0] - from[0]) * mix)},${Math.round(
+        from[1] + (to[1] - from[1]) * mix,
+      )},${Math.round(from[2] + (to[2] - from[2]) * mix)})`,
+    );
+  }
+
+  return out;
+})();
+
 type Speck = {
   angle: number;
   radius: number; // fraction of the blob's radius
@@ -43,7 +75,7 @@ type Speck = {
   phase: number;
   size: number;
   spin: number;
-  colour: number;
+  band: number;
   alpha: number;
 };
 
@@ -60,7 +92,9 @@ const buildSpecks = (count: number, seed = 1): Speck[] => {
     const angle = rnd() * Math.PI * 2;
     // Colour by sector and depth, not per speck: a hue that varies with position reads as a lit
     // body, while a random hue per speck reads as confetti.
-    const sector = (angle / (Math.PI * 2)) * 2.4 + radius * 1.6;
+    // Band by angle: the wheel is fixed in space, so the cloud reads as light dispersed through
+    // glass rather than as recoloured dust.
+    const band = Math.floor(((angle / (Math.PI * 2)) % 1) * BANDS) % BANDS;
     return {
       angle,
       radius,
@@ -68,7 +102,7 @@ const buildSpecks = (count: number, seed = 1): Speck[] => {
       phase: rnd() * Math.PI * 2,
       size: 1.9 + rnd() * 2.9,
       spin: (rnd() - 0.5) * 2.4,
-      colour: Math.floor(((sector % 1) + 1) % 1 * SPECTRUM.length),
+      band,
       alpha: 0.26 + rnd() * 0.62,
     };
   });
@@ -133,12 +167,12 @@ export function HeroParticles() {
 
       context.globalCompositeOperation = 'lighter';
 
-      for (let colour = 0; colour < SPECTRUM.length; colour += 1) {
-        context.fillStyle = SPECTRUM[colour] ?? SPECTRUM[0]!;
+      for (let band = 0; band < BANDS; band += 1) {
+        context.fillStyle = BAND_COLOURS[band] ?? SPECTRUM[0]!;
         context.beginPath();
 
         for (const speck of specks) {
-          if (speck.colour !== colour) continue;
+          if (speck.band !== band) continue;
 
           const angle = speck.angle + seconds * speck.speed;
           // wobble: the edge breathes instead of spinning as a rigid disc
