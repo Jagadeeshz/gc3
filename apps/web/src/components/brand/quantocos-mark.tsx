@@ -32,13 +32,13 @@ export function QuantocosMark({
 
   return (
     <span
-      className={`inline-flex items-baseline font-sans font-medium tracking-[-0.01em] text-warm ${scale}${className ? ` ${className}` : ''}`}
+      className={`inline-flex items-baseline font-sans font-medium tracking-[-0.01em] leading-none text-warm ${scale}${className ? ` ${className}` : ''}`}
     >
       {/* Screen readers get the name once, from the label below. */}
-      <span aria-hidden="true" className="qc-q font-semibold">
+      <span aria-hidden="true" className="qc-q">
         Q
       </span>
-      <span aria-hidden="true">uantocos</span>
+      <span aria-hidden="true" className="font-medium italic">uantocos</span>
       {withSuffix ? (
         <span aria-hidden="true" className="ml-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-muted">
           GC³
