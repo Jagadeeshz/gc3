@@ -103,6 +103,11 @@ export default function ScrollytellingHome() {
           <div
             className="absolute inset-0 scale-[1.04] bg-[url('/images/gc3-hub-bg.webp')] bg-cover bg-[center_bottom] bg-no-repeat opacity-[0.32] blur-[3px] [will-change:transform]"
           />
+          {/* Architectural staging: a 4.5% grid, then a soft core behind the headline.
+              Order matters — the grid sits under the vignette so the centre of the type block
+              stays clean. */}
+          <div className="arch-grid absolute inset-0" />
+          <div className="arch-vignette absolute inset-0" />
           <div className="absolute inset-0 [background:radial-gradient(78%_64%_at_50%_42%,transparent_0%,var(--color-obsidian)_76%)]" />
           <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-obsidian via-obsidian/70 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-obsidian via-obsidian/85 to-transparent" />
@@ -194,8 +199,8 @@ export default function ScrollytellingHome() {
 
       {/* ------------------------------------------------------------ carousel */}
       <section className="border-b border-hairline bg-obsidian py-20 sm:py-24">
-        <div className="shell grid gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:gap-14">
-          <div className="lg:pt-2">
+        <div className="shell grid min-w-0 gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:gap-14">
+          <div className="min-w-0 lg:pt-2">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
               One at a time
             </p>

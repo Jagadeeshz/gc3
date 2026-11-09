@@ -30,8 +30,11 @@ const FRICTIONS = [
 
 export function ActProblem() {
   return (
-    <section id="act-problem" className="act-anchor relative border-b border-hairline bg-obsidian py-20 sm:py-28">
-      <div className="shell grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)] lg:gap-16">
+    <section id="act-problem" className="act-anchor relative overflow-hidden border-b border-hairline bg-obsidian py-20 sm:py-28">
+      {/* Operational sprawl, drawn: two grids on mismatched pitches, cut into patches by a
+          multi-stop mask. Decorative, and behind the content column. */}
+      <div aria-hidden="true" className="frag-grid pointer-events-none absolute inset-0 opacity-40" />
+      <div className="shell relative grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)] lg:gap-16">
         <div className="stage rise">
           <div className="relative overflow-hidden rounded-[16px] border border-hairline bg-obsidian-soft p-5 sm:p-7">
             <div className="flex items-center justify-between">

@@ -494,3 +494,94 @@ body {
   color: transparent;
   -webkit-text-fill-color: transparent;
 }
+
+/* ------------------------------------------------------------------ architectural staging
+   Background layers for the landing page. All are compositor-only (background-image, mask,
+   opacity) and all are aria-hidden decoration: nothing here carries meaning that is lost if
+   the CSS never loads.
+
+   Alphas are deliberately 3-5%. At this scale a grid reads as a construction drawing; a hair
+   more and it becomes a pattern competing with the headline. */
+.arch-grid {
+  background-image:
+    linear-gradient(to right, rgba(250, 248, 242, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(250, 248, 242, 0.045) 1px, transparent 1px);
+  background-size: 76px 76px;
+  background-position: center top;
+  -webkit-mask-image: radial-gradient(120% 82% at 50% 34%, #000 0%, rgba(0, 0, 0, 0.55) 54%, transparent 82%);
+  mask-image: radial-gradient(120% 82% at 50% 34%, #000 0%, rgba(0, 0, 0, 0.55) 54%, transparent 82%);
+}
+
+/* A soft core behind the h1: darkens the grid and the render directly under the type, so the
+   headline and the soma CTA never fight the background for contrast. */
+.arch-vignette {
+  background: radial-gradient(
+    62% 54% at 32% 46%,
+    rgba(8, 11, 18, 0.92) 0%,
+    rgba(8, 11, 18, 0.72) 42%,
+    rgba(8, 11, 18, 0.18) 68%,
+    transparent 84%
+  );
+}
+
+/* Act I - operational sprawl. Two grids on mismatched pitches so the seams never line up,
+   then a multi-stop mask that cuts the whole thing into disconnected patches. */
+.frag-grid {
+  background-image:
+    linear-gradient(to right, rgba(250, 248, 242, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(250, 248, 242, 0.05) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255, 221, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 221, 0, 0.05) 1px, transparent 1px);
+  background-size: 58px 58px, 58px 58px, 118px 118px, 118px 118px;
+  background-position: 0 0, 0 0, 23px 31px, 23px 31px;
+  -webkit-mask-image:
+    radial-gradient(68% 62% at 22% 30%, #000 0%, transparent 58%),
+    radial-gradient(52% 58% at 78% 62%, #000 0%, transparent 56%),
+    radial-gradient(46% 46% at 46% 88%, #000 0%, transparent 62%);
+  mask-image:
+    radial-gradient(68% 62% at 22% 30%, #000 0%, transparent 58%),
+    radial-gradient(52% 58% at 78% 62%, #000 0%, transparent 56%),
+    radial-gradient(46% 46% at 46% 88%, #000 0%, transparent 62%);
+  -webkit-mask-composite: source-over;
+  mask-composite: add;
+}
+
+/* Act II - convergence. One spine, spectrum at low opacity, feathered at both ends so it reads
+   as a line the story draws down the page rather than a divider. */
+.pod-spine {
+  background: var(--bindu-spectrum-gradient);
+  opacity: 0.22;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
+}
+
+/* Act III - the only spectrum on a card, and only while it is open. */
+.pod-rim-active::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  background: var(--bindu-spectrum-gradient);
+  opacity: 0.5;
+}
+
+/* Bento - ledger. Structural hairlines, no shadow, no lift beyond a border change. */
+.ledger-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: border-color 200ms var(--bindu-ease), background-color 200ms var(--bindu-ease);
+}
+
+.ledger-card:hover,
+.ledger-card:focus-within {
+  border-color: rgba(242, 213, 130, 0.28);
+}
+
+.sys-tag {
+  font-family: var(--bindu-font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 242, 0.34);
+}

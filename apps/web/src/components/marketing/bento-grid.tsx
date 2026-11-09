@@ -118,7 +118,7 @@ export function BentoGrid() {
         </div>
 
         <div className="grid auto-rows-[minmax(132px,auto)] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
-          {CELLS.map((cell) => {
+          {CELLS.map((cell, cellIndex) => {
             const Icon = cell.icon;
             const tone =
               cell.accent === 'amber'
@@ -128,7 +128,7 @@ export function BentoGrid() {
             return (
               <article
                 key={cell.label}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-[14px] border border-hairline bg-obsidian p-4 transition-[transform,border-color,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:border-emerald-400/30 hover:shadow-[0_22px_50px_-30px_rgba(16,185,129,0.55)] motion-reduce:hover:translate-y-0 ${cell.span}"
+                className={`ledger-card group relative flex flex-col justify-between overflow-hidden rounded-[10px] bg-obsidian p-4 ${cell.span}`}
               >
                 {/* The lit edge: a single gradient hairline that appears on hover. */}
                 <span
@@ -144,6 +144,10 @@ export function BentoGrid() {
                     {cell.label}
                   </span>
                 </div>
+
+                <span aria-hidden="true" className="sys-tag absolute bottom-2.5 right-3">
+                  SYS.{String(cellIndex + 1).padStart(2, '0')}
+                </span>
 
                 <div className="mt-4">
                   <p className="font-display text-[clamp(1.15rem,1.8vw,1.6rem)] font-semibold leading-none tracking-[-0.02em] tabular-nums text-ghost">

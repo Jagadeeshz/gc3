@@ -71,7 +71,7 @@ export function PodCarousel() {
 
   return (
     <div
-      className="relative"
+      className="relative w-full min-w-0"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
