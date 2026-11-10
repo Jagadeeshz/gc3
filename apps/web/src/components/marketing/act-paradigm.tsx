@@ -70,10 +70,19 @@ export function ActParadigm() {
           {/* Labels only — the numerals and the one-line explanations are gone. The list is a
               vertical rule against the left margin rather than a three-up band, so it stops short of
               the column's right edge instead of running past it. */}
-          <ul className="fade-scale grid gap-2.5 border-l border-emerald-400/20 pl-5">
+          <ul className="fade-scale grid max-w-[420px] gap-2">
             {PILLARS.map((pillar) => (
-              <li key={pillar} className="text-[14px] font-medium tracking-[-0.01em] text-ghost">
-                {pillar}
+              <li
+                key={pillar}
+                className="flex items-center gap-3 rounded-[9px] border border-white/10 bg-white/[0.045] px-3.5 py-2.5 transition-colors hover:border-white/20 hover:bg-white/[0.07]"
+              >
+                {/* A spectrum bar instead of a bullet: it belongs to the same family as the rules
+                    and the wordmark, and it earns the highlight without a coloured fill. */}
+                <span
+                  aria-hidden="true"
+                  className="h-4 w-[2px] shrink-0 rounded-full [background:linear-gradient(to_bottom,#ff2200,#ffdd00,#00ddaa,#0099ff,#7b00ff)]"
+                />
+                <span className="text-[14.5px] font-medium tracking-[-0.01em] text-ghost">{pillar}</span>
               </li>
             ))}
           </ul>
