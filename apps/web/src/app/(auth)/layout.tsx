@@ -10,5 +10,5 @@ import type { ReactNode } from 'react';
  * The group is parenthesised, so `/login` stays `/login`.
  */
 export default function AuthLayout({ children }: { readonly children: ReactNode }) {
-  return <div className="min-h-dvh bg-[#090D16]">{children}</div>;
+  return <div className="min-h-dvh bg-transparent">{children}</div>;
 }

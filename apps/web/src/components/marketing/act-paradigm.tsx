@@ -30,14 +30,14 @@ const PILLARS = [
 function SpecialistAgentPair({ index }: { readonly index: number }) {
   return (
     <div className="group/pair relative flex items-stretch gap-px overflow-hidden rounded-[10px] border border-hairline bg-hairline transition-colors duration-200 hover:border-emerald-400/35">
-      <div className="flex flex-1 items-center gap-2 bg-obsidian-raised px-3 py-2.5">
+      <div className="flex flex-1 items-center gap-2 bg-transparent-raised px-3 py-2.5">
         <UserRound aria-hidden className="size-3.5 text-ghost-muted transition-colors group-hover/pair:text-ghost" strokeWidth={1.75} />
         <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ghost-muted transition-colors group-hover/pair:text-ghost">
           Specialist {index}
         </span>
       </div>
       {/* The pairing marker: one human, one agent, one accountable unit. */}
-      <div className="flex items-center gap-1 bg-obsidian px-1.5">
+      <div className="flex items-center gap-1 bg-transparent px-1.5">
         <span className="size-1 rounded-full bg-emerald-400/80" />
         <span className="font-mono text-[8px] uppercase tracking-[0.1em] text-emerald-300/80">1:1</span>
       </div>
@@ -55,7 +55,7 @@ export function ActParadigm() {
   return (
     <section
       id="act-paradigm"
-      className="act-anchor relative overflow-hidden border-b border-hairline bg-obsidian-soft py-20 sm:py-28"
+      className="act-anchor relative overflow-hidden border-b border-hairline bg-transparent-soft py-20 sm:py-28"
     >
       {/* Convergence: Act I's scattered grid becomes one line. A single 1px spine on the
           centre line, one accent instead of nine, feathered at both ends so it reads as the
@@ -82,7 +82,7 @@ export function ActParadigm() {
 
           <div className="grid gap-px overflow-hidden rounded-[14px] border border-hairline bg-hairline sm:grid-cols-3">
             {PILLARS.map((pillar, index) => (
-              <div key={pillar.label} className="fade-scale bg-obsidian-raised p-5">
+              <div key={pillar.label} className="fade-scale bg-transparent-raised p-5">
                 <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-emerald-300/80">
                   0{index + 1}
                 </p>
@@ -96,7 +96,7 @@ export function ActParadigm() {
         </div>
 
         <div className="stage">
-          <div className="rise overflow-hidden rounded-[16px] border border-hairline bg-obsidian p-5 sm:p-7">
+          <div className="rise overflow-hidden rounded-[16px] border border-hairline bg-transparent p-5 sm:p-7">
             <div className="flex items-center justify-between">
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ghost-muted">
                 Hybrid workforce
@@ -106,8 +106,8 @@ export function ActParadigm() {
               </span>
             </div>
 
-            <div className="mt-5 flex items-center gap-3 rounded-[12px] border border-hairline bg-obsidian-raised px-4 py-3.5">
-              <span className="grid size-9 place-items-center rounded-[9px] border border-hairline bg-obsidian text-ghost">
+            <div className="mt-5 flex items-center gap-3 rounded-[12px] border border-hairline bg-transparent-raised px-4 py-3.5">
+              <span className="grid size-9 place-items-center rounded-[9px] border border-hairline bg-transparent text-ghost">
                 <Crown aria-hidden className="size-4" strokeWidth={1.75} />
               </span>
               <div>

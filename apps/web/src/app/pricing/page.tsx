@@ -40,7 +40,7 @@ const RULES = [
 
 export default function PricingPage() {
   return (
-    <div className="min-h-dvh bg-[#090D16]">
+    <div className="min-h-dvh bg-transparent">
       <header className="border-b border-[#1E293B]">
         <div className="mx-auto flex max-w-[1240px] items-center justify-between px-6 py-5">
           <Link href="/" className="flex items-center gap-3">

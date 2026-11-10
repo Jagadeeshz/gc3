@@ -170,7 +170,7 @@ export function PortalShell({
   const navItems = (isOps ? OPS_NAV : CLIENT_NAV).filter(canSee);
 
   return (
-    <div className={`grid min-h-dvh lg:grid-cols-[248px_1fr] ${isOps ? 'bg-void' : 'bg-[#090D16]'} `}>
+    <div className={`grid min-h-dvh lg:grid-cols-[248px_1fr] ${isOps ? 'bg-transparent' : 'bg-transparent'} `}>
       <aside className={`flex flex-col gap-6 px-4 py-5 ${isOps ? 'border-r border-[color:var(--bindu-surface-border)] bg-void-secondary' : 'border-r border-[color:var(--bindu-surface-border)] bg-[#0B1120]'}`}>
         {/*
           The brand leads home: clients to their dashboard, staff back to the

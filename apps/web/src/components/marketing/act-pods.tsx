@@ -110,7 +110,7 @@ export function ActPods() {
   const selected = pods.find((pod) => pod.code === openCode) ?? null;
 
   return (
-    <section id="act-pods" className="act-anchor relative border-b border-hairline bg-obsidian py-20 sm:py-28">
+    <section id="act-pods" className="act-anchor relative border-b border-hairline bg-transparent py-20 sm:py-28">
       <div className="shell grid gap-14 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:gap-16">
         <div className="stage rise">
           <h2 className="mt-4 font-display text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.06] tracking-[-0.02em] text-ghost">
@@ -142,7 +142,7 @@ export function ActPods() {
               {[0, 1, 2].map((index) => (
                 <div
                   key={index}
-                  className="h-[164px] animate-pulse rounded-[14px] border border-hairline bg-obsidian-soft"
+                  className="h-[164px] animate-pulse rounded-[14px] border border-hairline bg-transparent-soft"
                 />
               ))}
               {failed ? (
@@ -293,7 +293,7 @@ export function ActPods() {
                   <div
                     role="tooltip"
                     style={{ left: hover.x, top: hover.y }}
-                    className="pointer-events-none absolute z-50 mt-2 w-[252px] -translate-x-1/2 rounded-[12px] border border-hairline bg-obsidian-raised p-3 shadow-[var(--bindu-shadow-modal)]"
+                    className="pointer-events-none absolute z-50 mt-2 w-[252px] -translate-x-1/2 rounded-[12px] border border-hairline bg-transparent-raised p-3 shadow-[var(--bindu-shadow-modal)]"
                   >
                     <div className="flex items-baseline justify-between gap-2">
                       <p className="text-[12px] font-medium text-ghost">{hoveredPod.name}</p>
@@ -348,8 +348,8 @@ export function ActPods() {
                       aria-controls="pod-hub-panel"
                       className={`flex items-center justify-between gap-3 rounded-[12px] border px-4 py-3 text-left transition-colors ${
                         active
-                          ? 'border-[color:var(--bindu-rim-spectrum-mid)] bg-obsidian-raised'
-                          : 'border-hairline bg-obsidian-soft'
+                          ? 'border-[color:var(--bindu-rim-spectrum-mid)] bg-transparent-raised'
+                          : 'border-hairline bg-transparent-soft'
                       }`}
                     >
                       <span>
@@ -372,7 +372,7 @@ export function ActPods() {
               </div>
 
               {/* Detail panel — what click and keyboard open, since hover does not exist there. */}
-              <div id="pod-hub-panel" className="mt-6 rounded-[14px] border border-hairline bg-obsidian-soft">
+              <div id="pod-hub-panel" className="mt-6 rounded-[14px] border border-hairline bg-transparent-soft">
                 {selected === null ? (
                   <p className="px-5 py-4 font-mono text-[9px] uppercase tracking-[0.16em] text-ghost-muted">
                     Select a pod for its coverage and team
@@ -430,7 +430,7 @@ export function ActPods() {
                               return (
                                 <li
                                   key={row.label}
-                                  className="flex items-center justify-between bg-obsidian-raised px-2.5 py-1.5"
+                                  className="flex items-center justify-between bg-transparent-raised px-2.5 py-1.5"
                                 >
                                   <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ghost-muted">
                                     <Icon aria-hidden className="size-3" strokeWidth={1.9} />
@@ -443,7 +443,7 @@ export function ActPods() {
                               );
                             })}
                           {selected.managers + selected.specialists + selected.agents === 0 ? (
-                            <li className="bg-obsidian-raised px-2.5 py-1.5 font-mono text-[10px] text-ghost-muted">
+                            <li className="bg-transparent-raised px-2.5 py-1.5 font-mono text-[10px] text-ghost-muted">
                               {selected.teamSummary ?? 'Custom team'}
                             </li>
                           ) : null}

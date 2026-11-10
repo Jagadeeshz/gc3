@@ -353,7 +353,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
   );
 
   return (
-    <div className="min-h-dvh bg-obsidian">
+    <div className="min-h-dvh bg-transparent">
       {/* mobile bar */}
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-hairline bg-obsidian/95 px-4 py-2.5 backdrop-blur lg:hidden">
         <button

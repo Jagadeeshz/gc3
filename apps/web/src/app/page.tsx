@@ -65,7 +65,7 @@ const FOOTER_NAV = [
 
 export default function ScrollytellingHome() {
   return (
-    <div className="landing min-h-dvh bg-obsidian">
+    <div className="landing min-h-dvh bg-transparent">
       <SessionGate />
       <ScrollProgress />
       <CommandPalette />
@@ -174,7 +174,7 @@ export default function ScrollytellingHome() {
       <ActPods />
 
       {/* ------------------------------------------------------------ carousel */}
-      <section className="border-b border-hairline bg-obsidian py-20 sm:py-24">
+      <section className="border-b border-hairline bg-transparent py-20 sm:py-24">
         <div className="shell grid min-w-0 gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:gap-14">
           <div className="min-w-0 lg:pt-2">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
@@ -198,20 +198,20 @@ export default function ScrollytellingHome() {
       <BentoGrid />
 
       {/* -------------------------------------------------- the software + FAQ */}
-      <section className="ambient ambient--teal border-b border-hairline bg-obsidian py-20 sm:py-24">
+      <section className="ambient ambient--teal border-b border-hairline bg-transparent py-20 sm:py-24">
         <div className="shell relative z-10">
           <PlatformBand />
         </div>
       </section>
 
-      <section className="border-b border-hairline bg-obsidian-soft py-20 sm:py-24">
+      <section className="border-b border-hairline bg-transparent-soft py-20 sm:py-24">
         <div className="shell">
           <PricingFaq />
         </div>
       </section>
 
       {/* ------------------------------------------------------------- closing */}
-      <section id="contact" className="ambient ambient--soma relative overflow-hidden bg-obsidian py-20 sm:py-28">
+      <section id="contact" className="ambient ambient--soma relative overflow-hidden bg-transparent py-20 sm:py-28">
         <div aria-hidden="true" className="blueprint pointer-events-none absolute inset-0 opacity-[0.18]" />
         <div className="shell relative grid gap-8">
           <div className="max-w-[58ch]">
@@ -247,7 +247,7 @@ export default function ScrollytellingHome() {
       </section>
 
       {/* -------------------------------------------------------------- footer */}
-      <footer className="border-t border-hairline bg-obsidian-soft">
+      <footer className="border-t border-hairline bg-transparent-soft">
         <div className="shell grid gap-10 py-12 sm:grid-cols-3">
           {FOOTER_NAV.map((column) => (
             <div key={column.heading}>

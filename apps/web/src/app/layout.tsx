@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, DM_Mono, DM_Sans } from 'next/font/google';
 import { SessionProvider } from '@/lib/session-context';
 import './globals.css';
+import { LatticeBackground } from '@/components/site/lattice-background';
 
 /**
  * Brand type stack (01-brand-and-design-system): serif display, geometric sans
@@ -44,6 +45,9 @@ export default function RootLayout({ children }: { readonly children: React.Reac
   return (
     <html lang="en" className={`${dmSans.variable} ${cormorant.variable} ${dmMono.variable}`}>
       <body className="min-h-dvh bg-void font-sans text-warm antialiased">
+        {/* One fixed layer for the whole site. Invisible where a section is opaque — which is
+            how the landing hero stays clean while everything below it carries the lattice. */}
+        <LatticeBackground />
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
