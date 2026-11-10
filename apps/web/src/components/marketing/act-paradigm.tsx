@@ -62,9 +62,9 @@ export function ActParadigm() {
           </div>
 
           <p className="fade-scale max-w-[58ch] text-[15px] leading-[1.85] text-ghost-muted">
-            GC³ — Global Capability Center 3.0 — starts from the opposite end. Instead of assembling
-            tools and hoping a team forms around them, one pod is composed around the outcome and one
-            subscription pays for it. The capability arrives whole.
+            GC³ starts from the opposite end. Rather than assembling tools and hoping a team forms
+            around them, the pod is built around the outcome — one owner, one standing team, one
+            subscription that pays for it. The capability arrives whole, not in pieces.
           </p>
 
           {/* Labels only — the numerals and the one-line explanations are gone. The list is a

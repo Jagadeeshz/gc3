@@ -271,7 +271,7 @@ export default function ScrollytellingHome() {
         </div>
 
         <div className="shell flex flex-wrap items-center justify-between gap-3 border-t border-hairline py-5 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
-          <span className="inline-flex items-center gap-1.5">© 2026 <QuantocosMark size="sm" /> · GC³ is a Global Capability Center</span>
+          <span className="inline-flex items-center gap-1.5">© 2026 <QuantocosMark size="sm" /> · GC³ is a capability pod platform</span>
           <span>Prices in USD · published, not quoted</span>
         </div>
       </footer>

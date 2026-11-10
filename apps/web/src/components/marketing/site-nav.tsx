@@ -58,7 +58,7 @@ export function SiteNav() {
       <div className="border-b border-hairline/70 bg-obsidian">
         <div className="shell flex h-9 items-center justify-between gap-4">
           <p className="truncate font-mono text-[10px] uppercase tracking-[0.16em] text-ghost-muted">
-            <QuantocosMark size="sm" /> <span className="text-hairline">·</span> Global Cloud Capability Center
+            <QuantocosMark size="sm" /> <span className="text-hairline">·</span> Explore possibilities
           </p>
           <p className="hidden shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-ghost-muted sm:flex">
             <span className="size-1.5 rounded-full bg-emerald-400/80" aria-hidden="true" />
