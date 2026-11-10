@@ -11,20 +11,7 @@ import { Bot, Crown, Link2, UserRound } from 'lucide-react';
  * specialist count here is a variable and not a drawing.
  */
 
-const PILLARS = [
-  {
-    label: 'One pod',
-    line: 'A standing team assembled around one outcome, with one owner.',
-  },
-  {
-    label: 'One subscription',
-    line: 'A monthly credit pool. No seat arithmetic, no licence renewals.',
-  },
-  {
-    label: 'Zero operational overhead',
-    line: 'No integrations to own, no vendor layers between you and the work.',
-  },
-] as const;
+const PILLARS = ['One pod', 'One subscription', 'Zero operational overhead'] as const;
 
 /** A specialist and the agent paired to them, drawn as one unit. */
 function SpecialistAgentPair({ index }: { readonly index: number }) {
@@ -80,19 +67,16 @@ export function ActParadigm() {
             subscription pays for it. The capability arrives whole.
           </p>
 
-          <div className="grid gap-px overflow-hidden rounded-[14px] border border-hairline bg-hairline sm:grid-cols-3">
-            {PILLARS.map((pillar, index) => (
-              <div key={pillar.label} className="fade-scale bg-transparent-raised p-5">
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-emerald-300/80">
-                  0{index + 1}
-                </p>
-                <h3 className="mt-3 text-[15px] font-medium tracking-[-0.01em] text-ghost">
-                  {pillar.label}
-                </h3>
-                <p className="mt-2 text-[12px] leading-[1.75] text-ghost-muted">{pillar.line}</p>
-              </div>
+          {/* Labels only — the numerals and the one-line explanations are gone. The list is a
+              vertical rule against the left margin rather than a three-up band, so it stops short of
+              the column's right edge instead of running past it. */}
+          <ul className="fade-scale grid gap-2.5 border-l border-emerald-400/20 pl-5">
+            {PILLARS.map((pillar) => (
+              <li key={pillar} className="text-[14px] font-medium tracking-[-0.01em] text-ghost">
+                {pillar}
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
 
         <div className="stage">
