@@ -28,7 +28,7 @@ export default function PodsPage() {
         lede="A pod is a standing team assembled around one outcome, with one accountable manager and a fixed specialist roster. Each carries a published credit pool, so the team and the price are decided before the first request rather than negotiated around it."
         primary={{ label: 'See published pricing', href: '/pricing' }}
         secondary={{ label: 'How it works', href: '/how-it-works' }}
-        backgroundSrc="/brand/pods-hall.jpg"
+        backgroundSrc="/brand/pods-hall-clean.jpg"
       />
 
       <StatBand />
