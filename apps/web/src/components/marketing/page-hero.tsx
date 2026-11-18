@@ -16,6 +16,7 @@ export function PageHero({
   secondary,
   backgroundSrc,
   backgroundMode = 'photo',
+  plateSrc,
 }: {
   readonly eyebrow: string;
   readonly title: string;
@@ -30,6 +31,12 @@ export function PageHero({
    * edges to hide, so cropping it would only cut figures in half).
    */
   readonly backgroundMode?: 'photo' | 'art';
+  /**
+   * Renders the image as a lit plate standing in the band instead of as a flat
+   * background — perspective, gold rim, its own shadow, and a slow float. Use this
+   * for photography that should read as an object in the room.
+   */
+  readonly plateSrc?: string;
 }) {
   return (
     <header className="relative overflow-hidden border-b border-hairline bg-obsidian">
@@ -61,6 +68,16 @@ export function PageHero({
           </>
         )}
       </div>
+
+      {plateSrc ? (
+        <div aria-hidden="true" className="hero-plate-wrap">
+          <div className="hero-plate">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={plateSrc} alt="" />
+            <span className="hero-plate__rim" />
+          </div>
+        </div>
+      ) : null}
 
       <div className="shell relative py-14 sm:py-20">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--color-gold-light)]">{eyebrow}</p>

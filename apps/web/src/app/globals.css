@@ -2096,3 +2096,97 @@ textarea:focus {
     opacity: 0.32;
   }
 }
+
+/* ------------------------------------------------------------------ hero plate
+ *
+ * The photographic band as an object rather than a wallpaper: the plate stands in
+ * the room, turned a few degrees, with its own rim, its own shadow, and a slow
+ * float so it reads as physical. It squares up as the pointer approaches.
+ *
+ * Everything is transform and opacity, so it stays on the compositor — and
+ * reduced motion parks it flat and still.
+ */
+.hero-plate-wrap {
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  width: min(56%, 780px);
+  display: grid;
+  place-items: center;
+  perspective: 1400px;
+  perspective-origin: 65% 50%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero-plate {
+  position: relative;
+  width: 88%;
+  /* the plate must fit the band, not run out of the bottom of it */
+  max-height: 78%;
+  border-radius: 20px;
+  overflow: hidden;
+  transform: rotateY(-15deg) rotateX(4deg) scale(0.98);
+  transform-style: preserve-3d;
+  animation: hero-plate-float 9s ease-in-out infinite alternate;
+  box-shadow:
+    0 60px 90px -50px rgba(0, 0, 0, 0.95),
+    0 0 0 1px rgba(242, 213, 130, 0.22),
+    0 0 60px -20px rgba(201, 145, 26, 0.35);
+}
+
+.hero-plate img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: inherit;
+  object-fit: cover;
+}
+
+/* the lit edge: the same gold family the rest of the page uses */
+.hero-plate__rim {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background-image: linear-gradient(135deg, rgba(242, 213, 130, 0.9), rgba(201, 145, 26, 0.15) 45%, rgba(242, 213, 130, 0.55));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+@keyframes hero-plate-float {
+  from {
+    transform: rotateY(-15deg) rotateX(4deg) translate3d(0, 6px, 0) scale(0.98);
+  }
+  to {
+    transform: rotateY(-11deg) rotateX(2.5deg) translate3d(0, -6px, 0) scale(1);
+  }
+}
+
+@media (max-width: 1023px) {
+  .hero-plate-wrap {
+    width: 100%;
+    place-items: end center;
+    padding-bottom: 1.5rem;
+    opacity: 0.22;
+  }
+
+  .hero-plate {
+    width: 72%;
+    transform: rotateY(-8deg) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-plate {
+    animation: none;
+    transform: rotateY(-12deg) rotateX(2deg);
+  }
+}
