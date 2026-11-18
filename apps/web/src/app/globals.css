@@ -87,8 +87,8 @@ body {
   --color-gold-light: #f2d582;
   --color-gold-deep: #8b6410;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-cormorant), ui-serif, Georgia, serif;
   --font-mono: var(--font-dm-mono), ui-monospace, SFMono-Regular, monospace;
 
   --radius-card: 14px;
@@ -1571,5 +1571,130 @@ textarea:focus {
     animation: none !important;
     transition: none !important;
     transform: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ gradient edges
+ *
+ * Every panel, card and button carries a gradient hairline on its own edge, per
+ * BINDU's rules: the spectrum belongs on borders and rims, soma gold belongs to
+ * the action. So cards take the spectrum rim and buttons take the soma rim — the
+ * rainbow never lands on a CTA button, which is rule 1's one exclusion.
+ *
+ * Technique: a 1px transparent padding box with the gradient painted underneath,
+ * knocked out by a double mask so only the ring survives. It follows any radius
+ * through `border-radius: inherit` and never intercepts a click.
+ */
+@property --edge-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 135deg;
+}
+
+.edge-rim::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background-image: var(--edge-gradient, var(--bindu-spectrum-gradient));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity var(--motion-base);
+}
+
+.edge-rim:hover::after,
+.edge-rim:focus-within::after {
+  opacity: 0.9;
+}
+
+/* Every card surface, in one rule: the kit's panels, the hand-built ones and
+   the ledger rows all sit inside the same edge. */
+.b-panel,
+.b-card,
+.b-surface,
+.ledger-card {
+  position: relative;
+}
+
+.b-panel::after,
+.b-card::after,
+.b-surface::after,
+.ledger-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background-image: var(--bindu-spectrum-gradient);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.42;
+  pointer-events: none;
+  transition: opacity var(--motion-base);
+}
+
+.b-panel:hover::after,
+.b-card:hover::after,
+.b-surface:hover::after,
+.ledger-card:hover::after {
+  opacity: 0.85;
+}
+
+/* Buttons: the gold edge, not the rainbow. */
+.btn-gold,
+.btn-glass {
+  position: relative;
+}
+
+.btn-gold::after,
+.btn-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background-image: var(--bindu-soma-gradient);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.85;
+  pointer-events: none;
+  transition: opacity var(--motion-base);
+}
+
+.btn-gold:hover::after,
+.btn-glass:hover::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edge-rim::after,
+  .b-panel::after,
+  .b-card::after,
+  .b-surface::after,
+  .ledger-card::after,
+  .btn-gold::after,
+  .btn-glass::after {
+    transition: none;
   }
 }
