@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight, Coins, Layers, Users } from 'lucide-react';
 import { SiteNav } from '@/components/marketing/site-nav';
+import { BookDemoDialog } from '@/components/marketing/book-demo';
+import { PageHero } from '@/components/marketing/page-hero';
 import { SiteFooter } from '@/components/marketing/site-footer';
 import { PodCatalogue } from '@/components/pricing/pod-catalogue';
 import { PlatformBand, PricingFaq } from '@/components/pricing/pricing-sections';
@@ -44,32 +46,32 @@ export default function PricingPage() {
   return (
     <div className="min-h-dvh bg-transparent">
       <SiteNav />
+      <BookDemoDialog />
+
+      <PageHero
+        eyebrow="Pricing"
+        title="A complete capability. Not another vendor."
+        lede="Six pods, each a standing multidisciplinary team on a monthly credit pool. Start at the capability you need; the pods above carry the ones below at no extra credit cost."
+        primary="demo"
+        secondary={{ label: 'How it works', href: '/how-it-works' }}
+        backgroundSrc="/brand/pricing-pods.svg"
+        backgroundMode="art"
+      />
 
       <main className="mx-auto max-w-[1240px] px-6 py-12">
-        <section className="reveal max-w-[62ch]">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-            Capability pods
-          </p>
-          <h1 className="mt-3 font-display text-4xl leading-[1.05] tracking-[-0.02em] text-slate-100 sm:text-5xl">
-            A complete capability. Not another vendor.
-          </h1>
-          <p className="mt-5 text-sm leading-relaxed text-slate-400">
-            Six pods, each a standing multidisciplinary team on a monthly credit pool. Start at the
-            capability you need; the pods above carry the ones below at no extra credit cost.
-          </p>
-
-          <dl className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-[12px] border border-[#1E293B] bg-[#1E293B] sm:grid-cols-4">
+        <section className="reveal">
+          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[12px] border border-hairline bg-hairline sm:grid-cols-4">
             {[
               ['6', 'Capability pods'],
               ['48–120h', 'Delivery commitments'],
               ['1:1', 'Agent per specialist'],
               ['Monthly', 'No annual lock-in'],
             ].map(([value, label]) => (
-              <div key={label} className="bg-[#0B1220] b-surface px-4 py-3.5">
-                <dd className="font-display text-[20px] font-semibold tabular-nums leading-none text-slate-100">
+              <div key={label} className="bg-obsidian-soft px-4 py-3.5">
+                <dd className="font-display text-[20px] font-semibold tabular-nums leading-none text-ghost">
                   {value}
                 </dd>
-                <dt className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">
+                <dt className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">
                   {label}
                 </dt>
               </div>
