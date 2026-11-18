@@ -7,6 +7,7 @@ import { PageHero } from '@/components/marketing/page-hero';
 import { SiteFooter } from '@/components/marketing/site-footer';
 import { PodCatalogue } from '@/components/pricing/pod-catalogue';
 import { PlatformBand, PricingFaq } from '@/components/pricing/pricing-sections';
+import { PricingFan } from '@/components/pricing/pricing-fan';
 import { QuantocosMark } from '@/components/brand/quantocos-mark';
 
 export const metadata: Metadata = {
@@ -78,6 +79,8 @@ export default function PricingPage() {
             ))}
           </dl>
         </section>
+
+        <PricingFan />
 
         <section className="reveal mt-10">
           <PodCatalogue />

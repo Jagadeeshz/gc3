@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
-import { PODS } from './capability-grid';
+import { PODS } from '@/lib/pods';
 
 /**
  * The catalogue as a slider.
