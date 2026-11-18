@@ -21,7 +21,7 @@ import {
  * the unit of the whole site, so this grid is the page in miniature.
  */
 
-type Pod = {
+export type Pod = {
   name: string;
   outcome: string;
   composition: string;
@@ -29,7 +29,7 @@ type Pod = {
   icon: LucideIcon;
 };
 
-const PODS: readonly Pod[] = [
+export const PODS: readonly Pod[] = [
   {
     name: 'Creative',
     outcome: 'Brand systems, campaign visuals and production artwork, made by a standing team.',
@@ -193,6 +193,9 @@ export function CapabilityGrid({
             return (
               <div key={pod.name}>
                 <article className="pod-card group flex h-full flex-col justify-between gap-6 rounded-[14px] border border-hairline bg-obsidian-soft p-6 b-surface">
+                  {/* a light that travels the card's edge; decoration only */}
+                  <span aria-hidden="true" className="pod-card__beam" />
+                  <span aria-hidden="true" className="pod-card__sheen" />
                 <div>
                   <span className="pod-card__chip inline-grid size-10 place-items-center rounded-[10px] border border-hairline bg-obsidian text-ghost">
                     <Icon aria-hidden className="size-[18px]" strokeWidth={1.7} />
