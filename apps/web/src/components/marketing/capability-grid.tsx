@@ -71,22 +71,24 @@ const PODS: readonly Pod[] = [
   },
 ];
 
-export function CapabilityGrid() {
+export function CapabilityGrid({ showHeader = true }: { readonly showHeader?: boolean } = {}) {
   return (
     <section id="pods" className="border-b border-hairline bg-transparent py-20 sm:py-24">
       <div className="shell">
-        <div className="reveal max-w-[62ch]">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
-            The catalogue
-          </p>
-          <h2 className="mt-3 font-display text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.06] tracking-[-0.025em] text-ghost">
-            Six pods. One of them is already the team you needed.
-          </h2>
-          <p className="mt-4 text-[14px] leading-[1.8] text-ghost-muted">
-            Each pod carries a published pool and a fixed composition, so the team is decided before the
-            work begins. Pick the capability, not the headcount.
-          </p>
-        </div>
+        {showHeader ? (
+          <div className="reveal max-w-[62ch]">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
+              The catalogue
+            </p>
+            <h2 className="mt-3 font-display text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.06] tracking-[-0.025em] text-ghost">
+              Six pods. One of them is already the team you needed.
+            </h2>
+            <p className="mt-4 text-[14px] leading-[1.8] text-ghost-muted">
+              Each pod carries a published pool and a fixed composition, so the team is decided before the work
+              begins. Pick the capability, not the headcount.
+            </p>
+          </div>
+        ) : null}
 
         <div className="reveal-stagger mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PODS.map((pod) => {

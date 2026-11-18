@@ -11,6 +11,7 @@ import { Card, CardBody, CardHeader, CardTitle, MetaLabel, Badge, buttonStyles }
 import { AGENT_PROHIBITED_ACTIONS, CLIENT_ROLES } from '@gc3/types';
 import { createOrganizationSchema } from '@gc3/validation';
 import { SiteNav } from '@/components/marketing/site-nav';
+import { SiteFooter } from '@/components/marketing/site-footer';
 import { getApiHealth } from '@/lib/api';
 
 /** Live dependency probe on every request — never a cached build-time snapshot. */
@@ -274,12 +275,7 @@ export default async function FoundationPage() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10">
-        <div className="mx-auto flex max-w-[1120px] flex-col gap-2 px-6 py-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted sm:flex-row sm:items-center sm:justify-between">
-          <span>GC³ Portal · monorepo skeleton</span>
-          <span>source of truth: Development-Breif.md</span>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

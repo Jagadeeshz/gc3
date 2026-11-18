@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, ArrowUpRight, Check } from 'lucide-react';
 import { SessionGate } from '@/components/marketing/session-gate';
 import { SiteNav } from '@/components/marketing/site-nav';
+import { SiteFooter } from '@/components/marketing/site-footer';
 import { ScrollProgress } from '@/components/marketing/scroll-progress';
 import { PodRail } from '@/components/marketing/pod-rail';
 import { CommandPalette } from '@/components/marketing/command-palette';
@@ -13,7 +14,6 @@ import { HowItWorks } from '@/components/marketing/how-it-works';
 import { Comparison } from '@/components/marketing/comparison';
 import { ResourceCards } from '@/components/marketing/resource-cards';
 import { CtaBand } from '@/components/marketing/cta-band';
-import { QuantocosMark } from '@/components/brand/quantocos-mark';
 
 export const metadata: Metadata = {
   title: 'Quantocos — Explore possibilities',
@@ -30,44 +30,6 @@ export const metadata: Metadata = {
  * choreography, no canvas layer, no moving marquee — so the page reads the same in
  * a screenshot, a print, a low-power laptop and a screen reader.
  */
-
-const FOOTER_COLUMNS = [
-  {
-    heading: 'Pods',
-    links: [
-      { label: 'Creative', href: '/pricing' },
-      { label: 'Growth', href: '/pricing' },
-      { label: 'Strategy', href: '/pricing' },
-      { label: 'Automation', href: '/pricing' },
-      { label: 'Interactive', href: '/pricing' },
-      { label: 'REMAU', href: '/pricing' },
-    ],
-  },
-  {
-    heading: 'Platform',
-    links: [
-      { label: 'How it works', href: '#how-it-works' },
-      { label: 'Why a pod', href: '#comparison' },
-      { label: 'Delivery commitments', href: '#comparison' },
-      { label: 'Pricing', href: '/pricing' },
-    ],
-  },
-  {
-    heading: 'Portal',
-    links: [
-      { label: 'Sign in', href: '/login' },
-      { label: 'Client workspace', href: '/login' },
-      { label: 'Start a conversation', href: '#contact' },
-    ],
-  },
-  {
-    heading: 'Contact',
-    links: [
-      { label: 'Book a demo', href: '#contact' },
-      { label: 'Read next', href: '#resources' },
-    ],
-  },
-] as const;
 
 const HERO_FACTS = [
   'One manager, accountable from day one',
@@ -206,37 +168,7 @@ export default function HomePage() {
       <ResourceCards />
       <CtaBand />
 
-      {/* ------------------------------------------------------------- footer */}
-      <footer className="border-t border-hairline bg-obsidian">
-        <div className="shell grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
-          {FOOTER_COLUMNS.map((column) => (
-            <div key={column.heading}>
-              <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-ghost-muted">
-                {column.heading}
-              </p>
-              <ul className="mt-3 grid gap-1.5">
-                {column.links.map((link) => (
-                  <li key={`${column.heading}-${link.label}`}>
-                    <Link
-                      href={link.href}
-                      className="text-[12px] text-ghost-muted transition-colors hover:text-ghost"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="shell flex flex-wrap items-center justify-between gap-3 border-t border-hairline py-5 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
-          <span className="inline-flex items-center gap-1.5">
-            © 2026 <QuantocosMark size="sm" /> · GC³ is a capability pod platform
-          </span>
-          <span>Prices in USD · published, not quoted</span>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

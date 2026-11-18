@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight, Coins, Layers, Users } from 'lucide-react';
 import { SiteNav } from '@/components/marketing/site-nav';
+import { SiteFooter } from '@/components/marketing/site-footer';
 import { PodCatalogue } from '@/components/pricing/pod-catalogue';
 import { PlatformBand, PricingFaq } from '@/components/pricing/pricing-sections';
 import { QuantocosMark } from '@/components/brand/quantocos-mark';
@@ -111,11 +112,9 @@ export default function PricingPage() {
           </p>
         </section>
 
-        <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-[#1E293B] pt-6 font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500">
-          <span>Prices in USD · per pod · per month unless stated</span>
-          <span className="inline-flex items-center gap-1.5">GC³ — <QuantocosMark size="sm" /></span>
-        </footer>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

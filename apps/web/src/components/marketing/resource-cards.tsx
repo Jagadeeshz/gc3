@@ -22,7 +22,7 @@ const CARDS: readonly Card[] = [
     tag: 'Delivery',
     title: 'What a commitment means',
     body: 'The window a request carries, who owns it, and what happens when it is at risk — measured the same way the console measures it.',
-    href: '#comparison',
+    href: '/why-a-pod',
     cta: 'Read the comparison',
     icon: Compass,
   },

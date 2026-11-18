@@ -1,16 +1,14 @@
-import { QuantocosQ } from './quantocos-q';
-
 /**
- * The Quantocos wordmark: the ring mark, then the name.
+ * The Quantocos lockup.
  *
- * The Q used to be a text glyph with the spectrum gradient painted on it, which is why it never
- * matched the company mark — the real one is a ring with a chrome sphere closing the break, not
- * a letter. It is drawn as SVG now (see quantocos-q.tsx) and set alongside the word instead of
- * standing in for its first letter.
+ * The shipped artwork, used as delivered: the gradient wordmark with the
+ * "Explore Possibilities." line beneath it. The supplied PNG had a white ground,
+ * which reads as a white rectangle on this site's obsidian, so the background is
+ * knocked out to transparency in the asset itself and the nav places the image
+ * directly on the page.
  *
- * The mark is optical, not typographic: the sphere sits at the baseline, so the ring is centred
- * on the word's x-height rather than its baseline. Hence `items-center` and a small downward
- * nudge on the ring instead of baseline alignment.
+ * The accessible name lives on the wrapper, not the image: a screen reader hears
+ * "Quantocos" once, never the file name and never a second copy of the suffix.
  */
 export function QuantocosMark({
   className,
@@ -22,26 +20,28 @@ export function QuantocosMark({
   /** Renders the "GC³" product suffix after the company name. */
   readonly withSuffix?: boolean;
 }) {
-  const { text, mark } = {
-    sm: { text: 'text-[13px]', mark: 18 },
-    md: { text: 'text-[15px]', mark: 21 },
-    lg: { text: 'text-[18px]', mark: 25 },
-  }[size];
+  const height = { sm: 18, md: 24, lg: 30 }[size];
 
   return (
     <span
-      className={`inline-flex items-center gap-[3px] font-sans font-medium tracking-[-0.01em] leading-none text-warm ${text}${className ? ` ${className}` : ''}`}
+      className={`inline-flex items-center gap-2 ${className ?? ''}`}
+      role="img"
+      aria-label={`Quantocos${withSuffix ? ' GC3' : ''}`}
     >
-      <QuantocosQ size={mark} className="shrink-0 translate-y-[1px]" />
-      <span aria-hidden="true" className="font-medium italic">
-        uantocos
-      </span>
+      <img
+        src="/brand/quantocos-wordmark.png"
+        alt=""
+        height={height}
+        style={{ height }}
+        width={Math.round((488 / 98) * height)}
+        className="w-auto select-none"
+        draggable={false}
+      />
       {withSuffix ? (
-        <span aria-hidden="true" className="ml-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-muted">
+        <span aria-hidden="true" className="font-mono text-[9px] uppercase tracking-[0.16em] text-ghost-muted">
           GC³
         </span>
       ) : null}
-      <span className="sr-only">Quantocos{withSuffix ? ' GC3' : ''}</span>
     </span>
   );
 }

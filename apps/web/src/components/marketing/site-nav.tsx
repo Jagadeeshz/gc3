@@ -9,9 +9,9 @@ import { QuantocosMark } from '@/components/brand/quantocos-mark';
 // The acts are the navigation: the page is a story, so the menu is its table of
 // contents. Anchors point at the act sections; pricing is a real route.
 const NAV = [
-  { href: '#pods', label: 'Pods' },
-  { href: '#how-it-works', label: 'How it works' },
-  { href: '#comparison', label: 'Why a pod' },
+  { href: '/pods', label: 'Pods' },
+  { href: '/how-it-works', label: 'How it works' },
+  { href: '/why-a-pod', label: 'Why a pod' },
   { href: '/pricing', label: 'Pricing' },
 ] as const;
 
@@ -58,7 +58,7 @@ export function SiteNav() {
       <div className="hidden border-b border-hairline/70 bg-obsidian sm:block">
         <div className="shell flex h-9 items-center justify-between gap-4">
           <p className="truncate font-mono text-[10px] uppercase tracking-[0.16em] text-ghost-muted">
-            <QuantocosMark size="sm" /> <span className="text-hairline">·</span> Explore possibilities
+            <QuantocosMark size="sm" /> <span className="text-hairline">·</span> Capability pods, governed delivery
           </p>
           <p className="hidden shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-ghost-muted sm:flex">
             <span className="size-1.5 rounded-full bg-emerald-400/80" aria-hidden="true" />
@@ -76,14 +76,8 @@ export function SiteNav() {
         <div className="shell flex h-[72px] items-center justify-between gap-3 sm:gap-6">
           <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="Quantocos GC³ home">
             
-            <span className="leading-none">
-              <span className="block whitespace-nowrap font-display text-[15px] tracking-[-0.01em] text-ghost sm:text-[17px]">
-                <QuantocosMark size="md" />
-              </span>
-              <span className="mt-1 hidden font-mono text-[9px] uppercase tracking-[0.18em] text-ghost-muted sm:block">
-                Explore possibilities
-              </span>
-            </span>
+            <QuantocosMark size="md" className="sm:hidden" />
+            <QuantocosMark size="lg" className="hidden sm:inline-flex" />
           </Link>
 
           <nav aria-label="Primary" className="hidden items-center gap-7 lg:flex">
