@@ -2465,11 +2465,11 @@ textarea:focus {
 
 /* the travelling light is the rim on these cards — the static spectrum stays
    present but steps back so the two do not read as a colour clash */
-.pod-card.b-surface::after {
+.pod-card.b-surface:not(.pod-slide)::after {
   opacity: 0.2;
 }
 
-.pod-card.b-surface:hover::after {
+.pod-card.b-surface:not(.pod-slide):hover::after {
   opacity: 0.35;
 }
 
@@ -2575,9 +2575,9 @@ textarea:focus {
   padding: 24px;
   border-radius: 14px;
   background-color: #17161d;
-  /* at rest the outline has to read on its own: the beam only passes an edge at a
-     time, so a near-invisible 7% border made the card look cut off */
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  /* the gradient edge is the outline here, so the flat border steps back to a
+     whisper — it exists to keep the box honest, not to be seen */
+  border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 24px 50px -30px rgba(0, 0, 0, 0.9);
   /* the depth: cards either side sit back and down, the centred one stands up */
   transform: translate3d(0, 10px, 0) scale(0.93);
@@ -2639,4 +2639,102 @@ textarea:focus {
 .pod-slide[data-active] .pod-slide__index {
   opacity: 0.16;
   color: var(--color-gold-light);
+}
+
+/* ------------------------------------------------------------------ finale
+ *
+ * The close of the ribbon sequence. The cards have dissolved by now, so the band
+ * is empty on purpose: this is the only place the hero states what the company
+ * is, rather than what it sells.
+ */
+.ribbon-hero__finale {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate3d(-50%, 28px, 0);
+  width: min(92vw, 46rem);
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+.ribbon-hero__finale-eyebrow {
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 0.78vw, 11px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-gold-light);
+}
+
+.ribbon-hero__finale-title {
+  margin-top: 1.1rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 4.4vw, 4.1rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  color: #ffffff;
+  /* the white-to-grey fade the reference asks for on headlines */
+  background: linear-gradient(180deg, #ffffff 34%, rgba(255, 255, 255, 0.62) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ribbon-hero__finale-body {
+  margin: 1.4rem auto 0;
+  max-width: 46ch;
+  font-size: clamp(13px, 1.15vw, 15px);
+  line-height: 1.75;
+  color: var(--rb-mid);
+}
+
+.ribbon-hero__finale-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 1.9rem;
+  padding: 0 20px;
+  height: 40px;
+  border-radius: 99px;
+  background: linear-gradient(120deg, #f2d582, #c9911a);
+  color: #0d0c11;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.ribbon-hero__finale-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px -18px rgba(242, 213, 130, 0.7);
+}
+
+@media (max-width: 900px) {
+  .ribbon-hero__finale {
+    top: 42%;
+  }
+}
+
+/* ------------------------------------------------------------------ slide edge
+ *
+ * The catalogue cards carry the same gradient edge as the rest of the site, drawn
+ * a touch heavier than the panels so it survives the rail's scale-down on the
+ * cards either side.
+ */
+.pod-slide.b-surface::after {
+  padding: 1.5px;
+  opacity: 0.85;
+  transition: opacity 420ms ease;
+}
+
+.pod-slide.b-surface[data-active]::after {
+  opacity: 1;
+}
+
+.pod-slide.b-surface[data-past]::after {
+  opacity: 0.45;
 }

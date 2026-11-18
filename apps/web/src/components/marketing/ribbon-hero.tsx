@@ -127,6 +127,7 @@ export function RibbonHero() {
   const cap = useRef<HTMLDivElement | null>(null);
   const rule = useRef<HTMLDivElement | null>(null);
   const canvas = useRef<HTMLCanvasElement | null>(null);
+  const finale = useRef<HTMLDivElement | null>(null);
   const [staticMode, setStaticMode] = useState(false);
 
   useEffect(() => {
@@ -236,7 +237,7 @@ export function RibbonHero() {
       const NY = 3;
 
       const vs = `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
-      const fs = `uniform sampler2D map;uniform float ready,radius;varying vec2 vUv;
+      const fs = `uniform sampler2D map;uniform float ready,radius,fade;varying vec2 vUv;
 void main(){
   vec2 q=(abs(vUv-.5)-.5)*vec2(1.59,1.)+radius;
   float d=length(max(q,0.))+min(max(q.x,q.y),0.)-radius;
@@ -244,7 +245,7 @@ void main(){
   if(a<.01)discard;
   vec3 c=texture2D(map,vUv).rgb;
   float edge=smoothstep(-.012-px,-.012,d);
-  gl_FragColor=vec4(mix(c,vec3(1.),edge*.12),a);
+  gl_FragColor=vec4(mix(c,vec3(1.),edge*.12),a*fade);
 }`;
 
       const cards = PODS.map((pod, i) => {
@@ -259,6 +260,7 @@ void main(){
             map: { value: tex },
             ready: { value: 1 },
             radius: { value: 0.018 },
+            fade: { value: 1 },
           },
         });
         const mesh = new THREE.Mesh(geo, mat);
@@ -381,25 +383,33 @@ void main(){
         }
         if (rule.current) rule.current.style.transform = `scaleX(${ease(span(pp, 0.72, 0.86))})`;
 
+        // the ribbon dissolves as the finale arrives; the two never share the frame
+        const dissolve = 1 - ease(span(pp, 0.6, 0.68));
+        if (l1.current) l1.current.style.opacity = String(1 - span(pp, 0.52, 0.62));
+        if (l2.current) l2.current.style.opacity = String(1 - span(pp, 0.52, 0.62));
+        if (finale.current) {
+          const fin = ease(span(pp, 0.66, 0.8));
+          finale.current.style.opacity = String(fin);
+          // the -50% is the centring, not decoration: dropping it pinned the block
+          // to the 50% mark and pushed the headline off the right edge
+          finale.current.style.transform = `translate3d(-50%, ${(1 - fin) * 28}px, 0)`;
+          finale.current.style.pointerEvents = fin > 0.6 ? 'auto' : 'none';
+        }
+
         const pr = span(pp, RIB_A, RIB_B);
         const head = mix(0, PATH_L + cards.length * STEP, pr);
 
         for (const c of cards) {
           const s = head - c.i * STEP;
           const end = PATH_L - CARD_W;
-          if (s < end) {
-            c.mesh.visible = s > CARD_W;
-            c.rect = null;
-            if (c.mesh.visible) poseRibbon(c, head);
-          } else if (c.i < cols * rows) {
-            const st = mix(RIB_A, RIB_B, (end + c.i * STEP) / (PATH_L + cards.length * STEP));
-            const q = out(span(pp, st, st + 0.13));
-            c.mesh.visible = q > 0.001;
-            if (c.mesh.visible) poseGrid(c, q);
-          } else {
-            c.mesh.visible = false;
-            c.rect = null;
-          }
+          // No 3x2 hand-off: the ribbon is allowed to run out and dissolve. The
+          // grid it used to settle into repeated what the catalogue already says,
+          // and it fought the story beat that closes the sequence.
+          const running = s < head;
+          c.mesh.visible = running && s > CARD_W - STEP;
+          c.rect = null;
+          if (c.mesh.visible) poseRibbon(c, head);
+          c.mat.uniforms.fade!.value = dissolve;
         }
 
         renderer.render(scene, camera);
@@ -488,6 +498,19 @@ void main(){
 
           <div ref={rule} className="ribbon-hero__rule" />
           <canvas ref={canvas} className="ribbon-hero__canvas" />
+
+          {/* The close: the ribbon has run out, and the band states what the
+              company is rather than repeating the catalogue one screen early. */}
+          <div ref={finale} className="ribbon-hero__finale">
+            <p className="ribbon-hero__finale-eyebrow">Quantocos / global systems</p>
+            <h2 className="ribbon-hero__finale-title">Intelligence, engineered at the edge.</h2>
+            <p className="ribbon-hero__finale-body">
+              Autonomous AI capability execution and multi-agent workflows built for enterprise scale.
+            </p>
+            <Link href="/pods" className="ribbon-hero__finale-cta">
+              See the pods
+            </Link>
+          </div>
 
           <footer className="ribbon-hero__bot">
             <p>
