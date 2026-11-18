@@ -51,7 +51,7 @@ export function SiteFooter() {
           alt=""
           loading="lazy"
           decoding="async"
-          className="absolute -bottom-24 right-6 size-[360px] opacity-[0.22] [mask-image:radial-gradient(circle_at_center,black_46%,transparent_74%)] sm:right-16 sm:size-[420px]"
+          className="absolute -bottom-20 right-4 size-[340px] opacity-[0.30] [mask-image:radial-gradient(circle_at_center,black_70%,transparent_92%)] sm:right-12 sm:size-[440px]"
         />
         <div className="absolute inset-0 [background:linear-gradient(180deg,rgba(8,11,18,0.92)_0%,rgba(8,11,18,0.75)_55%,rgba(8,11,18,0.95)_100%)]" />
       </div>
