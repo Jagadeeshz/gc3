@@ -48,45 +48,46 @@ export function Comparison() {
       <div className="shell">
         <div className="reveal max-w-[62ch]">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--color-gold-light)]">
-            Why a pod
+            The comparison
           </p>
           <h2 className="mt-3 font-display text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.06] tracking-[-0.025em] text-ghost">
-            The same outcome, three ways of buying it.
+            Five dimensions, written honestly.
           </h2>
         </div>
 
-        <div className="reveal mt-10 overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse text-left">
+        <div className="cmp mt-10">
+          <table className="cmp__table w-full min-w-[760px] border-collapse text-left">
             <caption className="sr-only">
               Comparison of an in-house team, a traditional agency and a GC³ capability pod
             </caption>
             <thead>
               <tr>
-                <th scope="col" className="w-[22%] pb-4 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
+                <th scope="col" data-col="dim" className="w-[22%] pb-4 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
                   Dimension
                 </th>
-                <th scope="col" className="w-[24%] pb-4 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
+                <th scope="col" data-col="alt" className="w-[24%] pb-4 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
                   In-house team
                 </th>
-                <th scope="col" className="w-[24%] pb-4 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
+                <th scope="col" data-col="alt" className="w-[24%] pb-4 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
                   Traditional agency
                 </th>
-                <th scope="col" className="w-[30%] rounded-t-[12px] bg-obsidian-soft px-5 pb-4 pt-5 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost">
+                <th scope="col" data-col="pod" className="cmp__podhead w-[30%] rounded-t-[12px] bg-obsidian-soft px-5 pb-4 pt-5 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost">
                   GC³ capability pod
                 </th>
               </tr>
             </thead>
             <tbody>
               {ROWS.map((row, index) => (
-                <tr key={row.dimension} className="border-t border-hairline align-top">
-                  <th scope="row" className="py-4 pr-4 text-[12.5px] font-medium text-ghost">
+                <tr key={row.dimension} className="cmp__row border-t border-hairline align-top" style={{ '--row': index } as React.CSSProperties}>
+                  <th scope="row" data-col="dim" className="py-4 pr-4 text-[12.5px] font-medium text-ghost">
                     {row.dimension}
                   </th>
-                  <td className="py-4 pr-4 text-[12.5px] leading-[1.65] text-ghost-muted">{row.inHouse}</td>
-                  <td className="py-4 pr-4 text-[12.5px] leading-[1.65] text-ghost-muted">{row.agency}</td>
+                  <td data-col="alt" className="py-4 pr-4 text-[12.5px] leading-[1.65] text-ghost-muted">{row.inHouse}</td>
+                  <td data-col="alt" className="py-4 pr-4 text-[12.5px] leading-[1.65] text-ghost-muted">{row.agency}</td>
                   <td
+                    data-col="pod"
                     className={[
-                      'bg-obsidian-soft px-5 py-4 text-[12.5px] leading-[1.65] text-ghost',
+                      'cmp__podcell bg-obsidian-soft px-5 py-4 text-[12.5px] leading-[1.65] text-ghost',
                       index === ROWS.length - 1 ? 'rounded-b-[12px]' : '',
                     ].join(' ')}
                   >

@@ -1935,3 +1935,139 @@ textarea:focus {
     opacity: 0.42;
   }
 }
+
+/* ------------------------------------------------------------------ comparison
+ *
+ * The table earns the motion rather than wearing it: rows rise in sequence as the
+ * table is read, the pod column carries a gold seam down its whole height, and a
+ * row in the pointer's path lifts while its dimension grows a gold marker.
+ *
+ * All of it is CSS. The reveal is a view() timeline with a per-row range, so the
+ * stagger is tied to scroll position instead of a timer that finishes before a
+ * reader has scrolled to row three.
+ */
+.cmp {
+  position: relative;
+}
+
+/* Horizontal swipe only where the table cannot fit. This matters for the motion
+   as much as the layout: `overflow-x` creates a scroll container, and a
+   scroll-driven animation inside one resolves its timeline against that box
+   instead of the page — which is why the rows were arriving finished. */
+@media (max-width: 900px) {
+  .cmp {
+    overflow-x: auto;
+  }
+}
+
+.cmp__row {
+  position: relative;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* The timeline sits on the cells, not the row: view() does not attach to a
+       table-row box in Chromium, so animating `tr` silently falls back to a zero
+       duration and every row arrives already finished. */
+    .cmp__row > * {
+      animation: cmp-row-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 62%;
+    }
+
+    .cmp__row:nth-child(1) > * { animation-range: entry 0% entry 46%; }
+    .cmp__row:nth-child(2) > * { animation-range: entry 6% entry 52%; }
+    .cmp__row:nth-child(3) > * { animation-range: entry 12% entry 58%; }
+    .cmp__row:nth-child(4) > * { animation-range: entry 18% entry 64%; }
+    .cmp__row:nth-child(5) > * { animation-range: entry 24% entry 70%; }
+
+    @keyframes cmp-row-in {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 18px, 0);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  }
+}
+
+/* The pod column, lit from top to bottom. A hairline seam plus a wash that is
+   only as strong as the row beneath the reader. */
+.cmp__podhead {
+  position: relative;
+}
+
+.cmp__podhead::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--bindu-soma-gradient), transparent);
+}
+
+.cmp__podcell {
+  position: relative;
+  transition:
+    background-color var(--motion-base),
+    color var(--motion-base);
+}
+
+.cmp__podcell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(242, 213, 130, 0.09),
+    rgba(242, 213, 130, 0.02)
+  );
+  opacity: 0;
+  transition: opacity var(--motion-base);
+  pointer-events: none;
+}
+
+/* Hover: the whole row responds, not just the cell under the pointer — the pod
+   column leads, the two alternatives stay readable. */
+.cmp__row:hover [data-col='dim'] {
+  color: #ffffff;
+}
+
+.cmp__row:hover [data-col='alt'] {
+  color: #d3d3d7;
+}
+
+.cmp__row:hover .cmp__podcell::before {
+  opacity: 1;
+}
+
+.cmp__row:hover .cmp__podcell {
+  color: #ffffff;
+}
+
+/* The marker: a gold edge that lights the left of the dimension cell.
+   An inset shadow rather than a positioned bar — the table lives inside a
+   horizontally scrollable box, and anything placed outside the cell is clipped
+   at that box's edge, so a bar at left:-14px simply never rendered. */
+.cmp__row [data-col='dim'] {
+  position: relative;
+  box-shadow: inset 0 0 0 0 transparent;
+  transition:
+    box-shadow var(--motion-base),
+    color var(--motion-base);
+}
+
+.cmp__row:hover [data-col='dim'] {
+  box-shadow: inset 2px 0 0 0 rgba(242, 213, 130, 0.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cmp__row [data-col='dim'],
+  .cmp__podcell::before,
+  .cmp__podcell {
+    transition: none;
+  }
+}
