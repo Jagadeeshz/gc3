@@ -1698,3 +1698,114 @@ textarea:focus {
     transition: none;
   }
 }
+
+/* ------------------------------------------------------------------ day-one deck
+ *
+ * Cards pin and hand off as the reader scrolls: each one sticks a little deeper
+ * than the last, and a view() timeline shrinks and dims it on the way out, so the
+ * stack reads as depth rather than as a list scrolling by.
+ *
+ * Degrades to a plain stacked list: without sticky the cards simply flow, and
+ * without animation-timeline nothing shrinks. Reduced motion keeps the pinning
+ * (it is layout, not animation) and drops the shrink.
+ */
+.dayone-stack {
+  display: grid;
+  gap: 1.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dayone-card {
+  position: sticky;
+  top: calc(5.5rem + (var(--i, 0) * 1.5rem));
+  transform-origin: 50% 0%;
+}
+
+.dayone-card__inner {
+  border-radius: 18px;
+  padding: 1.75rem 1.75rem 1.5rem;
+  background-color: #13121a;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 45%);
+}
+
+.dayone-card__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dayone-card__index {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-gold-light);
+  letter-spacing: -0.01em;
+}
+
+.dayone-card__meta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-ghost-muted);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dayone-card__top > .dayone-card__meta {
+  min-width: 0;
+}
+
+.dayone-card__title {
+  margin-top: 1.1rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.dayone-card__body {
+  margin-top: 0.6rem;
+  max-width: 62ch;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #b9b8bb;
+}
+
+.dayone-card__foot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11.5px;
+  color: #d3d3d7;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .dayone-card {
+      animation: dayone-sink linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 90%;
+    }
+
+    @keyframes dayone-sink {
+      to {
+        transform: scale(0.94) translateY(-8px);
+        opacity: 0.55;
+      }
+    }
+  }
+}
