@@ -1598,7 +1598,7 @@ textarea:focus {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background-image: var(--edge-gradient, var(--edge-gold));
+  background-image: var(--edge-gradient, var(--bindu-spectrum-gradient));
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -1635,7 +1635,7 @@ textarea:focus {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background-image: var(--edge-gold);
+  background-image: var(--bindu-spectrum-gradient);
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -2150,7 +2150,7 @@ textarea:focus {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background-image: var(--edge-gold);
+  background-image: var(--bindu-spectrum-gradient);
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -2467,11 +2467,11 @@ textarea:focus {
 /* the travelling light is the rim on these cards — the static spectrum stays
    present but steps back so the two do not read as a colour clash */
 .pod-card.b-surface:not(.pod-slide)::after {
-  opacity: 0.2;
+  opacity: 0.75;
 }
 
 .pod-card.b-surface:not(.pod-slide):hover::after {
-  opacity: 0.35;
+  opacity: 1;
 }
 
 @keyframes pod-beam {
@@ -2794,7 +2794,7 @@ textarea:focus {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background-image: var(--edge-gold);
+  background-image: var(--bindu-spectrum-gradient);
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
