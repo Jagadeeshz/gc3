@@ -31,7 +31,7 @@ export default function PodsPage() {
       />
 
       <StatBand />
-      <CapabilityGrid showHeader={false} />
+      <CapabilityGrid background />
       <GlowCards />
       <CtaBand />
       <SiteFooter />

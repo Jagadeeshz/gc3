@@ -133,11 +133,38 @@ function usePointerTilt() {
   return { grid, onPointerMove, onPointerLeave };
 }
 
-export function CapabilityGrid({ showHeader = true }: { readonly showHeader?: boolean } = {}) {
+export function CapabilityGrid({
+  showHeader = true,
+  background = false,
+}: { readonly showHeader?: boolean; readonly background?: boolean } = {}) {
   const pointer = usePointerTilt();
 
   return (
-    <section id="pods" className="border-b border-hairline bg-transparent py-20 sm:py-24">
+    <section
+      id="pods"
+      className={`relative overflow-hidden border-b border-hairline py-20 sm:py-24 ${background ? '' : 'bg-transparent'}`}
+    >
+      {background ? (
+        <>
+          {/* The hall, as the section's ground. Dimmed and scrimmed from both ends
+              so the cards keep their contrast and the section blends into the page
+              instead of sitting on it as a photograph. */}
+          <div
+            aria-hidden="true"
+            className="podbg pointer-events-none absolute inset-0 -z-10"
+            style={{ backgroundImage: "url('/brand/pods-hall.jpg')" }}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -z-10"
+            style={{
+              background:
+                'linear-gradient(180deg, #0d0c11 0%, rgba(13,12,17,0.55) 22%, rgba(13,12,17,0.62) 72%, #0d0c11 100%)',
+            }}
+          />
+        </>
+      ) : null}
+
       <div className="shell">
         {showHeader ? (
           <div className="reveal max-w-[62ch]">

@@ -1908,3 +1908,13 @@ textarea:focus {
     transition: none;
   }
 }
+
+/* The catalogue hall. Sits behind the pod grid, cooled slightly so the gold
+   edges and CTA stay the warmest thing in the section. */
+.podbg {
+  background-size: cover;
+  background-position: center 42%;
+  background-repeat: no-repeat;
+  filter: saturate(0.85) brightness(0.9);
+  opacity: 0.55;
+}
