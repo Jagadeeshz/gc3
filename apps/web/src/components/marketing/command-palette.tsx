@@ -143,7 +143,7 @@ export function CommandPalette() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open the command palette"
-        className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-[color:var(--bindu-void-2)]/90 px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-emerald-200 backdrop-blur-md transition-colors hover:border-emerald-400/60 hover:bg-emerald-400/10"
+        className="fixed bottom-5 right-5 z-40 hidden items-center gap-2 rounded-full sm:inline-flex border border-emerald-400/30 bg-[color:var(--bindu-void-2)]/90 px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-emerald-200 backdrop-blur-md transition-colors hover:border-emerald-400/60 hover:bg-emerald-400/10"
       >
         <Command aria-hidden className="size-3.5" strokeWidth={1.9} />
         <span className="hidden sm:inline">Search</span>

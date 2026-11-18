@@ -55,7 +55,7 @@ export function SiteNav() {
   return (
     <>
       {/* Utility strip — mono metadata only, never a paragraph. */}
-      <div className="border-b border-hairline/70 bg-obsidian">
+      <div className="hidden border-b border-hairline/70 bg-obsidian sm:block">
         <div className="shell flex h-9 items-center justify-between gap-4">
           <p className="truncate font-mono text-[10px] uppercase tracking-[0.16em] text-ghost-muted">
             <QuantocosMark size="sm" /> <span className="text-hairline">·</span> Explore possibilities
