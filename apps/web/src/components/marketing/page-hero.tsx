@@ -29,7 +29,7 @@ export function PageHero({
       </div>
 
       <div className="shell relative py-14 sm:py-20">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">{eyebrow}</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--color-gold-light)]">{eyebrow}</p>
         <h1 className="mt-4 max-w-[24ch] font-display text-[clamp(2.1rem,4.4vw,3.4rem)] leading-[1.03] tracking-[-0.03em] text-ghost">
           {title}
         </h1>
@@ -41,7 +41,7 @@ export function PageHero({
             {primary && primary !== 'demo' ? (
               <Link
                 href={primary.href}
-                className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-5 py-2.5 text-[13px] font-semibold text-[#080B12] transition-[filter] hover:brightness-[1.08]"
+                className="inline-flex items-center gap-2 rounded-full btn-gold px-5 py-2.5 text-[13px] font-semibold"
               >
                 {primary.label}
                 <ArrowUpRight aria-hidden className="size-3.5" strokeWidth={2} />

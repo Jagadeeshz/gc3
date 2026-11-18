@@ -12,6 +12,7 @@ import { StatBand } from '@/components/marketing/stat-band';
 import { CapabilityGrid } from '@/components/marketing/capability-grid';
 import { HowItWorks } from '@/components/marketing/how-it-works';
 import { Comparison } from '@/components/marketing/comparison';
+import { GlowCards } from '@/components/marketing/glow-cards';
 import { ResourceCards } from '@/components/marketing/resource-cards';
 import { CtaBand } from '@/components/marketing/cta-band';
 
@@ -165,6 +166,7 @@ export default function HomePage() {
       <CapabilityGrid />
       <HowItWorks />
       <Comparison />
+      <GlowCards />
       <ResourceCards />
       <CtaBand />
 

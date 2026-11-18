@@ -167,7 +167,7 @@ export default function NewRequestPage() {
           <button
             type="submit"
             disabled={saving !== null}
-            className="inline-flex min-h-11 items-center justify-center rounded-[12px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-3 text-sm font-medium text-ink transition-[filter] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 items-center justify-center rounded-[12px] border border-[#8B6410]/60 btn-gold px-4 py-3 text-sm font-medium text-ink hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving === 'SUBMITTED' ? 'Submitting…' : 'Submit request'}
           </button>

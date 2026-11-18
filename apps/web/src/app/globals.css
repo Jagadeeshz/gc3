@@ -67,29 +67,29 @@ body {
 
 @theme {
   /* BINDU void family */
-  --color-void: #080b12;
-  --color-void-secondary: #0c1020;
-  --color-graphite: #111827;
-  --color-graphite-elevated: #1a2235;
+  --color-void: #0d0c11;
+  --color-void-secondary: #13121a;
+  --color-graphite: #17161d;
+  --color-graphite-elevated: #1e1d26;
 
   /* BINDU shunya family */
   --color-mineral: #f3f0e8;
   --color-stone: #e6e2d6;
   --color-editorial: #faf8f2;
-  --color-warm: #faf8f2;
+  --color-warm: #ffffff;
 
   --color-ink: #111318;
   --color-ink-secondary: #474b52;
-  --color-muted: #a7a9b0;
+  --color-muted: #b9b8bb;
 
   /* Soma gold — CTA surfaces only (hard rule 2) */
   --color-gold: #c9911a;
   --color-gold-light: #f2d582;
   --color-gold-deep: #8b6410;
 
-  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-source-serif), ui-serif, Georgia, serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, SFMono-Regular, monospace;
 
   --radius-card: 14px;
 }
@@ -138,12 +138,12 @@ body {
  * ------------------------------------------------------------------ */
 @theme {
   /* The marketing/portal surface names, pointed at BINDU tokens. */
-  --color-obsidian: #080b12;
-  --color-obsidian-soft: #111827;
-  --color-obsidian-raised: #1a2235;
-  --color-hairline: #23293a;
-  --color-ghost: #faf8f2;
-  --color-ghost-muted: #a8a296;
+  --color-obsidian: #0d0c11;
+  --color-obsidian-soft: #13121a;
+  --color-obsidian-raised: #1e1d26;
+  --color-hairline: #2a2933;
+  --color-ghost: #ffffff;
+  --color-ghost-muted: #d3d3d7;
 }
 
 /* One page container so every band lines up on the same 1240px rail. */
@@ -162,9 +162,10 @@ body {
 /* Fine 1px grid, used at low opacity behind hero and the closing panel. */
 @utility blueprint {
   background-image:
-    linear-gradient(to right, color-mix(in oklab, var(--color-hairline) 55%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--color-hairline) 55%, transparent) 1px, transparent 1px);
-  background-size: 72px 72px;
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center top;
 }
 
 /*
@@ -1125,12 +1126,13 @@ body {
  * ================================================================== */
 
 :root {
-  --glass-fill-1: color-mix(in oklab, #0c1020 58%, transparent);
-  --glass-fill-2: color-mix(in oklab, #111827 46%, transparent);
-  --glass-edge: rgba(255, 255, 255, 0.11);
-  --glass-edge-strong: rgba(255, 255, 255, 0.20);
-  --glass-blur: blur(18px) saturate(140%);
-  --glass-blur-lg: blur(30px) saturate(150%);
+  --glass-fill-1: rgba(255, 255, 255, 0.02);
+  --glass-fill-2: rgba(255, 255, 255, 0.02);
+  --glass-fill-raised: rgba(255, 255, 255, 0.04);
+  --glass-edge: rgba(255, 255, 255, 0.16);
+  --glass-edge-strong: rgba(255, 255, 255, 0.26);
+  --glass-blur: blur(8px) brightness(1.15) saturate(0.8);
+  --glass-blur-lg: blur(16px) brightness(1.15) saturate(0.8);
   --glass-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0) 46%);
   --motion-fast: 160ms cubic-bezier(0.22, 1, 0.36, 1);
   --motion-base: 320ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -1331,5 +1333,243 @@ textarea:focus {
 @media (prefers-reduced-motion: reduce) {
   .b-surface {
     transition: none;
+  }
+}
+
+/* Ambient washes behind the grid: gold and graphite, drifting slowly. */
+@keyframes wash-drift {
+  0% { transform: translate3d(-3%, -2%, 0) scale(1); opacity: 0.55; }
+  50% { transform: translate3d(3%, 2%, 0) scale(1.08); opacity: 0.8; }
+  100% { transform: translate3d(-2%, 3%, 0) scale(1.02); opacity: 0.6; }
+}
+
+.site-wash {
+  filter: blur(96px);
+  animation: wash-drift 30s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.site-wash--gold {
+  background: radial-gradient(circle at center, rgba(201, 145, 26, 0.17), transparent 68%);
+}
+
+.site-wash--graphite {
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.06), transparent 72%);
+}
+
+/* The primary action, in one place: gold gradient, warm glow, scale settle. */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.625rem 1.25rem;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  color: #0d0c11;
+  background-image: linear-gradient(120deg, #f2d582 0%, #c9911a 52%, #8b6410 100%);
+  box-shadow:
+    0 10px 30px -12px rgba(201, 145, 26, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition:
+    transform var(--motion-fast),
+    box-shadow var(--motion-base),
+    filter var(--motion-fast);
+}
+
+.btn-gold:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px) scale(1.015);
+  box-shadow:
+    0 16px 42px -14px rgba(201, 145, 26, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-gold:active {
+  transform: translateY(0) scale(0.995);
+}
+
+/* Secondary: a dark glass pill beside the gold one. */
+.btn-glass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.625rem 1.25rem;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-warm);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background-color: rgba(255, 255, 255, 0.03);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  transition:
+    border-color var(--motion-fast),
+    background-color var(--motion-fast),
+    transform var(--motion-fast);
+}
+
+.btn-glass:hover {
+  border-color: rgba(255, 255, 255, 0.34);
+  background-color: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-wash {
+    animation: none !important;
+  }
+
+  .btn-gold,
+  .btn-glass {
+    transition: none !important;
+  }
+
+  .btn-gold:hover,
+  .btn-gold:active,
+  .btn-glass:hover {
+    transform: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ token remap, v2
+ *
+ * BINDU ships an unlayered `body` rule, so its font and canvas win over any
+ * Tailwind utility in @layer. Remapping the BINDU tokens themselves is the only
+ * place the change holds: the vendored files stay untouched and everything that
+ * reads `var(--bindu-*)` moves with the new system in one edit.
+ *
+ * Canvas is black; the accent family stays gold; interface text is Inter.
+ */
+:root {
+  --bindu-void: #0d0c11;
+  --bindu-void-1: #13121a;
+  --bindu-void-2: #17161d;
+  --bindu-void-3: #1e1d26;
+  --bindu-void-4: #26242f;
+
+  --bindu-shunya: #ffffff;
+  --bindu-text-primary: #ffffff;
+  --bindu-text-secondary: #b9b8bb;
+  --bindu-text-tertiary: #d3d3d7;
+
+  --bindu-font-body: var(--font-sans);
+  --bindu-font-display: var(--font-display);
+  --bindu-font-mono: var(--font-mono);
+}
+
+/* ------------------------------------------------------------------ glowing feature cards
+ *
+ * Ported from the supplied reference: an 8px gradient border drawn with
+ * background-clip, a blurred copy of the same gradient sitting behind the frame
+ * as the glow, and a staggered rise on entry.
+ *
+ * Two deliberate differences from the reference: the gradients are the gold
+ * family rather than pink/cyan/violet (this site is black and gold), and the
+ * entrance is CSS keyframes rather than a motion library — the effect is a fade
+ * and a 30px rise, which needs no dependency and inherits reduced-motion for free.
+ */
+:root {
+  --glow-gold-1: linear-gradient(137deg, #f2d582 0%, #c9911a 52%, #8b6410 100%);
+  --glow-gold-2: linear-gradient(137deg, #fff1cf 0%, #e0b764 48%, #b8862b 100%);
+  --glow-gold-3: linear-gradient(137deg, #e8cf9a 0%, #b98c2a 50%, #6b4e0c 100%);
+}
+
+@keyframes glow-card-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.glow-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 300px;
+  margin-inline: auto;
+  animation: glow-card-enter 800ms ease-out both;
+}
+
+.glow-card:nth-child(1) { animation-delay: 100ms; }
+.glow-card:nth-child(2) { animation-delay: 200ms; }
+.glow-card:nth-child(3) { animation-delay: 300ms; }
+
+/* The glow: the same gradient, blurred, sitting behind the frame. */
+.glow-card__glow {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 300px;
+  border-radius: 40px;
+  opacity: 0.6;
+  filter: blur(45px);
+  pointer-events: none;
+  transition: opacity var(--motion-base);
+}
+
+.glow-card:hover .glow-card__glow {
+  opacity: 0.85;
+}
+
+/* The frame: transparent 8px border, gradient painted into the border box only. */
+.glow-card__frame {
+  position: relative;
+  z-index: 10;
+  align-self: stretch;
+  height: 300px;
+  border-radius: 40px;
+  border: 8px solid transparent;
+  overflow: hidden;
+  background-clip: padding-box, border-box;
+  background-origin: border-box;
+  background-image: linear-gradient(#1a1a1c, #1a1a1c), var(--glow-gold-1);
+  transition: transform var(--motion-base);
+}
+
+.glow-card:hover .glow-card__frame {
+  transform: translateY(-3px);
+}
+
+.glow-card__body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 1.75rem;
+}
+
+@media (max-width: 767px) {
+  .glow-card,
+  .glow-card__frame,
+  .glow-card__glow {
+    max-width: 100%;
+  }
+
+  .glow-card__frame,
+  .glow-card__glow {
+    height: 260px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-card,
+  .glow-card__frame,
+  .glow-card__glow {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
   }
 }

@@ -77,7 +77,7 @@ export function CapabilityGrid({ showHeader = true }: { readonly showHeader?: bo
       <div className="shell">
         {showHeader ? (
           <div className="reveal max-w-[62ch]">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--color-gold-light)]">
               The catalogue
             </p>
             <h2 className="mt-3 font-display text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.06] tracking-[-0.025em] text-ghost">

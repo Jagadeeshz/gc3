@@ -77,7 +77,7 @@ export default function RequestsPage() {
         </div>
         <Link
           href="/requests/new"
-          className="inline-flex min-h-11 items-center gap-2 rounded-[12px] border border-[#8B6410]/60 bg-[linear-gradient(120deg,#F2D582_0%,#C9911A_52%,#8B6410_100%)] px-4 py-2.5 text-sm font-medium text-ink transition-[filter] hover:brightness-105"
+          className="inline-flex min-h-11 items-center gap-2 rounded-[12px] border border-[#8B6410]/60 btn-gold px-4 py-2.5 text-sm font-medium text-ink hover:brightness-105"
         >
           ＋ Create new
         </Link>

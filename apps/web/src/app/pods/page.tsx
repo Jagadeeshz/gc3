@@ -5,6 +5,7 @@ import { BookDemoDialog } from '@/components/marketing/book-demo';
 import { PageHero } from '@/components/marketing/page-hero';
 import { StatBand } from '@/components/marketing/stat-band';
 import { CapabilityGrid } from '@/components/marketing/capability-grid';
+import { GlowCards } from '@/components/marketing/glow-cards';
 import { CtaBand } from '@/components/marketing/cta-band';
 import { SiteFooter } from '@/components/marketing/site-footer';
 
@@ -31,6 +32,7 @@ export default function PodsPage() {
 
       <StatBand />
       <CapabilityGrid showHeader={false} />
+      <GlowCards />
       <CtaBand />
       <SiteFooter />
     </div>

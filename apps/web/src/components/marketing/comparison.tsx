@@ -47,7 +47,7 @@ export function Comparison() {
     <section id="comparison" className="border-b border-hairline bg-transparent py-20 sm:py-24">
       <div className="shell">
         <div className="reveal max-w-[62ch]">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--color-gold-light)]">
             Why a pod
           </p>
           <h2 className="mt-3 font-display text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.06] tracking-[-0.025em] text-ghost">

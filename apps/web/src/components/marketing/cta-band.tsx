@@ -15,7 +15,7 @@ export function CtaBand() {
       <div aria-hidden="true" className="blueprint pointer-events-none absolute inset-0 opacity-[0.14]" />
       <div className="shell relative">
         <div className="reveal max-w-[64ch]">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--color-gold-light)]">
             Start here
           </p>
           <h2 className="mt-3 font-display text-[clamp(2rem,3.8vw,3.1rem)] leading-[1.04] tracking-[-0.025em] text-ghost">

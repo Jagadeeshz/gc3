@@ -54,7 +54,7 @@ export default function HowItWorksPage() {
       <section className="border-b border-hairline bg-transparent py-20 sm:py-24">
         <div className="shell grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
           <div className="reveal">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--color-gold-light)]">
               What you have on day one
             </p>
             <h2 className="mt-3 font-display text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.06] tracking-[-0.025em] text-ghost">
