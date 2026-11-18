@@ -960,3 +960,154 @@ body {
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Motion system for the public marketing site.
+ *
+ * Two kinds of movement only, and both are decoration:
+ *
+ *   1. entrance — tied to scroll position with `animation-timeline: view()`,
+ *      so it costs no JavaScript and content is never left invisible if the
+ *      timeline is unsupported.
+ *   2. ambient — a slow drift behind the hero that carries no information,
+ *      so a reader who never notices it has lost nothing.
+ *
+ * Everything below collapses to a still page under prefers-reduced-motion.
+ * ------------------------------------------------------------------ */
+
+@keyframes site-drift {
+  0% {
+    transform: translate3d(-3%, -2%, 0) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate3d(3%, 2%, 0) scale(1.08);
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate3d(-2%, 3%, 0) scale(1.02);
+    opacity: 0.55;
+  }
+}
+
+@keyframes site-sheen {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+
+@keyframes site-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Hero entrance: runs once, on load, and is finished before a reader starts. */
+.site-enter {
+  animation: site-enter 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.site-enter-1 { animation-delay: 40ms; }
+.site-enter-2 { animation-delay: 130ms; }
+.site-enter-3 { animation-delay: 220ms; }
+.site-enter-4 { animation-delay: 310ms; }
+.site-enter-5 { animation-delay: 400ms; }
+
+/* Scroll entrance: no JS, no observers, degrades to fully visible. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: site-enter linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 58%;
+    }
+
+    /* A staggered group: siblings arrive in sequence as the row enters. */
+    .reveal-stagger > * {
+      animation: site-enter linear both;
+      animation-timeline: view();
+    }
+
+    .reveal-stagger > *:nth-child(1) { animation-range: entry 0% entry 46%; }
+    .reveal-stagger > *:nth-child(2) { animation-range: entry 6% entry 52%; }
+    .reveal-stagger > *:nth-child(3) { animation-range: entry 12% entry 58%; }
+    .reveal-stagger > *:nth-child(4) { animation-range: entry 18% entry 64%; }
+    .reveal-stagger > *:nth-child(5) { animation-range: entry 24% entry 70%; }
+    .reveal-stagger > *:nth-child(6) { animation-range: entry 30% entry 76%; }
+  }
+}
+
+/* Ambient field behind the hero. One slow drift, never a spin. */
+.site-ambient {
+  animation: site-drift 26s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+/* A hairline of spectrum that travels once across a section border. */
+.site-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.site-sheen::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inline-size: 32%;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--spectrum-accent) 42%, transparent), transparent);
+  animation: site-sheen 6.5s ease-in-out 1.2s infinite;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-enter,
+  .reveal,
+  .reveal-stagger > *,
+  .site-ambient,
+  .site-sheen::after {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Catalogue rail: the one continuous motion in the page body.
+ * Rendered twice, translated exactly half the track, so the seam is the
+ * only thing that never shows. Paused on hover and focus; stopped under
+ * reduced motion, where the duplicate is removed and the rest wraps.
+ * ------------------------------------------------------------------ */
+@keyframes rail-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+.rail-track {
+  animation: rail-scroll 46s linear infinite;
+}
+
+.rail:hover .rail-track,
+.rail:focus-within .rail-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-track {
+    animation: none !important;
+    transform: none !important;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .rail-dup {
+    display: none !important;
+  }
+}

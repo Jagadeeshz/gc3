@@ -10,6 +10,7 @@ import {
 import { Card, CardBody, CardHeader, CardTitle, MetaLabel, Badge, buttonStyles } from '@gc3/ui';
 import { AGENT_PROHIBITED_ACTIONS, CLIENT_ROLES } from '@gc3/types';
 import { createOrganizationSchema } from '@gc3/validation';
+import { SiteNav } from '@/components/marketing/site-nav';
 import { getApiHealth } from '@/lib/api';
 
 /** Live dependency probe on every request — never a cached build-time snapshot. */
@@ -74,26 +75,11 @@ export default async function FoundationPage() {
 
   return (
     <div className="min-h-dvh">
-      <header className="border-b border-white/10">
-        <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-4 px-6 py-5">
-          <div className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-[10px] border border-gold/35 bg-gold/10 font-display text-lg font-semibold text-gold-light">
-              G
-            </span>
-            <div className="leading-tight">
-              <p className="text-sm font-semibold tracking-[0.01em] text-warm">GC³ Portal</p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-                Global Cloud Capability &amp; Consulting
-              </p>
-            </div>
-          </div>
-          <Badge tone="gold">Phase 0 — Foundation</Badge>
-        </div>
-      </header>
+      <SiteNav />
 
       <main className="mx-auto max-w-[1120px] px-6">
         {/* Hero — one dominant idea, generous vertical space. */}
-        <section className="glow-gold relative -mx-6 px-6 pb-16 pt-16 sm:pt-24">
+        <section className="site-enter glow-gold relative -mx-6 px-6 pb-16 pt-16 sm:pt-24">
           <MetaLabel>Development Brief v1.0 · Section 10</MetaLabel>
           <h1 className="mt-5 max-w-[22ch] font-display text-4xl leading-[1.06] tracking-[-0.02em] text-warm sm:text-6xl">
             The operating platform for global delivery.
@@ -185,7 +171,7 @@ export default async function FoundationPage() {
         </Card>
 
         {/* Workspace map */}
-        <section className="pb-16">
+        <section className="reveal pb-16">
           <div className="flex items-end justify-between gap-6">
             <div>
               <MetaLabel>workspace</MetaLabel>
@@ -223,7 +209,7 @@ export default async function FoundationPage() {
         </section>
 
         {/* Contract proof: values rendered from the shared packages at request time. */}
-        <section className="hairline grid gap-6 py-12 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="reveal hairline grid gap-6 py-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
             <MetaLabel>contracts in force</MetaLabel>
             <h2 className="mt-3 font-display text-2xl tracking-[-0.01em] text-warm">
@@ -269,7 +255,7 @@ export default async function FoundationPage() {
         </section>
 
         {/* Next slices */}
-        <section className="pb-20">
+        <section className="reveal pb-20">
           <div className="flex items-center gap-3">
             <Database aria-hidden className="size-4 text-gold" strokeWidth={1.75} />
             <MetaLabel>next slices</MetaLabel>

@@ -9,9 +9,9 @@ import { QuantocosMark } from '@/components/brand/quantocos-mark';
 // The acts are the navigation: the page is a story, so the menu is its table of
 // contents. Anchors point at the act sections; pricing is a real route.
 const NAV = [
-  { href: '#act-problem', label: 'The problem' },
-  { href: '#act-paradigm', label: 'What GC³ is' },
-  { href: '#act-pods', label: 'Pods' },
+  { href: '#pods', label: 'Pods' },
+  { href: '#how-it-works', label: 'How it works' },
+  { href: '#comparison', label: 'Why a pod' },
   { href: '/pricing', label: 'Pricing' },
 ] as const;
 

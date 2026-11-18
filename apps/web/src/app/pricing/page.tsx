@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight, Coins, Layers, Users } from 'lucide-react';
+import { SiteNav } from '@/components/marketing/site-nav';
 import { PodCatalogue } from '@/components/pricing/pod-catalogue';
 import { PlatformBand, PricingFaq } from '@/components/pricing/pricing-sections';
 import { QuantocosMark } from '@/components/brand/quantocos-mark';
@@ -41,32 +42,10 @@ const RULES = [
 export default function PricingPage() {
   return (
     <div className="min-h-dvh bg-transparent">
-      <header className="border-b border-[#1E293B]">
-        <div className="mx-auto flex max-w-[1240px] items-center justify-between px-6 py-5">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-[10px] border border-gold/35 bg-gold/10 font-display text-base font-semibold text-gold-light">
-              G
-            </span>
-            <span className="leading-tight">
-              <span className="block text-sm font-semibold text-slate-100">GC³ Portal</span>
-              <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">
-                Global Cloud Capability &amp; Consulting
-              </span>
-            </span>
-          </Link>
-
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-400/35 bg-emerald-400/10 px-3 py-1.5 text-[12px] font-medium text-emerald-200 transition-colors hover:bg-emerald-400/20"
-          >
-            Sign in
-            <ArrowUpRight aria-hidden className="size-3.5" strokeWidth={1.75} />
-          </Link>
-        </div>
-      </header>
+      <SiteNav />
 
       <main className="mx-auto max-w-[1240px] px-6 py-12">
-        <section className="max-w-[62ch]">
+        <section className="reveal max-w-[62ch]">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
             Capability pods
           </p>
@@ -97,19 +76,19 @@ export default function PricingPage() {
           </dl>
         </section>
 
-        <section className="mt-10">
+        <section className="reveal mt-10">
           <PodCatalogue />
         </section>
 
-        <section className="mt-14">
+        <section className="reveal mt-14">
           <PlatformBand />
         </section>
 
-        <section className="mt-14">
+        <section className="reveal mt-14">
           <PricingFaq />
         </section>
 
-        <section className="mt-12 grid gap-4 border-t border-[#1E293B] pt-10 sm:grid-cols-3">
+        <section className="reveal-stagger mt-12 grid gap-4 border-t border-[#1E293B] pt-10 sm:grid-cols-3">
           {RULES.map((rule) => {
             const Icon = rule.icon;
 
@@ -123,7 +102,7 @@ export default function PricingPage() {
           })}
         </section>
 
-        <section className="mt-10 rounded-[12px] border border-[#1E293B] bg-[#0B1220]/60 px-4 py-3.5">
+        <section className="reveal mt-10 rounded-[12px] border border-[#1E293B] bg-[#0B1220]/60 px-4 py-3.5">
           <p className="text-[11px] leading-relaxed text-slate-400">
             <span className="text-slate-200">Custom pods.</span> Automation and Interactive are scoped
             per engagement at a per-credit rate: process audits, RAG chatbots, voice agents, 3D and VR
