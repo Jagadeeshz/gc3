@@ -54,7 +54,8 @@ export default function PricingPage() {
         lede="Six pods, each a standing multidisciplinary team on a monthly credit pool. Start at the capability you need; the pods above carry the ones below at no extra credit cost."
         primary="demo"
         secondary={{ label: 'How it works', href: '/how-it-works' }}
-        plateSrc="/brand/handshake-hero.jpg"
+        backgroundSrc="/brand/pricing-hero.jpg"
+        backgroundMode="photo"
       />
 
       <main className="mx-auto max-w-[1240px] px-6 py-12">
