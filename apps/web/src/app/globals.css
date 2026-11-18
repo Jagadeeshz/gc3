@@ -2071,3 +2071,28 @@ textarea:focus {
     transition: none;
   }
 }
+
+/* The pod illustration in the how-it-works band. Held rather than cropped, pinned
+   to the right, and faded into the page at its left edge so the copy meets no
+   hard boundary — the drawing is transparent, so there is nothing to mask. */
+.hero-art {
+  /* height-based rather than `contain`: with the box wider than the drawing's
+     aspect, contain pins the art to the container edge and clips the last figure.
+     A height rule plus a right inset keeps the whole composition inside the band. */
+  background-size: auto 82%;
+  background-position: right 5% center;
+  background-repeat: no-repeat;
+  opacity: 0.9;
+  /* the left-to-right scrim below does the blending; masking here would eat the
+     figures rather than the ground */
+  -webkit-mask-image: linear-gradient(90deg, transparent 12%, #000 52%);
+  mask-image: linear-gradient(90deg, transparent 12%, #000 52%);
+}
+
+@media (max-width: 1023px) {
+  .hero-art {
+    background-position: 108% 30%;
+    background-size: 78%;
+    opacity: 0.32;
+  }
+}

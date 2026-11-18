@@ -15,6 +15,7 @@ export function PageHero({
   primary,
   secondary,
   backgroundSrc,
+  backgroundMode = 'photo',
 }: {
   readonly eyebrow: string;
   readonly title: string;
@@ -23,6 +24,12 @@ export function PageHero({
   readonly secondary?: { label: string; href: string };
   /** When set, the band sits on this image instead of the blueprint grid. */
   readonly backgroundSrc?: string;
+  /**
+   * How the image should occupy the band. `photo` fills and crops, `art` holds the
+   * whole drawing and lets it sit on the page colour (a transparent vector has no
+   * edges to hide, so cropping it would only cut figures in half).
+   */
+  readonly backgroundMode?: 'photo' | 'art';
 }) {
   return (
     <header className="relative overflow-hidden border-b border-hairline bg-obsidian">
@@ -32,7 +39,7 @@ export function PageHero({
             {/* The image is anchored right, so the copy keeps the darker left
                 third to itself and the scrim only has to carry the middle. */}
             <div
-              className="hero-photo absolute inset-0"
+              className={`${backgroundMode === 'art' ? 'hero-art' : 'hero-photo'} absolute inset-0`}
               style={{ backgroundImage: `url('${backgroundSrc}')` }}
             />
             <div

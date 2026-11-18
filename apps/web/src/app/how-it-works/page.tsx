@@ -29,6 +29,8 @@ export default function HowItWorksPage() {
         lede="No procurement cycle and no statement of work for each piece of work. The pod is composed once against the outcome, and the work moves through it as requests rather than as projects."
         primary="demo"
         secondary={{ label: 'See the pods', href: '/pods' }}
+        backgroundSrc="/brand/how-it-works-pod.svg"
+        backgroundMode="art"
       />
 
       <HowItWorks showHeader={false} />
