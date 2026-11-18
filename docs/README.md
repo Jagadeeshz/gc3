@@ -4,6 +4,8 @@ Module documentation required by Development Brief §19.1 lives here, grouped by
 
 ```text
 docs/
+├── GC3_Portal_Documentation.md      Technical & functional documentation of the shipped platform
+├── GC3_Figma_Editable_Blueprint.md  Design tokens and frame specs for a matching Figma file
 ├── architecture/   System shape, boundaries, tenancy model
 ├── api/            Endpoint contracts and conventions
 ├── database/       Schema and migration notes
@@ -14,9 +16,20 @@ docs/
 
 ## Current state
 
-Phase 0. The only documentation that exists so far is the root `README.md` and the source-level
-contracts in `packages/types` and `packages/validation`.
+Two consolidated documents live at the top level and describe the platform as built, not as
+planned:
 
-Each module added from Phase 1 onward must ship with its own overview covering: business purpose,
+- **`GC3_Portal_Documentation.md`** — scope, value by audience, architecture across the three
+  portals, design language, stack, tenancy and security, quality, and an explicit list of what
+  is deliberately not built.
+- **`GC3_Figma_Editable_Blueprint.md`** — a Token Studio JSON set, per-screen frame
+  specifications and component specs, plus a table recording where the blueprint diverges from
+  earlier briefs (palette, motion library, hero copy, ribbon geometry).
+
+Both are written from the codebase. Where a brief and the shipped product disagreed, the
+document records the product and states the correction rather than carrying the brief forward.
+
+Each module added from here must ship with its own overview covering: business purpose,
 functional requirements, roles and permissions, workflow, data entities, API specification, UI
-specification, validation rules, error handling, test cases, deployment notes and known limitations.
+specification, validation rules, error handling, test cases, deployment notes and known
+limitations.
