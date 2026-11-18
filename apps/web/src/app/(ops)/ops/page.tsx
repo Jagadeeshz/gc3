@@ -95,7 +95,7 @@ export default function OpsPage() {
 
   if (!persona) {
     return (
-      <div className="mx-auto mt-10 max-w-[520px] rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-6 text-center">
+      <div className="mx-auto mt-10 max-w-[520px] rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-6 text-center">
         <CircleSlash aria-hidden className="mx-auto size-6 text-amber-300" strokeWidth={1.75} />
         <h1 className="mt-3 font-display text-lg text-slate-100">No staff workspace for this account</h1>
         <p className="mt-2 text-[12px] leading-relaxed text-slate-400">

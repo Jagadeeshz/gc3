@@ -149,7 +149,7 @@ export default function SupportPage() {
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
                 placeholder="Short summary — e.g. Deliverable upload failing"
-                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
               />
             </label>
 
@@ -162,7 +162,7 @@ export default function SupportPage() {
                 value={details}
                 onChange={(event) => setDetails(event.target.value)}
                 placeholder="What you expected, what happened, and anything you have already tried."
-                className="resize-y rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="resize-y rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
               />
             </label>
 
@@ -172,7 +172,7 @@ export default function SupportPage() {
                 <select
                   value={priority}
                   onChange={(event) => setPriority(event.target.value as ServiceRequestPriority)}
-                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
                 >
                   {PRIORITIES.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -187,7 +187,7 @@ export default function SupportPage() {
                 <select
                   value={categoryId}
                   onChange={(event) => setCategoryId(event.target.value)}
-                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
                 >
                   <option value="">General support</option>
                   {categories.map((category) => (

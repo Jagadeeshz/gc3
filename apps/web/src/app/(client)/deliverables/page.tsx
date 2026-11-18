@@ -148,7 +148,7 @@ export default function DeliverablesPage() {
           { label: 'Awaiting review', value: totals.awaiting },
           { label: 'Approved or released', value: Math.max(totals.approved, released) },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-4">
+          <div key={stat.label} className="rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4">
             <p className="text-[11px] uppercase tracking-[0.1em] text-slate-400">{stat.label}</p>
             <p className="mt-2 font-display text-[26px] font-semibold tabular-nums leading-none text-slate-100">
               {stat.value}

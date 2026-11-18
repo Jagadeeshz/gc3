@@ -85,7 +85,7 @@ export default function NewRequestPage() {
       </p>
 
       <form
-        className="mt-6 grid gap-4 rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-6"
+        className="mt-6 grid gap-4 rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-6"
         onSubmit={(event) => {
           event.preventDefault();
           void submit('SUBMITTED');
@@ -100,7 +100,7 @@ export default function NewRequestPage() {
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="e.g. Provision a staging cluster"
-            className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+            className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
           />
         </label>
 
@@ -114,7 +114,7 @@ export default function NewRequestPage() {
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             placeholder="What needs to happen, for whom, and by when?"
-            className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+            className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
           />
         </label>
 
@@ -123,7 +123,7 @@ export default function NewRequestPage() {
           <select
             value={priority}
             onChange={(event) => setPriority(event.target.value as ServiceRequestPriority)}
-            className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+            className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
           >
             {PRIORITIES.map((value) => (
               <option key={value} value={value}>
@@ -138,7 +138,7 @@ export default function NewRequestPage() {
           <select
             value={categoryId}
             onChange={(event) => setCategoryId(event.target.value)}
-            className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+            className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
           >
             <option value="">No category</option>
             {categories.map((category) => (

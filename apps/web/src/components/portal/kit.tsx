@@ -197,9 +197,10 @@ export function RestrictedPanel({
   readonly label?: string;
 }) {
   return (
-    <div className="mx-auto mt-10 max-w-[520px] rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-6 text-center">
+    <div className="mx-auto mt-10 max-w-[520px] rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-6 text-center">
       <Lock aria-hidden className="mx-auto size-5 text-gold-light" strokeWidth={1.75} />
-      <h2 className="mt-3 font-display text-lg font-semibold text-warm">{title}</h2>
+      {/* This panel is the whole page wherever it is used, so its title is the page heading. */}
+      <h1 className="mt-3 font-display text-lg font-semibold text-warm">{title}</h1>
       <p className="mt-2 text-sm text-muted">{body}</p>
       <Link
         href={href}

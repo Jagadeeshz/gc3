@@ -178,7 +178,7 @@ export default function ServicesPage() {
           {categories.map((category) => (
             <article
               key={category.id}
-              className="flex flex-col justify-between rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-4 transition-colors hover:border-emerald-400/30"
+              className="flex flex-col justify-between rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4 transition-colors hover:border-emerald-400/30"
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
@@ -249,7 +249,7 @@ export default function ServicesPage() {
                       current ? { ...current, categoryId: event.target.value } : current,
                     )
                   }
-                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
                 >
                   <option value="">General request</option>
                   {categories.map((category) => (
@@ -271,7 +271,7 @@ export default function ServicesPage() {
                     setDraft((current) => (current ? { ...current, title: event.target.value } : current))
                   }
                   placeholder="What do you need delivered?"
-                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
                 />
               </label>
 
@@ -288,7 +288,7 @@ export default function ServicesPage() {
                     )
                   }
                   placeholder="Scope, audience, deadline, anything we should know."
-                  className="resize-y rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                  className="resize-y rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
                 />
               </label>
 

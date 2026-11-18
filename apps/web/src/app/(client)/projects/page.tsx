@@ -100,7 +100,7 @@ export default function ProjectsPage() {
           { label: 'Active now', value: summary.active },
           { label: 'Deliverables released', value: summary.delivered },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-4">
+          <div key={stat.label} className="rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4">
             <p className="text-[11px] uppercase tracking-[0.1em] text-slate-400">{stat.label}</p>
             <p className="mt-2 font-display text-[26px] font-semibold tabular-nums leading-none text-slate-100">
               {stat.value}
@@ -134,7 +134,7 @@ export default function ProjectsPage() {
                 const released = deliverables.filter((item) => item.status === 'RELEASED').length;
 
                 return (
-                  <tr key={request.id} className="border-t border-white/10 hover:bg-[rgba(12,16,32,0.55)]">
+                  <tr key={request.id} className="border-t border-white/10 hover:bg-[rgba(12,16,32,0.55)] b-surface">
                     <td className="px-4 py-3">
                       <p className="text-sm text-slate-100">{request.title}</p>
                       <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-slate-400">

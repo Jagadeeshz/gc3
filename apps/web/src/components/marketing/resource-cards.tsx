@@ -67,7 +67,7 @@ export function ResourceCards() {
               <Link
                 key={card.title}
                 href={card.href}
-                className="group flex flex-col rounded-[14px] border border-hairline bg-obsidian p-6 transition-colors duration-200 hover:border-[color:var(--bindu-rim-spectrum-mid)]"
+                className="group flex flex-col rounded-[14px] border border-hairline bg-obsidian p-6 transition-colors duration-200 hover:border-[color:var(--bindu-rim-spectrum-mid)] b-surface"
               >
                 <div className="flex items-center justify-between">
                   <span className="rounded-full border border-hairline px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">

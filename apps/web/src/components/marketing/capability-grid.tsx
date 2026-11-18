@@ -97,7 +97,7 @@ export function CapabilityGrid({ showHeader = true }: { readonly showHeader?: bo
             return (
               <article
                 key={pod.name}
-                className="group flex flex-col justify-between gap-6 rounded-[14px] border border-hairline bg-obsidian-soft p-6 transition-colors duration-200 hover:border-[color:var(--bindu-rim-spectrum-mid)]"
+                className="group flex flex-col justify-between gap-6 rounded-[14px] border border-hairline bg-obsidian-soft p-6 transition-colors duration-200 hover:border-[color:var(--bindu-rim-spectrum-mid)] b-surface"
               >
                 <div>
                   <span className="inline-grid size-10 place-items-center rounded-[10px] border border-hairline bg-obsidian text-ghost">

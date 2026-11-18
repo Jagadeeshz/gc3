@@ -121,7 +121,7 @@ export default function SubscriptionPage() {
           </Link>
         }
       />
-      <div className="flex flex-wrap items-start gap-2 rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] px-3.5 py-3">
+      <div className="flex flex-wrap items-start gap-2 rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3.5 py-3">
         <Info aria-hidden className="mt-0.5 size-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} />
         <p className="text-[11px] leading-relaxed text-slate-400">
           <span className="text-slate-200">Two price models, both real.</span> This workspace bills

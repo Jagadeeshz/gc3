@@ -345,7 +345,8 @@ export function PortalShell({
           tenant at once, so it gets the width instead of the reading column.
         */}
         <main
-          className={isOps ? 'mx-auto max-w-[1440px] px-6 py-6' : 'mx-auto max-w-[1080px] px-6 py-8'}
+          key={pathname}
+          className={`page-enter ${isOps ? 'mx-auto max-w-[1440px] px-6 py-6' : 'mx-auto max-w-[1080px] px-6 py-8'}`}
         >
           {children}
         </main>

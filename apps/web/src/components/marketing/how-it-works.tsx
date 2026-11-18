@@ -50,7 +50,7 @@ export function HowItWorks({ showHeader = true }: { readonly showHeader?: boolea
           {STEPS.map((step, index) => (
             <li
               key={step.title}
-              className="flex flex-col rounded-[14px] border border-hairline bg-obsidian p-6"
+              className="b-surface flex flex-col rounded-[14px] border border-hairline bg-obsidian p-6"
             >
               <div className="flex items-center justify-between">
                 <span className="figures font-mono text-[11px] tracking-[0.16em] text-ghost-muted">

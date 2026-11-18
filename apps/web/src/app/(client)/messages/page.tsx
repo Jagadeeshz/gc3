@@ -220,7 +220,7 @@ export default function MessagesPage() {
                       onChange={(event) => setDraft(event.target.value)}
                       rows={2}
                       placeholder="Write a reply…"
-                      className="flex-1 resize-none rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                      className="flex-1 resize-none rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
                     />
                     <button
                       type="submit"

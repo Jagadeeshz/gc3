@@ -232,13 +232,13 @@ export default function ClientOverviewPage() {
   if (workspace.loading) {
     return (
       <div className="grid gap-4">
-        <div className="h-16 animate-pulse rounded-[8px] bg-white/[0.03]" />
+        <div className="h-16 skeleton" />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-[8px] bg-white/[0.03]" />
+            <div key={i} className="h-28 skeleton" />
           ))}
         </div>
-        <div className="h-64 animate-pulse rounded-[8px] bg-white/[0.03]" />
+        <div className="h-64 skeleton" />
       </div>
     );
   }

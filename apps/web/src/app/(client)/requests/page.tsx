@@ -113,7 +113,7 @@ export default function RequestsPage() {
       {loading ? (
         <p className="mt-6 text-sm text-slate-400">Loading requests…</p>
       ) : items.length === 0 ? (
-        <div className="mt-6 rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-6">
+        <div className="mt-6 rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-6">
           <p className="text-sm text-slate-100">Nothing here yet.</p>
           <p className="mt-1 text-sm text-slate-400">
             {filter === 'ALL'
@@ -127,7 +127,7 @@ export default function RequestsPage() {
             <li key={item.id}>
               <Link
                 href={`/requests/${item.id}`}
-                className="block rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-4 transition-colors hover:border-emerald-400/30"
+                className="block rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4 transition-colors hover:border-emerald-400/30"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">

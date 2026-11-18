@@ -399,7 +399,9 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
           </div>
         ) : null}
 
-        <main className="min-w-0 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+        <main key={pathname} className="page-enter min-w-0 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          {children}
+        </main>
       </div>
     </div>
   );

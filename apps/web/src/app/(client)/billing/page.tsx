@@ -160,7 +160,7 @@ export default function BillingPage() {
         </p>
       </header>
 
-      <p className="flex flex-wrap items-center gap-1.5 rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] px-3.5 py-2.5 text-[11px] text-slate-400">
+      <p className="flex flex-wrap items-center gap-1.5 rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3.5 py-2.5 text-[11px] text-slate-400">
         <Info aria-hidden className="size-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} />
         Invoices price the metered platform plan. Capability pods and their credit pools are the
         commercial catalogue —{' '}
@@ -177,7 +177,7 @@ export default function BillingPage() {
       ) : null}
 
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <article className="rounded-2xl border border-white/10 bg-[rgba(12,16,32,0.55)] p-5">
+        <article className="rounded-2xl border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">Plan</p>
@@ -207,7 +207,7 @@ export default function BillingPage() {
           </p>
         </article>
 
-        <article className="rounded-2xl border border-white/10 bg-[rgba(12,16,32,0.55)] p-5">
+        <article className="rounded-2xl border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-5">
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">
             Change your plan
           </p>
@@ -234,7 +234,7 @@ export default function BillingPage() {
             return (
               <article
                 key={meter.key}
-                className="rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-4"
+                className="rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4"
               >
                 <p className="text-xs text-slate-400">
                   {meter.key === 'REQUESTS'
@@ -344,7 +344,7 @@ export default function BillingPage() {
       </section>
 
       {openInvoice ? (
-        <section className="rounded-2xl border border-white/10 bg-[rgba(12,16,32,0.55)] p-5">
+        <section className="rounded-2xl border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">

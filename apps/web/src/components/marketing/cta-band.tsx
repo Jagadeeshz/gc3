@@ -28,7 +28,7 @@ export function CtaBand() {
         </div>
 
         <div className="reveal-stagger mt-10 grid gap-4 lg:grid-cols-2">
-          <div className="flex flex-col justify-between gap-6 rounded-[14px] border border-hairline bg-obsidian-soft p-6 sm:p-7">
+          <div className="b-surface flex flex-col justify-between gap-6 rounded-[14px] border border-hairline bg-obsidian-soft p-6 sm:p-7">
             <div>
               <h3 className="font-display text-[20px] leading-snug tracking-[-0.01em] text-ghost">
                 Talk to an expert
@@ -50,7 +50,7 @@ export function CtaBand() {
             </div>
           </div>
 
-          <div className="flex flex-col justify-between gap-6 rounded-[14px] border border-hairline bg-obsidian-soft p-6 sm:p-7">
+          <div className="b-surface flex flex-col justify-between gap-6 rounded-[14px] border border-hairline bg-obsidian-soft p-6 sm:p-7">
             <div>
               <h3 className="font-display text-[20px] leading-snug tracking-[-0.01em] text-ghost">
                 See it in action

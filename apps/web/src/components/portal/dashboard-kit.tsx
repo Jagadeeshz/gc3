@@ -122,7 +122,7 @@ export function ChartPanel({
 }) {
   return (
     <section
-      className={`rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] p-4 ${className ?? ''}`}
+      className={`rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4 ${className ?? ''}`}
     >
       <div className="flex items-start justify-between gap-3">
         <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/55">{title}</p>
