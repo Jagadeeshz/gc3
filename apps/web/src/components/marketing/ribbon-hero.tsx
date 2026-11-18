@@ -485,6 +485,8 @@ void main(){
     <section ref={shell} className="ribbon-hero">
       <div ref={track} className="ribbon-hero__track">
         <div ref={stage} className="ribbon-hero__stage">
+          {/* the ground: the plate the ribbon runs over, so the band is never empty */}
+          <div aria-hidden="true" className="ribbon-hero__bg" />
           <div ref={l1} className="ribbon-hero__line ribbon-hero__line--1">
             <span>YOUR CHALLENGES</span>
           </div>
