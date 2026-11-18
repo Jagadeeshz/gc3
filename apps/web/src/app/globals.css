@@ -1719,7 +1719,10 @@ textarea:focus {
 
 .dayone-card {
   position: sticky;
-  top: calc(5.5rem + (var(--i, 0) * 1.5rem));
+  /* The step is deliberately the height of the card's header row, so a covered
+     card leaves exactly its index strip showing — never a title cut mid-glyph,
+     which reads as a rendering fault rather than as a stack. */
+  top: calc(5.5rem + (var(--i, 0) * 2.75rem));
   transform-origin: 50% 0%;
 }
 
@@ -1807,5 +1810,101 @@ textarea:focus {
         opacity: 0.55;
       }
     }
+  }
+}
+
+/* ------------------------------------------------------------------ pod cards
+ *
+ * The catalogue, as objects. A gold spotlight tracks the pointer across the card
+ * and the card itself leans a few degrees toward it; both come from two custom
+ * properties the grid writes per frame, so nothing here re-renders React.
+ *
+ * Touch is excluded at the source (the handler ignores non-mouse pointers), and
+ * the whole lean is dropped under reduced motion while the spotlight stays.
+ */
+.pod-card {
+  --mx: 50%;
+  --my: 50%;
+  --rx: 0deg;
+  --ry: 0deg;
+  position: relative;
+  isolation: isolate;
+  transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry));
+  transform-style: preserve-3d;
+  transition:
+    transform var(--motion-base),
+    border-color var(--motion-base),
+    box-shadow var(--motion-base);
+  will-change: transform;
+}
+
+.pod-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 18px 40px -28px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(242, 213, 130, 0.14);
+}
+
+/* The spotlight. Sits under the content, above the fill. */
+.pod-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    220px circle at var(--mx) var(--my),
+    rgba(242, 213, 130, 0.16),
+    rgba(242, 213, 130, 0.05) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--motion-base);
+  pointer-events: none;
+}
+
+.pod-card:hover::before {
+  opacity: 1;
+}
+
+/* Keep the spotlight from washing the type. */
+.pod-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.pod-card__chip {
+  transition:
+    transform var(--motion-base),
+    color var(--motion-base),
+    border-color var(--motion-base);
+}
+
+.pod-card:hover .pod-card__chip {
+  transform: translateZ(24px) scale(1.06);
+  color: var(--color-gold-light);
+  border-color: rgba(242, 213, 130, 0.35);
+}
+
+.pod-card h3 {
+  transition: transform var(--motion-base);
+}
+
+.pod-card:hover h3 {
+  transform: translateZ(14px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pod-card,
+  .pod-card:hover .pod-card__chip,
+  .pod-card:hover h3 {
+    transform: none;
+  }
+
+  .pod-card,
+  .pod-card::before,
+  .pod-card__chip,
+  .pod-card h3 {
+    transition: none;
   }
 }

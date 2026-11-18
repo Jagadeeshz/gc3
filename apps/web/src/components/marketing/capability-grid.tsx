@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useCallback, useRef } from 'react';
 import {
   ArrowUpRight,
   Bot,
@@ -71,7 +74,68 @@ const PODS: readonly Pod[] = [
   },
 ];
 
+
+/**
+ * Pointer-tracked spotlight and tilt for the catalogue.
+ *
+ * One listener on the grid, not six on the cards, and the position is written to
+ * the card's own custom properties rather than to React state: a `setState` per
+ * pointermove re-renders all six cards and the highlight visibly trails the
+ * cursor. `requestAnimationFrame` collapses the writes to one per frame.
+ *
+ * Coarse pointers are excluded — a tilt under a finger is shake, not depth.
+ */
+function usePointerTilt() {
+  const grid = useRef<HTMLDivElement | null>(null);
+  const frame = useRef(0);
+  const pending = useRef<{ card: HTMLElement; x: number; y: number } | null>(null);
+
+  const onPointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse') return;
+
+    const card = (event.target as HTMLElement).closest<HTMLElement>('.pod-card');
+    if (!card) return;
+
+    const rect = card.getBoundingClientRect();
+    pending.current = {
+      card,
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+
+    if (frame.current) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0;
+      const next = pending.current;
+      if (!next) return;
+
+      const { card: target, x, y } = next;
+      const { width, height } = target.getBoundingClientRect();
+      const px = x / width - 0.5;
+      const py = y / height - 0.5;
+
+      target.style.setProperty('--mx', `${x}px`);
+      target.style.setProperty('--my', `${y}px`);
+      target.style.setProperty('--ry', `${px * 7}deg`);
+      target.style.setProperty('--rx', `${-py * 7}deg`);
+    });
+  }, []);
+
+  const onPointerLeave = useCallback(() => {
+    const card = grid.current?.querySelector<HTMLElement>('.pod-card[style]');
+    for (const node of grid.current?.querySelectorAll<HTMLElement>('.pod-card') ?? []) {
+      node.style.removeProperty('--rx');
+      node.style.removeProperty('--ry');
+    }
+    card?.style.removeProperty('--mx');
+  }, []);
+
+  return { grid, onPointerMove, onPointerLeave };
+}
+
 export function CapabilityGrid({ showHeader = true }: { readonly showHeader?: boolean } = {}) {
+  const pointer = usePointerTilt();
+
   return (
     <section id="pods" className="border-b border-hairline bg-transparent py-20 sm:py-24">
       <div className="shell">
@@ -90,17 +154,20 @@ export function CapabilityGrid({ showHeader = true }: { readonly showHeader?: bo
           </div>
         ) : null}
 
-        <div className="reveal-stagger mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          ref={pointer.grid}
+          onPointerMove={pointer.onPointerMove}
+          onPointerLeave={pointer.onPointerLeave}
+          className="reveal-stagger mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {PODS.map((pod) => {
             const Icon = pod.icon;
 
             return (
-              <article
-                key={pod.name}
-                className="group flex flex-col justify-between gap-6 rounded-[14px] border border-hairline bg-obsidian-soft p-6 transition-colors duration-200 hover:border-[color:var(--bindu-rim-spectrum-mid)] b-surface"
-              >
+              <div key={pod.name}>
+                <article className="pod-card group flex h-full flex-col justify-between gap-6 rounded-[14px] border border-hairline bg-obsidian-soft p-6 b-surface">
                 <div>
-                  <span className="inline-grid size-10 place-items-center rounded-[10px] border border-hairline bg-obsidian text-ghost">
+                  <span className="pod-card__chip inline-grid size-10 place-items-center rounded-[10px] border border-hairline bg-obsidian text-ghost">
                     <Icon aria-hidden className="size-[18px]" strokeWidth={1.7} />
                   </span>
 
@@ -134,7 +201,8 @@ export function CapabilityGrid({ showHeader = true }: { readonly showHeader?: bo
                     <ArrowUpRight aria-hidden className="size-3.5" strokeWidth={1.9} />
                   </Link>
                 </div>
-              </article>
+                </article>
+              </div>
             );
           })}
         </div>
