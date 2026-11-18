@@ -27,6 +27,8 @@ export default function WhyAPodPage() {
         lede="Most teams do not lose time to the work itself. They lose it to assembling the team, agreeing a scope for each piece, and reconciling the invoices afterwards. A pod is a different way of buying the same outcome — and it is worth comparing honestly against the two alternatives."
         primary="demo"
         secondary={{ label: 'See published pricing', href: '/pricing' }}
+        backgroundSrc="/brand/why-a-pod-fork.webp"
+        backgroundMode="art"
       />
 
       <Comparison />
