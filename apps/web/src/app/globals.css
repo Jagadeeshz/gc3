@@ -2190,3 +2190,216 @@ textarea:focus {
     transform: rotateY(-12deg) rotateX(2deg);
   }
 }
+
+/* ------------------------------------------------------------------ ribbon hero
+ *
+ * Six pods folded into a ribbon that runs away from the camera, unrolling into a
+ * 3×2 grid as the page is read. The track is tall on purpose: the scroll distance
+ * is the animation's clock, so nothing here is on a timer.
+ *
+ * The stage is sticky rather than fixed, which only works while no ancestor clips
+ * overflow — the landing wrapper must stay overflow-visible for this band.
+ */
+.ribbon-hero {
+  --rb-bg: #0d0c11;
+  --rb-ink: #ffffff;
+  --rb-mid: #b9b8bb;
+  --rb-line: rgba(255, 255, 255, 0.14);
+  position: relative;
+  background: var(--rb-bg);
+  color: var(--rb-ink);
+}
+
+.ribbon-hero__track {
+  height: 700vh;
+  position: relative;
+}
+
+.ribbon-hero__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--rb-bg);
+}
+
+.ribbon-hero__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.ribbon-hero__line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(38px, 6.4vw, 124px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+  text-align: center;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.ribbon-hero__line--1 {
+  top: calc(50% - 0.98em);
+  color: #ffffff;
+}
+
+.ribbon-hero__line--2 {
+  top: calc(50% + 0.03em);
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.ribbon-hero__cap {
+  position: absolute;
+  left: 50%;
+  /* Offset in the headline's size, not the caption's: the caption's own em is
+     12px, so an em-based offset put it straight through the second line. */
+  top: calc(50% + clamp(58px, 9.2vw, 178px));
+  transform: translate(-50%, 0);
+  width: 30em;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 0.72vw, 12px);
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rb-mid);
+  pointer-events: none;
+}
+
+.ribbon-hero__rule {
+  position: absolute;
+  left: 3.5vw;
+  right: 3.5vw;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(242, 213, 130, 0.5), transparent);
+  transform-origin: left;
+  transform: scaleX(0);
+  pointer-events: none;
+}
+
+.ribbon-hero__top {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  top: 86px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ribbon-hero__acts {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ribbon-hero__acts a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 99px;
+  color: var(--rb-ink);
+  text-decoration: none;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.ribbon-hero__acts a:hover {
+  background: #f2d582;
+  border-color: #f2d582;
+  color: #0d0c11;
+}
+
+.ribbon-hero__bot {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  bottom: 30px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 24px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.ribbon-hero__bot p {
+  max-width: 34ch;
+  color: var(--rb-mid);
+}
+
+.ribbon-hero__facts {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+}
+
+.ribbon-hero__more {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f2d582;
+  text-decoration: none;
+}
+
+.ribbon-hero__more::after {
+  content: '';
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+}
+
+@media (max-width: 900px) {
+  .ribbon-hero__top {
+    left: 18px;
+    right: 18px;
+    top: 74px;
+  }
+
+  .ribbon-hero__bot {
+    left: 18px;
+    right: 18px;
+    bottom: 20px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  .ribbon-hero__facts {
+    display: none;
+  }
+
+  .ribbon-hero__bot p {
+    font-size: 11.5px;
+  }
+
+  .ribbon-hero__track {
+    height: 520vh;
+  }
+}
