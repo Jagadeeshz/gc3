@@ -65,7 +65,7 @@ export default function PricingPage() {
               ['1:1', 'Agent per specialist'],
               ['Monthly', 'No annual lock-in'],
             ].map(([value, label]) => (
-              <div key={label} className="bg-[#0B1220] px-4 py-3.5">
+              <div key={label} className="bg-[#0B1220] b-surface px-4 py-3.5">
                 <dd className="font-display text-[20px] font-semibold tabular-nums leading-none text-slate-100">
                   {value}
                 </dd>
@@ -94,7 +94,7 @@ export default function PricingPage() {
             const Icon = rule.icon;
 
             return (
-              <div key={rule.title} className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4">
+              <div key={rule.title} className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] b-surface p-4">
                 <Icon aria-hidden className="size-4 text-emerald-300" strokeWidth={1.75} />
                 <h2 className="mt-2.5 text-[13px] font-semibold text-slate-100">{rule.title}</h2>
                 <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">{rule.body}</p>
@@ -103,7 +103,7 @@ export default function PricingPage() {
           })}
         </section>
 
-        <section className="reveal mt-10 rounded-[12px] border border-[#1E293B] bg-[#0B1220]/60 px-4 py-3.5">
+        <section className="reveal mt-10 rounded-[12px] border border-[#1E293B] bg-[#0B1220] b-surface/60 b-surface px-4 py-3.5">
           <p className="text-[11px] leading-relaxed text-slate-400">
             <span className="text-slate-200">Custom pods.</span> Automation and Interactive are scoped
             per engagement at a per-credit rate: process audits, RAG chatbots, voice agents, 3D and VR

@@ -88,8 +88,8 @@ export function PodCard({
       className={[
         'relative flex h-full flex-col justify-between gap-4 rounded-[14px] border p-5 transition-colors',
         current
-          ? 'border-emerald-400/45 bg-[#0B1220] shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_0_32px_-16px_rgba(16,185,129,0.6)]'
-          : 'border-[#1E293B] bg-[#0B1220] hover:border-emerald-400/25',
+          ? 'border-emerald-400/45 bg-[#0B1220] b-surface shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_0_32px_-16px_rgba(16,185,129,0.6)]'
+          : 'border-[#1E293B] bg-[#0B1220] b-surface hover:border-emerald-400/25',
       ].join(' ')}
     >
       {current ? (
@@ -268,7 +268,7 @@ export function PodCatalogue({
             <div
               role="tablist"
               aria-label="Price metric"
-              className="inline-flex rounded-lg border border-[#1E293B] bg-[#0B1220] p-0.5"
+              className="inline-flex rounded-lg border border-[#1E293B] bg-[#0B1220] b-surface p-0.5"
             >
               {(
                 [
@@ -310,7 +310,7 @@ export function PodCatalogue({
 
       <PodGrid pods={compact ? pods.slice(0, 3) : pods} currentCodes={currentCodes} />
 
-      <div className="flex flex-wrap items-start gap-2 rounded-[10px] border border-[#1E293B] bg-[#0B1220]/60 px-3.5 py-3">
+      <div className="flex flex-wrap items-start gap-2 rounded-[10px] border border-[#1E293B] bg-[#0B1220] b-surface/60 b-surface px-3.5 py-3">
         <Users aria-hidden className="mt-0.5 size-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} />
         <p className="text-[11px] leading-relaxed text-slate-400">
           <span className="text-slate-200">Stacking.</span> Pods stack upward: Growth carries the
@@ -350,7 +350,7 @@ export function PodPriceStrip({ token }: { readonly token?: string | null }) {
       {pods.map((pod) => (
         <span
           key={pod.code}
-          className="inline-flex items-baseline gap-1.5 rounded-full border border-[#1E293B] bg-[#0B1220] px-2.5 py-1 font-mono text-[10px] text-slate-300"
+          className="inline-flex items-baseline gap-1.5 rounded-full border border-[#1E293B] bg-[#0B1220] b-surface px-2.5 py-1 font-mono text-[10px] text-slate-300"
         >
           {pod.name}
           <span className="tabular-nums text-emerald-300">

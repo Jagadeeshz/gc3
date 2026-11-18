@@ -161,7 +161,7 @@ export function PlatformBand() {
           return (
             <article
               key={feature.title}
-              className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] p-4 transition-colors hover:border-emerald-400/25"
+              className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] b-surface p-4 transition-colors hover:border-emerald-400/25"
             >
               <Icon aria-hidden className="size-4 text-emerald-300" strokeWidth={1.75} />
               <h3 className="mt-2.5 text-[13px] font-semibold text-slate-100">{feature.title}</h3>
@@ -231,7 +231,7 @@ export function PricingFaq() {
           const expanded = open === index;
 
           return (
-            <div key={item.q} className="bg-[#0B1220]">
+            <div key={item.q} className="bg-[#0B1220] b-surface">
               <button
                 type="button"
                 onClick={() => setOpen(expanded ? null : index)}
