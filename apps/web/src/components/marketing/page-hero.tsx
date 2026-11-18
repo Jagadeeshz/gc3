@@ -14,18 +14,45 @@ export function PageHero({
   lede,
   primary,
   secondary,
+  backgroundSrc,
 }: {
   readonly eyebrow: string;
   readonly title: string;
   readonly lede: string;
   readonly primary?: { label: string; href: string } | 'demo';
   readonly secondary?: { label: string; href: string };
+  /** When set, the band sits on this image instead of the blueprint grid. */
+  readonly backgroundSrc?: string;
 }) {
   return (
     <header className="relative overflow-hidden border-b border-hairline bg-obsidian">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="blueprint absolute inset-0 opacity-[0.12]" />
-        <div className="absolute -left-[12%] top-[-40%] size-[46vw] rounded-full opacity-70 blur-[100px] [background:radial-gradient(circle_at_center,rgba(0,221,170,0.14),transparent_70%)]" />
+        {backgroundSrc ? (
+          <>
+            {/* The image is anchored right, so the copy keeps the darker left
+                third to itself and the scrim only has to carry the middle. */}
+            <div
+              className="hero-photo absolute inset-0"
+              style={{ backgroundImage: `url('${backgroundSrc}')` }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(90deg, #0d0c11 0%, rgba(13,12,17,0.94) 30%, rgba(13,12,17,0.6) 58%, rgba(13,12,17,0.35) 100%)',
+              }}
+            />
+            <div
+              className="absolute inset-x-0 bottom-0 h-40"
+              style={{ background: 'linear-gradient(180deg, transparent, #0d0c11)' }}
+            />
+          </>
+        ) : (
+          <>
+            <div className="blueprint absolute inset-0 opacity-[0.12]" />
+            <div className="absolute -left-[12%] top-[-40%] size-[46vw] rounded-full opacity-70 blur-[100px] [background:radial-gradient(circle_at_center,rgba(0,221,170,0.14),transparent_70%)]" />
+          </>
+        )}
       </div>
 
       <div className="shell relative py-14 sm:py-20">

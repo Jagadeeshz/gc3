@@ -1918,3 +1918,20 @@ textarea:focus {
   filter: saturate(0.85) brightness(0.9);
   opacity: 0.55;
 }
+
+/* The catalogue band's photograph. Anchored right so the pod line sits behind the
+   copy, cooled a touch so it belongs to the page rather than on it. */
+.hero-photo {
+  background-size: cover;
+  background-position: right 38%;
+  background-repeat: no-repeat;
+  filter: saturate(0.85) brightness(0.92);
+  opacity: 0.7;
+}
+
+@media (max-width: 1023px) {
+  .hero-photo {
+    background-position: 72% 30%;
+    opacity: 0.42;
+  }
+}
