@@ -22,7 +22,7 @@ const PODS = [
   { code: '06', name: 'REMAU', note: 'Continuous capacity, shared pod' },
 ] as const;
 
-const POOL = ['#00ddaa', '#7b00ff', '#ffdd00', '#0099ff', '#ff8800', '#aaff00'] as const;
+const POOL = ['#c9911a', '#8b6410', '#f2d582', '#c9911a', '#c9911a', '#aaff00'] as const;
 
 function Row({ duplicate }: { duplicate?: boolean }) {
   return (

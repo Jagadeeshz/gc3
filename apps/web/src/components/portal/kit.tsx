@@ -149,21 +149,21 @@ export function Meter({
     state === 'EXCEEDED'
       ? 'bg-red-400/80 shadow-[0_0_12px_rgba(248,113,113,0.55)]'
       : state === 'WARNING'
-        ? 'bg-amber-400/80 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
-        : 'bg-emerald-400/80 shadow-[0_0_12px_rgba(16,185,129,0.5)]';
+        ? 'bg-[var(--color-gold)] shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+        : 'bg-[var(--color-gold-light)] shadow-[0_0_12px_rgba(16,185,129,0.5)]';
   const text =
-    state === 'EXCEEDED' ? 'text-red-300' : state === 'WARNING' ? 'text-amber-300' : 'text-emerald-300';
+    state === 'EXCEEDED' ? 'text-red-300' : state === 'WARNING' ? 'text-[color:var(--color-gold)]' : 'text-[color:var(--color-gold-light)]';
 
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3">
-        <p className="text-xs text-slate-400">{label}</p>
-        <p className="font-mono text-[11px] tabular-nums text-slate-100">
+        <p className="text-xs text-ghost-muted">{label}</p>
+        <p className="font-mono text-[11px] tabular-nums text-ghost">
           {used.toLocaleString('en-IN')}
           <span className="text-muted"> / {included.toLocaleString('en-IN')} {unit}</span>
         </p>
       </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#1E293B]">
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[rgba(255,255,255,0.10)]">
         <div className={`h-full ${bar}`} style={{ width: `${Math.min(percent, 100)}%` }} />
       </div>
       <p className={`mt-1.5 text-[10px] ${text}`}>

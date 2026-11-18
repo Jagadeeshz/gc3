@@ -42,7 +42,7 @@ const STATUS_TONE: Record<InvoiceStatus, string> = {
   DRAFT: 'border-white/15 bg-white/5 text-muted',
   ISSUED: 'border-gold/35 bg-gold/10 text-gold-light',
   OVERDUE: 'border-red-400/35 bg-red-400/10 text-red-300',
-  PAID: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300',
+  PAID: 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]',
   VOID: 'border-white/15 bg-white/5 text-muted',
 };
 
@@ -400,7 +400,7 @@ export default function OpsBillingPage() {
                             type="button"
                             onClick={() => void move(invoice, 'PAID')}
                             disabled={busy === invoice.id}
-                            className="rounded-lg border border-emerald-400/40 px-2 py-0.5 text-[11px] text-emerald-300 hover:bg-emerald-400/10 disabled:opacity-50"
+                            className="rounded-lg border border-[color:var(--color-gold-light)] px-2 py-0.5 text-[11px] text-[color:var(--color-gold-light)] hover:bg-[var(--color-gold-light)] disabled:opacity-50"
                           >
                             Mark paid
                           </button>

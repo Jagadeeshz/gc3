@@ -228,7 +228,7 @@ export function PodSlider() {
 
         <div className="mt-6 h-px w-full bg-hairline">
           <div
-            className="h-px bg-[color:var(--color-gold-light)] transition-[width] duration-300"
+            className="h-px bg-[var(--color-gold-light)] transition-[width] duration-300"
             style={{ width: `${(1 / PODS.length) * 100 + progress * (1 - 1 / PODS.length) * 100}%` }}
           />
         </div>

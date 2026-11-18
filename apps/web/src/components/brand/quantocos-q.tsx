@@ -17,11 +17,11 @@
  */
 
 const SPECTRUM = [
-  '#FF2200',
-  '#FF8800',
-  '#FFDD00',
+  '#c9911a',
+  '#c9911a',
+  '#f2d582',
   '#AAFF00',
-  '#00DDAA',
+  '#c9911a',
   '#0099FF',
   '#3300FF',
   '#7B00FF',
@@ -112,7 +112,7 @@ export function QuantocosQ({ size = 24, className }: { readonly size?: number; r
       <defs>
         <radialGradient id="q-sphere" cx="34%" cy="28%" r="78%">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="46%" stopColor="#EDF0F4" />
+          <stop offset="46%" stopColor="#ffffff" />
           <stop offset="100%" stopColor="#9FA8B4" />
         </radialGradient>
       </defs>

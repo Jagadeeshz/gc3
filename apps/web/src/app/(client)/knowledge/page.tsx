@@ -69,18 +69,18 @@ export default function KnowledgePage() {
             <Link
               key={entry.href}
               href={entry.href}
-              className="group flex flex-col gap-2 rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4 transition-colors hover:border-emerald-400/30"
+              className="group flex flex-col gap-2 rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4 transition-colors hover:border-[color:var(--color-gold-light)]"
             >
               <Icon aria-hidden className="size-4 text-gold-light" strokeWidth={1.75} />
-              <h2 className="text-sm font-semibold text-slate-100">{entry.title}</h2>
-              <p className="text-[11px] leading-relaxed text-slate-400">{entry.body}</p>
+              <h2 className="text-sm font-semibold text-ghost">{entry.title}</h2>
+              <p className="text-[11px] leading-relaxed text-ghost-muted">{entry.body}</p>
             </Link>
           );
         })}
       </div>
 
       <Panel title="Not here yet" subtitle="Stated rather than faked">
-        <p className="text-[11px] leading-relaxed text-slate-400">
+        <p className="text-[11px] leading-relaxed text-ghost-muted">
           The platform does not ship an article library or a document CMS. When those are published they
           will appear on this screen; until then this page stays a map of where things genuinely are,
           because a search box over empty content is worse than an honest index.

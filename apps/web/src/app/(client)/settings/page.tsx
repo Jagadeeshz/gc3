@@ -28,7 +28,7 @@ export default function SettingsPage() {
   const { session } = useSession();
 
   if (!session) {
-    return <p className="text-sm text-slate-400">Loading…</p>;
+    return <p className="text-sm text-ghost-muted">Loading…</p>;
   }
 
   const isOwner = activeRoles(session).includes('CLIENT_OWNER');
@@ -67,13 +67,13 @@ export default function SettingsPage() {
                 key={row.label}
                 className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/10 pb-2"
               >
-                <dt className="text-[11px] uppercase tracking-[0.1em] text-slate-400">{row.label}</dt>
-                <dd className="font-mono text-[11px] text-slate-100">{row.value}</dd>
+                <dt className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">{row.label}</dt>
+                <dd className="font-mono text-[11px] text-ghost">{row.value}</dd>
               </div>
             ))}
           </dl>
 
-          <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-slate-400">
+          <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-ghost-muted">
             <ShieldCheck aria-hidden className="mt-0.5 size-3.5 shrink-0 text-gold-light" strokeWidth={1.75} />
             Renaming a workspace, and suspending or offboarding one, are staff actions with an audit trail.
             Ask your account manager — the change lands in the workspace audit log with who made it.
@@ -81,8 +81,8 @@ export default function SettingsPage() {
         </Panel>
 
         <Panel title="Your role" subtitle="What this session is allowed to do">
-          <p className="text-sm text-slate-100">{session.actor.fullName}</p>
-          <p className="font-mono text-[11px] text-slate-400">{session.actor.email}</p>
+          <p className="text-sm text-ghost">{session.actor.fullName}</p>
+          <p className="font-mono text-[11px] text-ghost-muted">{session.actor.email}</p>
 
           <div className="mt-3 flex flex-wrap gap-1.5">
             {activeRoles(session).map((role) => (
@@ -95,13 +95,13 @@ export default function SettingsPage() {
             ))}
           </div>
 
-          <p className="mt-4 text-[11px] leading-relaxed text-slate-400">
+          <p className="mt-4 text-[11px] leading-relaxed text-ghost-muted">
             An owner can see billing, the subscription and the team roster. Members and approvers work with
             requests, deliverables and messages, and never see commercial data.
           </p>
           <Link
             href="/profile"
-            className="mt-3 inline-block text-[11px] text-emerald-300 underline-offset-4 hover:underline"
+            className="mt-3 inline-block text-[11px] text-[color:var(--color-gold-light)] underline-offset-4 hover:underline"
           >
             Open my profile
           </Link>
@@ -122,7 +122,7 @@ export default function SettingsPage() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-2 rounded-[12px] border border-white/10 px-3 py-3 text-xs text-slate-100 transition-colors hover:border-gold/40"
+                className="flex items-center gap-2 rounded-[12px] border border-white/10 px-3 py-3 text-xs text-ghost transition-colors hover:border-gold/40"
               >
                 <Icon aria-hidden className="size-3.5 text-gold-light" strokeWidth={1.75} />
                 {item.label}

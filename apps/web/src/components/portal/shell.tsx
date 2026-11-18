@@ -252,7 +252,7 @@ export function PortalShell({
           */
           clientNavFor(roles.includes('CLIENT_OWNER')).map((section) => (
             <nav key={section.title} className="grid gap-0.5">
-              <span className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+              <span className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ghost-muted">
                 {section.title}
               </span>
               {section.items.map((item) => {
@@ -266,13 +266,13 @@ export function PortalShell({
                     className={[
                       'group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] transition-colors',
                       active
-                        ? 'border border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-200'
-                        : 'border border-transparent text-slate-400 hover:bg-white/[0.04] hover:text-slate-100',
+                        ? 'border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)]/[0.08] text-[color:var(--color-gold-light)]'
+                        : 'border border-transparent text-ghost-muted hover:bg-white/[0.04] hover:text-ghost',
                     ].join(' ')}
                   >
                     <Icon
                       aria-hidden
-                      className={`size-4 ${active ? 'text-[color:var(--bindu-soma-light)]' : 'text-slate-500 group-hover:text-slate-300'}`}
+                      className={`size-4 ${active ? 'text-[color:var(--bindu-soma-light)]' : 'text-ghost-muted group-hover:text-ghost-muted'}`}
                       strokeWidth={1.75}
                     />
                     {item.label}

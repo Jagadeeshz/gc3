@@ -29,8 +29,8 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 const STATUS_TONE: Record<string, string> = {
-  ACTIVE: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300',
-  INVITED: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-200',
+  ACTIVE: 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]',
+  INVITED: 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]',
   REVOKED: 'border-red-400/35 bg-red-400/10 text-red-300',
 };
 
@@ -97,8 +97,8 @@ export default function TeamPage() {
           { label: 'Invitations pending', value: invited },
         ].map((stat) => (
           <div key={stat.label} className="rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4">
-            <p className="text-[11px] uppercase tracking-[0.1em] text-slate-400">{stat.label}</p>
-            <p className="mt-2 font-display text-[26px] font-semibold tabular-nums leading-none text-slate-100">
+            <p className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">{stat.label}</p>
+            <p className="mt-2 font-display text-[26px] font-semibold tabular-nums leading-none text-ghost">
               {stat.value}
             </p>
           </div>
@@ -107,7 +107,7 @@ export default function TeamPage() {
 
       <div className="overflow-hidden rounded-[12px] border border-white/10">
         <table className="w-full text-left text-xs">
-          <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.12em] text-slate-400">
+          <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.12em] text-ghost-muted">
             <tr>
               <th className="px-4 py-2.5 font-medium">Member</th>
               <th className="px-4 py-2.5 font-medium">Roles</th>
@@ -119,8 +119,8 @@ export default function TeamPage() {
             {rows.map((row) => (
               <tr key={row.id} className="border-t border-white/10">
                 <td className="px-4 py-3">
-                  <p className="text-sm text-slate-100">{row.user.fullName}</p>
-                  <p className="mt-0.5 flex items-center gap-1.5 font-mono text-[10px] text-slate-400">
+                  <p className="text-sm text-ghost">{row.user.fullName}</p>
+                  <p className="mt-0.5 flex items-center gap-1.5 font-mono text-[10px] text-ghost-muted">
                     <Mail aria-hidden className="size-3" strokeWidth={1.75} />
                     {row.user.email}
                   </p>
@@ -130,7 +130,7 @@ export default function TeamPage() {
                     {row.roles.map((role) => (
                       <span
                         key={role}
-                        className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-slate-400"
+                        className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-ghost-muted"
                       >
                         {ROLE_LABEL[role] ?? role}
                       </span>
@@ -140,13 +140,13 @@ export default function TeamPage() {
                 <td className="px-4 py-3">
                   <span
                     className={`rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] ${
-                      STATUS_TONE[row.status] ?? 'border-white/15 bg-white/5 text-slate-400'
+                      STATUS_TONE[row.status] ?? 'border-white/15 bg-white/5 text-ghost-muted'
                     }`}
                   >
                     {row.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-slate-400">{formatDate(row.createdAt)}</td>
+                <td className="px-4 py-3 text-ghost-muted">{formatDate(row.createdAt)}</td>
               </tr>
             ))}
           </tbody>
@@ -154,12 +154,12 @@ export default function TeamPage() {
       </div>
 
       <Panel title="Adding and removing people" subtitle="Handled with an audit trail">
-        <p className="flex items-start gap-2 text-[11px] leading-relaxed text-slate-400">
+        <p className="flex items-start gap-2 text-[11px] leading-relaxed text-ghost-muted">
           <ShieldCheck aria-hidden className="mt-0.5 size-3.5 shrink-0 text-gold-light" strokeWidth={1.75} />
           Invitations, role changes and revocations are audited actions. Ask your account manager to make
           the change and it will appear in the workspace audit trail with who did it and when.
         </p>
-        <p className="mt-2 flex items-start gap-2 text-[11px] leading-relaxed text-slate-400">
+        <p className="mt-2 flex items-start gap-2 text-[11px] leading-relaxed text-ghost-muted">
           <UserPlus aria-hidden className="mt-0.5 size-3.5 shrink-0 text-gold-light" strokeWidth={1.75} />
           Pending invitations can be re-sent or revoked by the account team without creating a second
           membership.

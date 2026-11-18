@@ -110,7 +110,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@company.com"
-                className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-3)] px-3 py-2.5 text-[13px] text-warm placeholder:text-muted/60 transition-shadow focus:border-[color:var(--bindu-soma-light)] focus:outline-none focus:ring-1 focus:ring-[color:var(--bindu-soma-light)]"
+                className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[var(--bindu-void-3)] px-3 py-2.5 text-[13px] text-warm placeholder:text-muted/60 transition-shadow focus:border-[color:var(--bindu-soma-light)] focus:outline-none focus:ring-1 focus:ring-[color:var(--bindu-soma-light)]"
               />
             </label>
 
@@ -123,14 +123,14 @@ export default function LoginPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="••••••••••••"
-                className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-3)] px-3 py-2.5 text-[13px] text-warm placeholder:text-muted/60 transition-shadow focus:border-[color:var(--bindu-soma-light)] focus:outline-none focus:ring-1 focus:ring-[color:var(--bindu-soma-light)]"
+                className="rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[var(--bindu-void-3)] px-3 py-2.5 text-[13px] text-warm placeholder:text-muted/60 transition-shadow focus:border-[color:var(--bindu-soma-light)] focus:outline-none focus:ring-1 focus:ring-[color:var(--bindu-soma-light)]"
               />
             </label>
 
             {justSignedOut && !error ? (
               <p
                 role="status"
-                className="rounded-lg border border-emerald-400/30 bg-emerald-400/[0.08] px-3 py-2 text-xs text-emerald-200"
+                className="rounded-lg border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)]/[0.08] px-3 py-2 text-xs text-[color:var(--color-gold-light)]"
               >
                 You have been signed out.
               </p>

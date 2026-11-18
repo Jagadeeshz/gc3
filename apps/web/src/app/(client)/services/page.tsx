@@ -137,7 +137,7 @@ export default function ServicesPage() {
           <button
             type="button"
             onClick={() => openForm()}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 text-xs font-semibold text-emerald-200 transition-colors hover:bg-emerald-400/20"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-3 py-2 text-xs font-semibold text-[color:var(--color-gold-light)] transition-colors hover:bg-[var(--color-gold-light)]"
           >
             <LayoutGrid aria-hidden className="size-3.5" strokeWidth={2} />
             Request a service
@@ -150,15 +150,15 @@ export default function ServicesPage() {
       <PodPriceStrip token={token} />
 
       {created ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-emerald-400/30 bg-emerald-400/5 px-4 py-3">
-          <p className="flex items-center gap-2 text-xs text-emerald-200">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-4 py-3">
+          <p className="flex items-center gap-2 text-xs text-[color:var(--color-gold-light)]">
             <CheckCircle2 aria-hidden className="size-4" strokeWidth={1.75} />
             {created.reference} submitted — {created.title}
           </p>
           <button
             type="button"
             onClick={() => router.push(`/requests/${created.id}`)}
-            className="inline-flex items-center gap-1.5 text-xs text-emerald-300 underline-offset-4 hover:underline"
+            className="inline-flex items-center gap-1.5 text-xs text-[color:var(--color-gold-light)] underline-offset-4 hover:underline"
           >
             Open the request
             <ArrowRight aria-hidden className="size-3.5" strokeWidth={1.75} />
@@ -178,16 +178,16 @@ export default function ServicesPage() {
           {categories.map((category) => (
             <article
               key={category.id}
-              className="flex flex-col justify-between rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4 transition-colors hover:border-emerald-400/30"
+              className="flex flex-col justify-between rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4 transition-colors hover:border-[color:var(--color-gold-light)]"
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="text-sm font-semibold text-slate-100">{category.name}</h2>
-                  <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-slate-400">
+                  <h2 className="text-sm font-semibold text-ghost">{category.name}</h2>
+                  <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-ghost-muted">
                     {category.slaDeliveryHours ? `${category.slaDeliveryHours}h SLA` : 'SLA default'}
                   </span>
                 </div>
-                <p className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-slate-400">
+                <p className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-ghost-muted">
                   {category.description ?? 'No description has been published for this service yet.'}
                 </p>
               </div>
@@ -195,7 +195,7 @@ export default function ServicesPage() {
               <button
                 type="button"
                 onClick={() => openForm(category)}
-                className="mt-4 inline-flex items-center justify-between rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-100 transition-colors hover:border-emerald-400/35 hover:text-emerald-200"
+                className="mt-4 inline-flex items-center justify-between rounded-lg border border-white/10 px-3 py-2 text-xs text-ghost transition-colors hover:border-[color:var(--color-gold-light)] hover:text-[color:var(--color-gold-light)]"
               >
                 Request this service
                 <ArrowRight aria-hidden className="size-3.5" strokeWidth={1.75} />
@@ -206,7 +206,7 @@ export default function ServicesPage() {
       )}
 
       {fastest ? (
-        <p className="text-[11px] text-slate-400">
+        <p className="text-[11px] text-ghost-muted">
           Fastest published commitment: {fastest} hours from submission.
         </p>
       ) : null}
@@ -222,10 +222,10 @@ export default function ServicesPage() {
           <div className="w-full max-w-[560px] rounded-[14px] border border-white/10 bg-graphite shadow-2xl">
             <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">
+                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ghost-muted">
                   New service request
                 </p>
-                <h2 id="request-form-title" className="mt-1 font-display text-lg font-semibold text-slate-100">
+                <h2 id="request-form-title" className="mt-1 font-display text-lg font-semibold text-ghost">
                   {draft.categoryName || 'General request'}
                 </h2>
               </div>
@@ -233,7 +233,7 @@ export default function ServicesPage() {
                 type="button"
                 onClick={() => setDraft(null)}
                 aria-label="Close"
-                className="rounded-lg border border-white/10 p-1.5 text-slate-400 transition-colors hover:text-slate-100"
+                className="rounded-lg border border-white/10 p-1.5 text-ghost-muted transition-colors hover:text-ghost"
               >
                 <X aria-hidden className="size-4" strokeWidth={1.75} />
               </button>
@@ -241,7 +241,7 @@ export default function ServicesPage() {
 
             <form onSubmit={submit} className="grid gap-4 px-5 py-5">
               <label className="grid gap-1.5">
-                <span className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Service</span>
+                <span className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">Service</span>
                 <select
                   value={draft.categoryId}
                   onChange={(event) =>
@@ -249,7 +249,7 @@ export default function ServicesPage() {
                       current ? { ...current, categoryId: event.target.value } : current,
                     )
                   }
-                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
                 >
                   <option value="">General request</option>
                   {categories.map((category) => (
@@ -261,7 +261,7 @@ export default function ServicesPage() {
               </label>
 
               <label className="grid gap-1.5">
-                <span className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Title</span>
+                <span className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">Title</span>
                 <input
                   required
                   minLength={3}
@@ -271,12 +271,12 @@ export default function ServicesPage() {
                     setDraft((current) => (current ? { ...current, title: event.target.value } : current))
                   }
                   placeholder="What do you need delivered?"
-                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-ghost placeholder:text-ghost-muted/60 focus:border-[color:var(--color-gold-light)] focus:outline-none"
                 />
               </label>
 
               <label className="grid gap-1.5">
-                <span className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Requirements</span>
+                <span className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">Requirements</span>
                 <textarea
                   required
                   minLength={10}
@@ -288,12 +288,12 @@ export default function ServicesPage() {
                     )
                   }
                   placeholder="Scope, audience, deadline, anything we should know."
-                  className="resize-y rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                  className="resize-y rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-ghost placeholder:text-ghost-muted/60 focus:border-[color:var(--color-gold-light)] focus:outline-none"
                 />
               </label>
 
               <label className="grid gap-1.5">
-                <span className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Priority</span>
+                <span className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">Priority</span>
                 <div className="flex flex-wrap gap-1.5">
                   {PRIORITIES.map((priority) => (
                     <button
@@ -303,8 +303,8 @@ export default function ServicesPage() {
                       className={[
                         'rounded-lg border px-2.5 py-1 text-[11px] capitalize transition-colors',
                         draft.priority === priority
-                          ? 'border-emerald-400/45 bg-emerald-400/15 text-emerald-200-light'
-                          : 'border-white/10 text-slate-400 hover:text-slate-100',
+                          ? 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]-light'
+                          : 'border-white/10 text-ghost-muted hover:text-ghost',
                       ].join(' ')}
                     >
                       {priority.toLowerCase()}
@@ -319,14 +319,14 @@ export default function ServicesPage() {
                 <button
                   type="button"
                   onClick={() => setDraft(null)}
-                  className="rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400 transition-colors hover:text-slate-100"
+                  className="rounded-lg border border-white/10 px-3 py-2 text-xs text-ghost-muted transition-colors hover:text-ghost"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-gold/45 bg-gold/15 px-4 py-2 text-xs font-semibold text-gold-light transition-colors hover:bg-emerald-400/20 disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-gold/45 bg-gold/15 px-4 py-2 text-xs font-semibold text-gold-light transition-colors hover:bg-[var(--color-gold-light)] disabled:opacity-60"
                 >
                   {submitting ? (
                     <Loader2 aria-hidden className="size-3.5 animate-spin" strokeWidth={2} />
@@ -340,7 +340,7 @@ export default function ServicesPage() {
       ) : null}
 
       <Panel title="How requests move" subtitle="The statuses you will see on your request">
-        <ol className="grid gap-2 text-[11px] text-slate-400 sm:grid-cols-3">
+        <ol className="grid gap-2 text-[11px] text-ghost-muted sm:grid-cols-3">
           <li className="rounded-lg border border-white/10 px-3 py-2">
             <span className="font-mono uppercase tracking-[0.1em] text-gold-light">Submitted</span> — we
             have it and will triage it shortly.

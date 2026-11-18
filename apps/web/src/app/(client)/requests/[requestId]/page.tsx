@@ -606,7 +606,7 @@ export default function RequestDetailPage() {
   }
 
   if (loading) {
-    return <p className="text-sm text-slate-400">Loading request…</p>;
+    return <p className="text-sm text-ghost-muted">Loading request…</p>;
   }
 
   if (error || !request) {
@@ -624,16 +624,16 @@ export default function RequestDetailPage() {
 
   return (
     <div>
-      <Link href="/requests" className="text-xs text-slate-400 hover:text-slate-100">
+      <Link href="/requests" className="text-xs text-ghost-muted hover:text-ghost">
         ← All requests
       </Link>
 
       <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-400">
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ghost-muted">
             {request.reference}
           </p>
-          <h1 className="mt-1 font-display text-3xl tracking-[-0.01em] text-slate-100">
+          <h1 className="mt-1 font-display text-3xl tracking-[-0.01em] text-ghost">
             {request.title}
           </h1>
         </div>
@@ -646,7 +646,7 @@ export default function RequestDetailPage() {
               type="button"
               onClick={startEditing}
               disabled={editing || busy !== null}
-              className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-100 transition-colors hover:border-emerald-400/40 hover:bg-white/10 disabled:opacity-50"
+              className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-ghost transition-colors hover:border-[color:var(--color-gold-light)] hover:bg-white/10 disabled:opacity-50"
             >
               Edit
             </button>
@@ -667,35 +667,35 @@ export default function RequestDetailPage() {
           { label: 'Due', value: formatDate(request.dueAt) },
         ].map((item) => (
           <div key={item.label} className="rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-3.5">
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
+            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-ghost-muted">
               {item.label}
             </p>
-            <p className="mt-1 text-sm text-slate-100">{item.value}</p>
+            <p className="mt-1 text-sm text-ghost">{item.value}</p>
           </div>
         ))}
       </div>
 
       {editing ? (
         <form
-          className="mt-5 rounded-[14px] border border-emerald-400/25 bg-[rgba(12,16,32,0.55)] b-surface p-5"
+          className="mt-5 rounded-[14px] border border-[color:var(--color-gold-light)] bg-[rgba(12,16,32,0.55)] b-surface p-5"
           onSubmit={onSaveEdit}
         >
-          <h2 className="text-sm font-semibold text-slate-100">Edit request</h2>
+          <h2 className="text-sm font-semibold text-ghost">Edit request</h2>
 
           <label className="mt-4 grid gap-1.5">
-            <span className="text-xs font-medium text-slate-400">Title</span>
+            <span className="text-xs font-medium text-ghost-muted">Title</span>
             <input
               required
               minLength={3}
               maxLength={200}
               value={editForm.title}
               onChange={(event) => setEditForm({ ...editForm, title: event.target.value })}
-              className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+              className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none focus:ring-2 focus:border-[color:var(--color-gold-light)]"
             />
           </label>
 
           <label className="mt-3 grid gap-1.5">
-            <span className="text-xs font-medium text-slate-400">Description</span>
+            <span className="text-xs font-medium text-ghost-muted">Description</span>
             <textarea
               required
               minLength={10}
@@ -703,13 +703,13 @@ export default function RequestDetailPage() {
               maxLength={20_000}
               value={editForm.description}
               onChange={(event) => setEditForm({ ...editForm, description: event.target.value })}
-              className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+              className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none focus:ring-2 focus:border-[color:var(--color-gold-light)]"
             />
           </label>
 
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <label className="grid gap-1.5">
-              <span className="text-xs font-medium text-slate-400">Priority</span>
+              <span className="text-xs font-medium text-ghost-muted">Priority</span>
               <select
                 value={editForm.priority}
                 onChange={(event) =>
@@ -718,7 +718,7 @@ export default function RequestDetailPage() {
                     priority: event.target.value as ServiceRequestPriority,
                   })
                 }
-                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
               >
                 {(['LOW', 'NORMAL', 'HIGH', 'URGENT'] as ServiceRequestPriority[]).map((value) => (
                   <option key={value} value={value}>
@@ -729,11 +729,11 @@ export default function RequestDetailPage() {
             </label>
 
             <label className="grid gap-1.5">
-              <span className="text-xs font-medium text-slate-400">Category</span>
+              <span className="text-xs font-medium text-ghost-muted">Category</span>
               <select
                 value={editForm.categoryId}
                 onChange={(event) => setEditForm({ ...editForm, categoryId: event.target.value })}
-                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
               >
                 <option value="">No category</option>
                 {categories.map((category) => (
@@ -760,7 +760,7 @@ export default function RequestDetailPage() {
                 setActionError(null);
               }}
               disabled={busy !== null}
-              className="min-h-10 rounded-[12px] border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-100 hover:bg-white/10 disabled:opacity-60"
+              className="min-h-10 rounded-[12px] border border-white/15 bg-white/5 px-4 py-2 text-sm text-ghost hover:bg-white/10 disabled:opacity-60"
             >
               Cancel
             </button>
@@ -768,15 +768,15 @@ export default function RequestDetailPage() {
         </form>
       ) : (
         <section className="mt-5 rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-5">
-          <h2 className="text-sm font-semibold text-slate-100">Description</h2>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-400">
+          <h2 className="text-sm font-semibold text-ghost">Description</h2>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ghost-muted">
             {request.description}
           </p>
         </section>
       )}
 
       {notice ? (
-        <p className="mt-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
+        <p className="mt-4 rounded-lg border border-[color:var(--color-gold)] bg-[var(--color-gold)] px-3 py-2 text-xs text-[color:var(--color-gold)]">
           {notice}
         </p>
       ) : null}
@@ -792,8 +792,8 @@ export default function RequestDetailPage() {
 
       {nextStatuses.length > 0 ? (
         <section className="mt-5 rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-5">
-          <h2 className="text-sm font-semibold text-slate-100">Move this request</h2>
-          <p className="mt-1 text-xs text-slate-400">
+          <h2 className="text-sm font-semibold text-ghost">Move this request</h2>
+          <p className="mt-1 text-xs text-ghost-muted">
             Only transitions the workflow allows are offered; the API rejects the rest with 409.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -803,7 +803,7 @@ export default function RequestDetailPage() {
                 type="button"
                 onClick={() => void onTransition(status)}
                 disabled={busy !== null}
-                className="min-h-9 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-100 transition-colors hover:border-emerald-400/40 hover:bg-white/10 disabled:opacity-50"
+                className="min-h-9 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-ghost transition-colors hover:border-[color:var(--color-gold-light)] hover:bg-white/10 disabled:opacity-50"
               >
                 {busy === `status:${status}` ? 'Moving…' : `→ ${requestStatusLabel(status)}`}
               </button>
@@ -814,10 +814,10 @@ export default function RequestDetailPage() {
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[1.3fr_1fr]">
         <section className="rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-5">
-          <h2 className="text-sm font-semibold text-slate-100">Comments</h2>
+          <h2 className="text-sm font-semibold text-ghost">Comments</h2>
 
           {comments.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-400">No comments yet.</p>
+            <p className="mt-3 text-sm text-ghost-muted">No comments yet.</p>
           ) : (
             <ul className="mt-3 grid gap-2.5">
               {comments.map((comment) => (
@@ -826,12 +826,12 @@ export default function RequestDetailPage() {
                   className="rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3.5 py-3"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ghost-muted">
                       {comment.isInternal ? 'Internal note' : 'Client visible'}
                     </span>
-                    <span className="text-[11px] text-slate-400">{formatDate(comment.createdAt)}</span>
+                    <span className="text-[11px] text-ghost-muted">{formatDate(comment.createdAt)}</span>
                   </div>
-                  <p className="mt-1.5 text-sm text-slate-100">{comment.body}</p>
+                  <p className="mt-1.5 text-sm text-ghost">{comment.body}</p>
                 </li>
               ))}
             </ul>
@@ -843,10 +843,10 @@ export default function RequestDetailPage() {
               value={draftComment}
               onChange={(event) => setDraftComment(event.target.value)}
               placeholder={commentIsInternal ? 'Add an internal note…' : 'Add a comment…'}
-              className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+              className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2.5 text-sm text-ghost placeholder:text-ghost-muted/60 focus:border-[color:var(--color-gold-light)] focus:outline-none focus:ring-2 focus:border-[color:var(--color-gold-light)]"
             />
             {canWriteInternal ? (
-              <label className="flex items-center gap-2 text-xs text-slate-400">
+              <label className="flex items-center gap-2 text-xs text-ghost-muted">
                 <input
                   type="checkbox"
                   checked={commentIsInternal}
@@ -856,7 +856,7 @@ export default function RequestDetailPage() {
                 Internal note — hidden from the client
               </label>
             ) : (
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-ghost-muted">
                 Your comments are visible to the GC3 delivery team.
               </p>
             )}
@@ -874,18 +874,18 @@ export default function RequestDetailPage() {
         {isStaff ? (
           <section className="rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-5">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-sm font-semibold text-slate-100">Internal tasks</h2>
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
+              <h2 className="text-sm font-semibold text-ghost">Internal tasks</h2>
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ghost-muted">
                 {tasks.filter((task) => task.status !== 'DONE' && task.status !== 'CANCELLED').length}{' '}
                 open
               </span>
             </div>
-            <p className="mt-1 text-[11px] text-slate-400">
+            <p className="mt-1 text-[11px] text-ghost-muted">
               How the pod breaks this request down. Clients never see this list.
             </p>
 
             {tasks.length === 0 ? (
-              <p className="mt-3 text-[11px] text-slate-400">Nothing broken out yet.</p>
+              <p className="mt-3 text-[11px] text-ghost-muted">Nothing broken out yet.</p>
             ) : (
               <ul className="mt-3 grid gap-1.5">
                 {tasks.map((task) => {
@@ -897,8 +897,8 @@ export default function RequestDetailPage() {
                       className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-void/40 px-3 py-2"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-xs text-slate-100">{task.title}</p>
-                        <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-slate-400">
+                        <p className="truncate text-xs text-ghost">{task.title}</p>
+                        <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ghost-muted">
                           {task.assigneeName ?? 'unassigned'}
                           {task.dueAt ? ` · due ${formatDate(task.dueAt)}` : ''}
                         </p>
@@ -912,7 +912,7 @@ export default function RequestDetailPage() {
                           onChange={(event) =>
                             void assignTask(task.id, event.target.value || null)
                           }
-                          className="rounded border border-white/10 bg-void px-1.5 py-1 text-[10px] text-slate-100 focus:border-emerald-400/60 focus:outline-none disabled:opacity-50"
+                          className="rounded border border-white/10 bg-void px-1.5 py-1 text-[10px] text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none disabled:opacity-50"
                         >
                           <option value="">Unassigned</option>
                           {staff.map((candidate) => (
@@ -929,7 +929,7 @@ export default function RequestDetailPage() {
                           onChange={(event) =>
                             void setTaskStatus(task.id, event.target.value as TaskStatus)
                           }
-                          className="rounded border border-white/10 bg-void px-1.5 py-1 text-[10px] uppercase tracking-[0.06em] text-slate-100 focus:border-emerald-400/60 focus:outline-none disabled:opacity-50"
+                          className="rounded border border-white/10 bg-void px-1.5 py-1 text-[10px] uppercase tracking-[0.06em] text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none disabled:opacity-50"
                         >
                           {(['TODO', 'IN_PROGRESS', 'BLOCKED', 'DONE', 'CANCELLED'] as TaskStatus[]).map(
                             (status) => (
@@ -955,7 +955,7 @@ export default function RequestDetailPage() {
                   setTaskDraft((draft) => ({ ...draft, title: event.target.value }))
                 }
                 placeholder="Break out a work item…"
-                className="min-w-0 flex-1 rounded-lg border border-white/10 bg-void px-3 py-2 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                className="min-w-0 flex-1 rounded-lg border border-white/10 bg-void px-3 py-2 text-xs text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
               />
               <select
                 aria-label="Assign the new task to"
@@ -963,7 +963,7 @@ export default function RequestDetailPage() {
                 onChange={(event) =>
                   setTaskDraft((draft) => ({ ...draft, assigneeId: event.target.value }))
                 }
-                className="rounded-lg border border-white/10 bg-void px-2 py-2 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-white/10 bg-void px-2 py-2 text-xs text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
               >
                 <option value="">Unassigned</option>
                 {staff.map((candidate) => (
@@ -975,7 +975,7 @@ export default function RequestDetailPage() {
               <button
                 type="submit"
                 disabled={taskBusy === 'new' || taskDraft.title.trim().length < 3}
-                className="rounded-lg border border-emerald-400/40 bg-emerald-400/15 px-3 py-2 text-xs font-semibold text-emerald-200 transition-colors hover:bg-emerald-400/20 disabled:opacity-50"
+                className="rounded-lg border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-3 py-2 text-xs font-semibold text-[color:var(--color-gold-light)] transition-colors hover:bg-[var(--color-gold-light)] disabled:opacity-50"
               >
                 {taskBusy === 'new' ? 'Adding…' : 'Add task'}
               </button>
@@ -985,12 +985,12 @@ export default function RequestDetailPage() {
 
         <section className="rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-5">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-slate-100">Deliverables</h2>
+            <h2 className="text-sm font-semibold text-ghost">Deliverables</h2>
             {canCreateDeliverable && !showDeliverableForm ? (
               <button
                 type="button"
                 onClick={() => setShowDeliverableForm(true)}
-                className="rounded-md border border-emerald-400/35 bg-emerald-400/10 px-2.5 py-1 text-[11px] text-emerald-200 hover:bg-emerald-400/20"
+                className="rounded-md border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-2.5 py-1 text-[11px] text-[color:var(--color-gold-light)] hover:bg-[var(--color-gold-light)]"
               >
                 + Add deliverable
               </button>
@@ -999,7 +999,7 @@ export default function RequestDetailPage() {
 
           {canCreateDeliverable && showDeliverableForm ? (
             <form
-              className="mt-3 grid gap-2 rounded-[12px] border border-emerald-400/25 bg-[rgba(12,16,32,0.55)] b-surface p-3"
+              className="mt-3 grid gap-2 rounded-[12px] border border-[color:var(--color-gold-light)] bg-[rgba(12,16,32,0.55)] b-surface p-3"
               onSubmit={onCreateDeliverable}
             >
               <input
@@ -1011,7 +1011,7 @@ export default function RequestDetailPage() {
                   setDeliverableForm({ ...deliverableForm, title: event.target.value })
                 }
                 placeholder="Deliverable title"
-                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-ghost placeholder:text-ghost-muted/60 focus:border-[color:var(--color-gold-light)] focus:outline-none"
               />
               <input
                 maxLength={1000}
@@ -1020,7 +1020,7 @@ export default function RequestDetailPage() {
                   setDeliverableForm({ ...deliverableForm, description: event.target.value })
                 }
                 placeholder="Short description (optional)"
-                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-ghost placeholder:text-ghost-muted/60 focus:border-[color:var(--color-gold-light)] focus:outline-none"
               />
               <input
                 type="url"
@@ -1030,7 +1030,7 @@ export default function RequestDetailPage() {
                   setDeliverableForm({ ...deliverableForm, fileUrl: event.target.value })
                 }
                 placeholder="https://files.example.com/output.pdf (optional)"
-                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 font-mono text-xs text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 font-mono text-xs text-ghost placeholder:text-ghost-muted/60 focus:border-[color:var(--color-gold-light)] focus:outline-none"
               />
               <div className="flex gap-2">
                 <button
@@ -1047,7 +1047,7 @@ export default function RequestDetailPage() {
                     setDeliverableForm({ title: '', description: '', fileUrl: '' });
                   }}
                   disabled={busy !== null}
-                  className="rounded-md border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-slate-100 hover:bg-white/10 disabled:opacity-50"
+                  className="rounded-md border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-ghost hover:bg-white/10 disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -1056,7 +1056,7 @@ export default function RequestDetailPage() {
           ) : null}
 
           {deliverables.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-400">Nothing delivered against this request yet.</p>
+            <p className="mt-3 text-sm text-ghost-muted">Nothing delivered against this request yet.</p>
           ) : (
             <ul className="mt-3 grid gap-2.5">
               {deliverables.map((deliverable) => (
@@ -1066,19 +1066,19 @@ export default function RequestDetailPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm text-slate-100">
+                      <p className="truncate text-sm text-ghost">
                         {deliverable.title}
-                        <span className="ml-2 rounded border border-white/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-slate-400">
+                        <span className="ml-2 rounded border border-white/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ghost-muted">
                           v{deliverable.version}
                         </span>
                       </p>
-                      <p className="mt-0.5 text-[11px] text-slate-400">
+                      <p className="mt-0.5 text-[11px] text-ghost-muted">
                         {deliverable.approvedAt
                           ? `Approved ${formatDate(deliverable.approvedAt)}`
                           : 'Awaiting approval'}
                       </p>
                       {deliverable.fileKey ? (
-                        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.08em] text-slate-400">
+                        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.08em] text-ghost-muted">
                           {deliverable.fileMimeType} · {formatBytes(deliverable.fileSize)} · sha256{' '}
                           {shortDigest(deliverable.fileSha256)}
                         </p>
@@ -1106,7 +1106,7 @@ export default function RequestDetailPage() {
                         type="button"
                         onClick={() => startDeliverableEdit(deliverable)}
                         disabled={busy !== null}
-                        className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-slate-100 hover:bg-white/10 disabled:opacity-50"
+                        className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-ghost hover:bg-white/10 disabled:opacity-50"
                       >
                         Edit content
                       </button>
@@ -1115,7 +1115,7 @@ export default function RequestDetailPage() {
                       type="button"
                       onClick={() => void toggleVersions(deliverable)}
                       disabled={busy !== null}
-                      className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-slate-100 hover:bg-white/10 disabled:opacity-50"
+                      className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-ghost hover:bg-white/10 disabled:opacity-50"
                     >
                       {versions[deliverable.id]
                         ? 'Hide history'
@@ -1128,7 +1128,7 @@ export default function RequestDetailPage() {
                           type="button"
                           onClick={() => void onDownloadFile(deliverable)}
                           disabled={busy !== null}
-                          className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-slate-100 hover:bg-white/10 disabled:opacity-50"
+                          className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-ghost hover:bg-white/10 disabled:opacity-50"
                         >
                           {busy === `download:${deliverable.id}` ? 'Downloading…' : 'Download'}
                         </button>
@@ -1136,7 +1136,7 @@ export default function RequestDetailPage() {
                           type="button"
                           onClick={() => void onVerifyFile(deliverable)}
                           disabled={busy !== null}
-                          className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-slate-100 hover:bg-white/10 disabled:opacity-50"
+                          className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-ghost hover:bg-white/10 disabled:opacity-50"
                         >
                           {busy === `verify:${deliverable.id}` ? 'Checking…' : 'Verify checksum'}
                         </button>
@@ -1152,7 +1152,7 @@ export default function RequestDetailPage() {
                           setAttachNote('');
                         }}
                         disabled={busy !== null}
-                        className="rounded-md border border-emerald-400/35 bg-emerald-400/10 px-2.5 py-1 text-[11px] text-emerald-200 hover:bg-emerald-400/20 disabled:opacity-50"
+                        className="rounded-md border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-2.5 py-1 text-[11px] text-[color:var(--color-gold-light)] hover:bg-[var(--color-gold-light)] disabled:opacity-50"
                       >
                         {deliverable.fileKey ? 'Replace file' : 'Attach file'}
                       </button>
@@ -1162,7 +1162,7 @@ export default function RequestDetailPage() {
                       <span
                         className={
                           integrity[deliverable.id]!.ok
-                            ? 'self-center text-[11px] text-emerald-300'
+                            ? 'self-center text-[11px] text-[color:var(--color-gold-light)]'
                             : 'self-center text-[11px] text-red-300'
                         }
                       >
@@ -1181,16 +1181,16 @@ export default function RequestDetailPage() {
                       <input
                         type="file"
                         onChange={(event) => setAttachFile(event.target.files?.[0] ?? null)}
-                        className="text-[11px] text-slate-400 file:mr-2 file:rounded file:border file:border-white/15 file:bg-white/5 file:px-2 file:py-1 file:text-[11px] file:text-slate-100"
+                        className="text-[11px] text-ghost-muted file:mr-2 file:rounded file:border file:border-white/15 file:bg-white/5 file:px-2 file:py-1 file:text-[11px] file:text-ghost"
                       />
                       <input
                         maxLength={500}
                         value={attachNote}
                         onChange={(event) => setAttachNote(event.target.value)}
                         placeholder="Why this file (optional, recorded on the version)"
-                        className="rounded-md border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                        className="rounded-md border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-2.5 py-1.5 text-xs text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
                       />
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-ghost-muted">
                         The bytes are stored and hashed on arrival. If this deliverable has already
                         been approved or released, uploading clears that approval.
                       </p>
@@ -1210,7 +1210,7 @@ export default function RequestDetailPage() {
                             setAttachNote('');
                           }}
                           disabled={busy !== null}
-                          className="rounded-md border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-slate-100 hover:bg-white/10 disabled:opacity-50"
+                          className="rounded-md border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-ghost hover:bg-white/10 disabled:opacity-50"
                         >
                           Cancel
                         </button>
@@ -1235,7 +1235,7 @@ export default function RequestDetailPage() {
                           })
                         }
                         placeholder="Title"
-                        className="rounded-md border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                        className="rounded-md border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-2.5 py-1.5 text-xs text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
                       />
                       <input
                         maxLength={1000}
@@ -1247,7 +1247,7 @@ export default function RequestDetailPage() {
                           })
                         }
                         placeholder="Description"
-                        className="rounded-md border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                        className="rounded-md border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-2.5 py-1.5 text-xs text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
                       />
                       <input
                         type="url"
@@ -1260,7 +1260,7 @@ export default function RequestDetailPage() {
                           })
                         }
                         placeholder="https://files.example.com/replacement.pdf"
-                        className="rounded-md border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-2.5 py-1.5 font-mono text-[11px] text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                        className="rounded-md border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-2.5 py-1.5 font-mono text-[11px] text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
                       />
                       <input
                         maxLength={500}
@@ -1272,7 +1272,7 @@ export default function RequestDetailPage() {
                           })
                         }
                         placeholder="Why this changed (optional, recorded on the version)"
-                        className="rounded-md border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-2.5 py-1.5 text-xs text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                        className="rounded-md border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-2.5 py-1.5 text-xs text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
                       />
                       {deliverable.status === 'APPROVED' || deliverable.status === 'RELEASED' ? (
                         <p className="text-[11px] text-gold-light">
@@ -1294,7 +1294,7 @@ export default function RequestDetailPage() {
                           type="button"
                           onClick={() => setEditingDeliverableId(null)}
                           disabled={busy !== null}
-                          className="rounded-md border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-slate-100 hover:bg-white/10 disabled:opacity-50"
+                          className="rounded-md border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-ghost hover:bg-white/10 disabled:opacity-50"
                         >
                           Cancel
                         </button>
@@ -1305,8 +1305,8 @@ export default function RequestDetailPage() {
                   {versions[deliverable.id] ? (
                     <ol className="mt-2.5 grid gap-1.5 border-l border-gold/25 pl-3">
                       {versions[deliverable.id]!.map((version) => (
-                        <li key={version.id} className="text-[11px] text-slate-400">
-                          <span className="font-mono uppercase tracking-[0.08em] text-slate-100">
+                        <li key={version.id} className="text-[11px] text-ghost-muted">
+                          <span className="font-mono uppercase tracking-[0.08em] text-ghost">
                             v{version.version}
                           </span>{' '}
                           · {formatDate(version.createdAt)}
@@ -1333,7 +1333,7 @@ export default function RequestDetailPage() {
                           type="button"
                           onClick={() => void onDeliverableStatus(deliverable, 'APPROVED')}
                           disabled={busy !== null}
-                          className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-slate-100 hover:bg-white/10 disabled:opacity-50"
+                          className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-ghost hover:bg-white/10 disabled:opacity-50"
                         >
                           Approve
                         </button>
@@ -1343,14 +1343,14 @@ export default function RequestDetailPage() {
                           type="button"
                           onClick={() => void onDeliverableStatus(deliverable, 'RELEASED')}
                           disabled={busy !== null}
-                          className="rounded-md border border-emerald-400/35 bg-emerald-400/10 px-2.5 py-1 text-[11px] text-emerald-200 hover:bg-emerald-400/20 disabled:opacity-50"
+                          className="rounded-md border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-2.5 py-1 text-[11px] text-[color:var(--color-gold-light)] hover:bg-[var(--color-gold-light)] disabled:opacity-50"
                         >
                           Release to client
                         </button>
                       ) : null}
                     </div>
                   ) : (
-                    <p className="mt-2 text-[11px] text-slate-400">
+                    <p className="mt-2 text-[11px] text-ghost-muted">
                       Approval is done by the client owner or approver.
                     </p>
                   )}

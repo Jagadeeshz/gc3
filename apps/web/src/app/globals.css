@@ -62,7 +62,7 @@ body {
  * opposite. Raga-teal is the spectrum's midpoint and the colour already used for status.
  */
 :root {
-  --spectrum-accent: #00ddaa;
+  --spectrum-accent: #c9911a;
 }
 
 @theme {
@@ -83,6 +83,7 @@ body {
   --color-muted: #b9b8bb;
 
   /* Soma gold — CTA surfaces only (hard rule 2) */
+  --edge-gold: linear-gradient(135deg, rgba(242, 213, 130, 0.8), rgba(201, 145, 26, 0.28) 48%, rgba(139, 100, 16, 0.62));
   --color-gold: #c9911a;
   --color-gold-light: #f2d582;
   --color-gold-deep: #8b6410;
@@ -134,7 +135,7 @@ body {
 /* ------------------------------------------------------------------ *
  * Marketing surface tokens (obsidian / slate hairline system).
  * The portal stays on void+gold; the public site reads cooler and is
- * built on #090D16 with #1E293B hairlines and tabular figures.
+ * built on #090D16 with rgba(255,255,255,0.10) hairlines and tabular figures.
  * ------------------------------------------------------------------ */
 @theme {
   /* The marketing/portal surface names, pointed at BINDU tokens. */
@@ -399,10 +400,10 @@ body {
      the raga stops, not to gold. Emerald was the old brand accent; it maps to raga-teal,
      the same hue family, because gold is reserved for CTAs. */
   --color-amber-200: #fff2a8;
-  --color-amber-300: #ffdd00; /* raga-yellow */
+  --color-amber-300: #f2d582; /* raga-yellow */
   --color-amber-400: #e6c700;
   --color-emerald-200: #7effd9;
-  --color-emerald-300: #00ddaa; /* raga-teal */
+  --color-emerald-300: #c9911a; /* raga-teal */
   --color-emerald-400: #00c79a;
   --color-emerald-500: #00b289;
 }
@@ -607,17 +608,17 @@ body {
 .aurora-core {
   background: conic-gradient(
     from 200deg,
-    #7b00ff 0deg,
-    #00ddaa 46deg,
+    #8b6410 0deg,
+    #c9911a 46deg,
     #aaff00 86deg,
-    #ffdd00 124deg,
-    #ff8800 156deg,
+    #f2d582 124deg,
+    #c9911a 156deg,
     #ff2200 186deg,
-    /* the blues are compressed to a short transition arc: present, not dominant */ #7b00ff 212deg,
+    /* the blues are compressed to a short transition arc: present, not dominant */ #8b6410 212deg,
     #0055ff 226deg,
-    #0099ff 238deg,
-    #00ddaa 252deg,
-    #7b00ff 300deg
+    #c9911a 238deg,
+    #c9911a 252deg,
+    #8b6410 300deg
   );
   /* Blur turns the cone into a bloom; the mask keeps the disc from ending on a hard edge. */
   filter: blur(58px) saturate(1.1);
@@ -863,8 +864,8 @@ body {
 .sculpture-halo {
   background: radial-gradient(
     closest-side,
-    color-mix(in oklab, var(--glow, #ededed) 20%, transparent),
-    color-mix(in oklab, var(--glow, #ededed) 6%, transparent) 58%,
+    color-mix(in oklab, var(--glow, #ffffff) 20%, transparent),
+    color-mix(in oklab, var(--glow, #ffffff) 6%, transparent) 58%,
     transparent 82%
   );
   filter: blur(34px);
@@ -1597,7 +1598,7 @@ textarea:focus {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background-image: var(--edge-gradient, var(--bindu-spectrum-gradient));
+  background-image: var(--edge-gradient, var(--edge-gold));
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -1634,7 +1635,7 @@ textarea:focus {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background-image: var(--bindu-spectrum-gradient);
+  background-image: var(--edge-gold);
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -2149,7 +2150,7 @@ textarea:focus {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background-image: linear-gradient(135deg, rgba(242, 213, 130, 0.9), rgba(201, 145, 26, 0.15) 45%, rgba(242, 213, 130, 0.55));
+  background-image: var(--edge-gold);
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -2793,7 +2794,7 @@ textarea:focus {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background-image: var(--bindu-spectrum-gradient);
+  background-image: var(--edge-gold);
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);

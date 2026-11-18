@@ -137,9 +137,9 @@ export function BookDemoDialog() {
   if (!open) return null;
 
   const field =
-    'w-full rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-1)] px-3.5 py-2.5 text-[13px] text-slate-100 placeholder:text-slate-500 transition-colors focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/15';
+    'w-full rounded-[6px] border border-[color:var(--bindu-surface-border)] bg-[var(--bindu-void-1)] px-3.5 py-2.5 text-[13px] text-ghost placeholder:text-ghost-muted transition-colors focus:border-[color:var(--color-gold-light)] focus:outline-none focus:ring-2 focus:border-[color:var(--color-gold-light)]';
   const label =
-    'mb-1.5 block font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500';
+    'mb-1.5 block font-mono text-[9px] uppercase tracking-[0.16em] text-ghost-muted';
 
   return (
     <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto px-4 py-[8vh]">
@@ -154,21 +154,21 @@ export function BookDemoDialog() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="demo-title"
-        className="palette-in relative w-full max-w-[640px] overflow-hidden rounded-[16px] border border-emerald-400/20 bg-[color:var(--bindu-void-2)] p-6 shadow-[0_50px_140px_-50px_rgba(0,0,0,0.95)] sm:p-8"
+        className="palette-in relative w-full max-w-[640px] overflow-hidden rounded-[16px] border border-[color:var(--color-gold-light)] bg-[var(--bindu-void-2)] p-6 shadow-[0_50px_140px_-50px_rgba(0,0,0,0.95)] sm:p-8"
       >
         <button
           type="button"
           onClick={() => setOpen(false)}
           aria-label="Close the demo form"
-          className="absolute right-4 top-4 grid size-8 place-items-center rounded-lg text-slate-500 transition-colors hover:bg-white/5 hover:text-slate-200"
+          className="absolute right-4 top-4 grid size-8 place-items-center rounded-lg text-ghost-muted transition-colors hover:bg-white/5 hover:text-ghost"
         >
           <X aria-hidden className="size-4" strokeWidth={1.9} />
         </button>
 
         {status === 'sent' ? (
           <div className="py-8 text-center">
-            <span className="mx-auto grid size-12 place-items-center rounded-full border border-emerald-400/40 bg-emerald-400/10">
-              <Check aria-hidden className="size-6 text-emerald-300" strokeWidth={2.2} />
+            <span className="mx-auto grid size-12 place-items-center rounded-full border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)]">
+              <Check aria-hidden className="size-6 text-[color:var(--color-gold-light)]" strokeWidth={2.2} />
             </span>
             <h2 id="demo-title" className="mt-4 font-display text-[22px] text-ghost">
               Request received
@@ -180,7 +180,7 @@ export function BookDemoDialog() {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="mt-6 rounded-lg border border-emerald-400/35 bg-emerald-400/10 px-4 py-2 text-[12px] font-medium text-emerald-200 transition-colors hover:bg-emerald-400/20"
+              className="mt-6 rounded-lg border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-4 py-2 text-[12px] font-medium text-[color:var(--color-gold-light)] transition-colors hover:bg-[var(--color-gold-light)]"
             >
               Close
             </button>
@@ -266,7 +266,7 @@ export function BookDemoDialog() {
 
               <div className="sm:col-span-2">
                 <label className={label} htmlFor="demo-message">
-                  What are you trying to solve? <span className="normal-case tracking-normal text-slate-600">(optional)</span>
+                  What are you trying to solve? <span className="normal-case tracking-normal text-ghost-muted">(optional)</span>
                 </label>
                 <textarea
                   id="demo-message"
@@ -286,13 +286,13 @@ export function BookDemoDialog() {
               ) : null}
 
               <div className="flex items-center justify-between gap-3 sm:col-span-2">
-                <p className="max-w-[34ch] text-[10px] leading-relaxed text-slate-500">
+                <p className="max-w-[34ch] text-[10px] leading-relaxed text-ghost-muted">
                   We store your details to answer the request. Nothing else.
                 </p>
                 <button
                   type="submit"
                   disabled={status === 'sending'}
-                  className="inline-flex items-center gap-2 rounded-lg border border-emerald-400/40 bg-emerald-400/15 px-4 py-2.5 text-[12.5px] font-medium text-emerald-100 transition-colors hover:bg-emerald-400/25 disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-lg border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-4 py-2.5 text-[12.5px] font-medium text-[color:var(--color-gold-light)] transition-colors hover:bg-[var(--color-gold-light)] disabled:opacity-60"
                 >
                   {status === 'sending' ? 'Sending…' : 'Book a demo'}
                   <ArrowRight aria-hidden className="size-3.5" strokeWidth={1.9} />

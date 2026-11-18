@@ -64,14 +64,14 @@ export function PodComparison({
   const names = new Map(pods.map((pod) => [pod.code, pod.name.replace(' (Digital)', '')]));
 
   return (
-    <div className="overflow-x-auto rounded-[12px] border border-[#1E293B]">
+    <div className="overflow-x-auto rounded-[12px] border border-[rgba(255,255,255,0.10)]">
       <table className="w-full min-w-[720px] border-collapse text-left">
         <thead>
           <tr className="bg-white/[0.03]">
             {['Pod', 'Price', 'Capacity', 'Mgr / Spec / Agents', 'Carries', 'Minimum'].map((head) => (
               <th
                 key={head}
-                className="whitespace-nowrap px-4 py-3 font-mono text-[9px] uppercase tracking-[0.14em] text-slate-500"
+                className="whitespace-nowrap px-4 py-3 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted"
               >
                 {head}
               </th>
@@ -80,25 +80,25 @@ export function PodComparison({
         </thead>
         <tbody>
           {pods.map((pod) => (
-            <tr key={pod.code} className="border-t border-[#1E293B] transition-colors hover:bg-white/[0.02]">
+            <tr key={pod.code} className="border-t border-[rgba(255,255,255,0.10)] transition-colors hover:bg-white/[0.02]">
               <td className="px-4 py-3">
-                <span className="text-[12px] font-medium text-slate-100">{pod.name}</span>
+                <span className="text-[12px] font-medium text-ghost">{pod.name}</span>
               </td>
-              <td className="px-4 py-3 font-mono text-[12px] tabular-nums text-emerald-300">
+              <td className="px-4 py-3 font-mono text-[12px] tabular-nums text-[color:var(--color-gold-light)]">
                 {priceCell(pod, metricMode)}
               </td>
-              <td className="px-4 py-3 font-mono text-[11px] tabular-nums text-slate-300">
+              <td className="px-4 py-3 font-mono text-[11px] tabular-nums text-ghost-muted">
                 {capacityCell(pod)}
               </td>
-              <td className="px-4 py-3 font-mono text-[11px] tabular-nums text-slate-300">
+              <td className="px-4 py-3 font-mono text-[11px] tabular-nums text-ghost-muted">
                 {teamCell(pod)}
               </td>
-              <td className="px-4 py-3 text-[11px] text-slate-400">
+              <td className="px-4 py-3 text-[11px] text-ghost-muted">
                 {pod.includesCodes.length > 0
                   ? pod.includesCodes.map((code) => names.get(code) ?? code).join(' + ')
                   : '—'}
               </td>
-              <td className="px-4 py-3 font-mono text-[11px] text-slate-400">
+              <td className="px-4 py-3 font-mono text-[11px] text-ghost-muted">
                 {pod.minTermMonths > 0 ? `${pod.minTermMonths} months` : 'Monthly'}
               </td>
             </tr>
@@ -146,10 +146,10 @@ export function PlatformBand() {
   return (
     <section className="grid gap-5">
       <div className="max-w-[62ch]">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--color-gold-light)]">
           Inside the portal
         </p>
-        <h2 className="mt-3 font-display text-[clamp(1.6rem,2.8vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-slate-100">
+        <h2 className="mt-3 font-display text-[clamp(1.6rem,2.8vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ghost">
           The pod is the service. This is the software you get with it.
         </h2>
       </div>
@@ -161,11 +161,11 @@ export function PlatformBand() {
           return (
             <article
               key={feature.title}
-              className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] b-surface p-4 transition-colors hover:border-emerald-400/25"
+              className="rounded-[12px] border border-[rgba(255,255,255,0.10)] bg-[#13121a] b-surface p-4 transition-colors hover:border-[color:var(--color-gold-light)]"
             >
-              <Icon aria-hidden className="size-4 text-emerald-300" strokeWidth={1.75} />
-              <h3 className="mt-2.5 text-[13px] font-semibold text-slate-100">{feature.title}</h3>
-              <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">{feature.body}</p>
+              <Icon aria-hidden className="size-4 text-[color:var(--color-gold-light)]" strokeWidth={1.75} />
+              <h3 className="mt-2.5 text-[13px] font-semibold text-ghost">{feature.title}</h3>
+              <p className="mt-1.5 text-[11px] leading-relaxed text-ghost-muted">{feature.body}</p>
             </article>
           );
         })}
@@ -218,20 +218,20 @@ export function PricingFaq() {
   return (
     <section className="grid gap-5">
       <div className="max-w-[62ch]">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--color-gold-light)]">
           Questions buyers actually ask
         </p>
-        <h2 className="mt-3 font-display text-[clamp(1.6rem,2.8vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-slate-100">
+        <h2 className="mt-3 font-display text-[clamp(1.6rem,2.8vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ghost">
           The detail behind the price list.
         </h2>
       </div>
 
-      <div className="grid gap-px overflow-hidden rounded-[12px] border border-[#1E293B] bg-[#1E293B]">
+      <div className="grid gap-px overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.10)]">
         {FAQ.map((item, index) => {
           const expanded = open === index;
 
           return (
-            <div key={item.q} className="bg-[#0B1220] b-surface">
+            <div key={item.q} className="bg-[#13121a] b-surface">
               <button
                 type="button"
                 onClick={() => setOpen(expanded ? null : index)}
@@ -239,11 +239,11 @@ export function PricingFaq() {
                 aria-controls={`faq-panel-${index}`}
                 className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.02]"
               >
-                <span className="text-[13px] font-medium text-slate-100">{item.q}</span>
+                <span className="text-[13px] font-medium text-ghost">{item.q}</span>
                 <ChevronDown
                   aria-hidden
-                  className={`size-4 shrink-0 text-slate-500 transition-transform duration-300 ${
-                    expanded ? 'rotate-180 text-emerald-300' : ''
+                  className={`size-4 shrink-0 text-ghost-muted transition-transform duration-300 ${
+                    expanded ? 'rotate-180 text-[color:var(--color-gold-light)]' : ''
                   }`}
                   strokeWidth={1.9}
                 />
@@ -256,7 +256,7 @@ export function PricingFaq() {
                 }`}
               >
                 <div className="overflow-hidden">
-                  <p className="px-4 pb-4 pr-10 text-[12px] leading-relaxed text-slate-400">{item.a}</p>
+                  <p className="px-4 pb-4 pr-10 text-[12px] leading-relaxed text-ghost-muted">{item.a}</p>
                 </div>
               </div>
             </div>

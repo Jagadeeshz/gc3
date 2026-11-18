@@ -88,16 +88,16 @@ export function PodCard({
       className={[
         'relative flex h-full flex-col justify-between gap-4 rounded-[14px] border p-5 transition-colors',
         current
-          ? 'border-emerald-400/45 bg-[#0B1220] b-surface shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_0_32px_-16px_rgba(16,185,129,0.6)]'
-          : 'border-[#1E293B] bg-[#0B1220] b-surface hover:border-emerald-400/25',
+          ? 'border-[color:var(--color-gold-light)] bg-[#13121a] b-surface shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_0_32px_-16px_rgba(16,185,129,0.6)]'
+          : 'border-[rgba(255,255,255,0.10)] bg-[#13121a] b-surface hover:border-[color:var(--color-gold-light)]',
       ].join(' ')}
     >
       {current ? (
-        <span className="absolute -top-2.5 left-4 rounded-full border border-emerald-400/40 bg-emerald-400/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-emerald-200">
+        <span className="absolute -top-2.5 left-4 rounded-full border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-[color:var(--color-gold-light)]">
           Your pod
         </span>
       ) : popular ? (
-        <span className="absolute -top-2.5 left-4 rounded-full border border-amber-400/40 bg-amber-400/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-amber-200">
+        <span className="absolute -top-2.5 left-4 rounded-full border border-[color:var(--color-gold)] bg-[var(--color-gold)] px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-[color:var(--color-gold)]">
           Most specified
         </span>
       ) : null}
@@ -105,62 +105,62 @@ export function PodCard({
       <div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="grid size-8 place-items-center rounded-[9px] border border-[#1E293B] bg-white/[0.03] text-emerald-300">
+            <span className="grid size-8 place-items-center rounded-[9px] border border-[rgba(255,255,255,0.10)] bg-white/[0.03] text-[color:var(--color-gold-light)]">
               <Icon aria-hidden className="size-4" strokeWidth={1.75} />
             </span>
             <div>
-              <h3 className="text-[13px] font-semibold leading-tight text-slate-100">{pod.name}</h3>
-              <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">{pod.code}</p>
+              <h3 className="text-[13px] font-semibold leading-tight text-ghost">{pod.name}</h3>
+              <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">{pod.code}</p>
             </div>
           </div>
 
           {pod.minTermMonths > 0 ? (
-            <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-amber-300">
+            <span className="rounded-full border border-[color:var(--color-gold)] bg-[var(--color-gold)] px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[color:var(--color-gold)]">
               {pod.minTermMonths}-month min
             </span>
           ) : null}
         </div>
 
-        <p className="mt-3 text-[11px] leading-relaxed text-slate-400">{pod.tagline}</p>
+        <p className="mt-3 text-[11px] leading-relaxed text-ghost-muted">{pod.tagline}</p>
 
         <p className="mt-4 flex items-baseline gap-1.5">
-          <span className="font-display text-[24px] font-semibold tabular-nums leading-none tracking-[-0.01em] text-slate-100">
+          <span className="font-display text-[24px] font-semibold tabular-nums leading-none tracking-[-0.01em] text-ghost">
             {price.primary}
           </span>
-          <span className="text-[10px] text-slate-500">{price.suffix}</span>
+          <span className="text-[10px] text-ghost-muted">{price.suffix}</span>
         </p>
 
-        <dl className="mt-4 grid gap-1.5 border-t border-[#1E293B] pt-3 text-[11px]">
+        <dl className="mt-4 grid gap-1.5 border-t border-[rgba(255,255,255,0.10)] pt-3 text-[11px]">
           {pod.creditsIncluded > 0 ? (
             <div className="flex items-baseline justify-between gap-2">
-              <dt className="text-slate-500">Credits</dt>
-              <dd className="font-mono tabular-nums text-emerald-300">{pod.creditsIncluded}/mo</dd>
+              <dt className="text-ghost-muted">Credits</dt>
+              <dd className="font-mono tabular-nums text-[color:var(--color-gold-light)]">{pod.creditsIncluded}/mo</dd>
             </div>
           ) : null}
 
           {pod.hoursIncluded > 0 ? (
             <div className="flex items-baseline justify-between gap-2">
-              <dt className="text-slate-500">Hours</dt>
-              <dd className="font-mono tabular-nums text-emerald-300">
+              <dt className="text-ghost-muted">Hours</dt>
+              <dd className="font-mono tabular-nums text-[color:var(--color-gold-light)]">
                 {pod.hoursIncluded}
                 {pod.peakHoursIncluded > 0 ? (
-                  <span className="text-amber-300"> · {pod.peakHoursIncluded} peak</span>
+                  <span className="text-[color:var(--color-gold)]"> · {pod.peakHoursIncluded} peak</span>
                 ) : null}
               </dd>
             </div>
           ) : null}
 
           <div className="flex items-baseline justify-between gap-2">
-            <dt className="text-slate-500">Team</dt>
-            <dd className="text-right font-mono text-[10px] text-slate-300">
+            <dt className="text-ghost-muted">Team</dt>
+            <dd className="text-right font-mono text-[10px] text-ghost-muted">
               {team ?? pod.teamSummary ?? 'Custom team'}
             </dd>
           </div>
 
           {includes.length > 0 ? (
             <div className="flex items-baseline justify-between gap-2">
-              <dt className="text-slate-500">Includes</dt>
-              <dd className="text-right text-[10px] text-emerald-200">{includes.join(' + ')}</dd>
+              <dt className="text-ghost-muted">Includes</dt>
+              <dd className="text-right text-[10px] text-[color:var(--color-gold-light)]">{includes.join(' + ')}</dd>
             </div>
           ) : null}
         </dl>
@@ -168,8 +168,8 @@ export function PodCard({
 
       <ul className="grid gap-1">
         {pod.perks.slice(0, 6).map((perk) => (
-          <li key={perk} className="flex items-start gap-1.5 text-[11px] leading-snug text-slate-400">
-            <Check aria-hidden className="mt-0.5 size-3 shrink-0 text-emerald-400/80" strokeWidth={2.2} />
+          <li key={perk} className="flex items-start gap-1.5 text-[11px] leading-snug text-ghost-muted">
+            <Check aria-hidden className="mt-0.5 size-3 shrink-0 text-[color:var(--color-gold-light)]" strokeWidth={2.2} />
             {perk}
           </li>
         ))}
@@ -249,7 +249,7 @@ export function PodCatalogue({
   }, [load]);
 
   if (loading) {
-    return <p className="text-[11px] text-slate-500">Loading the catalogue…</p>;
+    return <p className="text-[11px] text-ghost-muted">Loading the catalogue…</p>;
   }
 
   if (error) {
@@ -268,7 +268,7 @@ export function PodCatalogue({
             <div
               role="tablist"
               aria-label="Price metric"
-              className="inline-flex rounded-lg border border-[#1E293B] bg-[#0B1220] b-surface p-0.5"
+              className="inline-flex rounded-lg border border-[rgba(255,255,255,0.10)] bg-[#13121a] b-surface p-0.5"
             >
               {(
                 [
@@ -287,8 +287,8 @@ export function PodCatalogue({
                     onClick={() => setMetricMode(option.key)}
                     className={`rounded-[6px] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition-colors ${
                       active
-                        ? 'bg-emerald-400/15 text-emerald-200'
-                        : 'text-slate-500 hover:text-slate-300'
+                        ? 'bg-[var(--color-gold-light)] text-[#0d0c11]'
+                        : 'text-ghost-muted hover:text-ghost-muted'
                     }`}
                   >
                     {option.label}
@@ -297,7 +297,7 @@ export function PodCatalogue({
               })}
             </div>
 
-            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-slate-500">
+            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-ghost-muted">
               {metricMode === 'credit'
                 ? 'monthly ÷ credits — every pod resolves to the same rate'
                 : 'published list price'}
@@ -310,10 +310,10 @@ export function PodCatalogue({
 
       <PodGrid pods={compact ? pods.slice(0, 3) : pods} currentCodes={currentCodes} />
 
-      <div className="flex flex-wrap items-start gap-2 rounded-[10px] border border-[#1E293B] bg-[#0B1220] b-surface/60 b-surface px-3.5 py-3">
-        <Users aria-hidden className="mt-0.5 size-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} />
-        <p className="text-[11px] leading-relaxed text-slate-400">
-          <span className="text-slate-200">Stacking.</span> Pods stack upward: Growth carries the
+      <div className="flex flex-wrap items-start gap-2 rounded-[10px] border border-[rgba(255,255,255,0.10)] bg-[#13121a] b-surface/60 b-surface px-3.5 py-3">
+        <Users aria-hidden className="mt-0.5 size-3.5 shrink-0 text-[color:var(--color-gold-light)]" strokeWidth={1.75} />
+        <p className="text-[11px] leading-relaxed text-ghost-muted">
+          <span className="text-ghost">Stacking.</span> Pods stack upward: Growth carries the
           entire Creative catalogue on the same credit pool, and Strategy carries both Growth and
           Creative. You do not buy the lower pods separately.
         </p>
@@ -350,10 +350,10 @@ export function PodPriceStrip({ token }: { readonly token?: string | null }) {
       {pods.map((pod) => (
         <span
           key={pod.code}
-          className="inline-flex items-baseline gap-1.5 rounded-full border border-[#1E293B] bg-[#0B1220] b-surface px-2.5 py-1 font-mono text-[10px] text-slate-300"
+          className="inline-flex items-baseline gap-1.5 rounded-full border border-[rgba(255,255,255,0.10)] bg-[#13121a] b-surface px-2.5 py-1 font-mono text-[10px] text-ghost-muted"
         >
           {pod.name}
-          <span className="tabular-nums text-emerald-300">
+          <span className="tabular-nums text-[color:var(--color-gold-light)]">
             {pod.isCustomPriced
               ? `${money(pod.creditRateCents, pod.currency)}/credit`
               : `${money(pod.monthlyPriceCents, pod.currency)}/mo`}
@@ -362,7 +362,7 @@ export function PodPriceStrip({ token }: { readonly token?: string | null }) {
       ))}
       <Link
         href="/pricing"
-        className="inline-flex items-center gap-1 text-[11px] text-emerald-300 underline-offset-4 hover:underline"
+        className="inline-flex items-center gap-1 text-[11px] text-[color:var(--color-gold-light)] underline-offset-4 hover:underline"
       >
         Full catalogue
         <ArrowUpRight aria-hidden className="size-3" strokeWidth={1.75} />

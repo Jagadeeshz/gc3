@@ -70,10 +70,10 @@ import {
  */
 
 const TONE: Record<string, string> = {
-  positive: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300',
-  warning: 'border-amber-400/40 bg-amber-400/10 text-amber-300',
+  positive: 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]',
+  warning: 'border-[color:var(--color-gold)] bg-[var(--color-gold)] text-[#0d0c11]',
   danger: 'border-red-400/35 bg-red-400/10 text-red-300',
-  neutral: 'border-white/12 bg-white/[0.04] text-slate-400',
+  neutral: 'border-white/12 bg-white/[0.04] text-ghost-muted',
   gold: 'border-gold/35 bg-gold/10 text-gold-light',
 };
 
@@ -100,7 +100,7 @@ function GlassCard({
     <div
       className={`rounded-[14px] border border-white/10 bg-white/[0.025] backdrop-blur-sm ${
         interactive
-          ? 'transition-[transform,border-color,background-color] duration-300 hover:-translate-y-0.5 hover:border-emerald-400/30 hover:bg-white/[0.045] motion-reduce:hover:translate-y-0'
+          ? 'transition-[transform,border-color,background-color] duration-300 hover:-translate-y-0.5 hover:border-[color:var(--color-gold-light)] hover:bg-white/[0.045] motion-reduce:hover:translate-y-0'
           : ''
       } ${className}`}
     >
@@ -116,10 +116,10 @@ function MeterRow({ meter }: { readonly meter: UsageMeterSnapshot }) {
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">{meter.key}</span>
-        <span className="font-mono text-[10px] tabular-nums text-slate-300">
+        <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">{meter.key}</span>
+        <span className="font-mono text-[10px] tabular-nums text-ghost-muted">
           {meter.quantity.toLocaleString()} / {meter.included.toLocaleString()}
-          <span className="text-slate-600"> {meter.unit}</span>
+          <span className="text-ghost-muted"> {meter.unit}</span>
         </span>
       </div>
       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
@@ -128,15 +128,15 @@ function MeterRow({ meter }: { readonly meter: UsageMeterSnapshot }) {
             meter.state === 'EXCEEDED'
               ? 'bg-red-400'
               : meter.state === 'WARNING'
-                ? 'bg-amber-400'
-                : 'bg-[linear-gradient(90deg,#10B981,#34D399)]'
+                ? 'bg-[var(--color-gold)]'
+                : 'bg-[linear-gradient(90deg,#8b6410,#f2d582)]'
           }`}
           style={{ width: `${width}%` }}
         />
       </div>
       <div className="mt-1 flex items-center justify-between">
         <Pill label={meter.state} tone={tone} />
-        <span className="font-mono text-[9px] text-slate-600">{meter.percentUsed}%</span>
+        <span className="font-mono text-[9px] text-ghost-muted">{meter.percentUsed}%</span>
       </div>
     </div>
   );
@@ -247,7 +247,7 @@ export default function ClientOverviewPage() {
     <div className="grid gap-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-300/90">
+          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--color-gold-light)]">
             {isOwnerView ? 'Owner workspace' : 'Member workspace'}
           </p>
           <h1 className="mt-2 font-display text-[clamp(1.5rem,2.6vw,2rem)] leading-[1.05] tracking-[-0.02em] text-ghost">
@@ -261,7 +261,7 @@ export default function ClientOverviewPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-slate-400">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ghost-muted">
             <CalendarClock aria-hidden className="size-3" strokeWidth={2} />
             {now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
           </span>
@@ -410,7 +410,7 @@ function OwnerDashboard({
         <GlassCard className="p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-[13px] font-semibold text-ghost">Plan usage</h2>
-            <Link href="/subscription" className="inline-flex items-center gap-1 text-[11px] text-emerald-300 hover:underline">
+            <Link href="/subscription" className="inline-flex items-center gap-1 text-[11px] text-[color:var(--color-gold-light)] hover:underline">
               Manage plan
               <ArrowUpRight aria-hidden className="size-3" strokeWidth={2} />
             </Link>
@@ -427,7 +427,7 @@ function OwnerDashboard({
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-[13px] font-semibold text-ghost">Project status</h2>
-          <Link href="/requests" className="text-[11px] text-emerald-300 hover:underline">
+          <Link href="/requests" className="text-[11px] text-[color:var(--color-gold-light)] hover:underline">
             All requests
           </Link>
         </div>
@@ -438,12 +438,12 @@ function OwnerDashboard({
             return (
               <div key={column.key} className="rounded-[14px] border border-white/[0.06] bg-[rgba(8,11,18,0.5)] p-2.5">
                 <div className="mb-2 flex items-center justify-between px-1">
-                  <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">{column.title}</span>
-                  <span className="font-mono text-[10px] tabular-nums text-slate-400">{items.length}</span>
+                  <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">{column.title}</span>
+                  <span className="font-mono text-[10px] tabular-nums text-ghost-muted">{items.length}</span>
                 </div>
                 <div className="grid gap-2">
                   {items.length === 0 ? (
-                    <p className="rounded-lg border border-dashed border-white/10 px-3 py-6 text-center text-[11px] text-slate-600">
+                    <p className="rounded-lg border border-dashed border-white/10 px-3 py-6 text-center text-[11px] text-ghost-muted">
                       Nothing here
                     </p>
                   ) : (
@@ -458,20 +458,20 @@ function OwnerDashboard({
                         <Link
                           key={request.id}
                           href={`/requests/${request.id}`}
-                          className="group rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-emerald-400/35 motion-reduce:hover:translate-y-0"
+                          className="group rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-[color:var(--color-gold-light)] motion-reduce:hover:translate-y-0"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-slate-600">{request.reference}</span>
+                            <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-ghost-muted">{request.reference}</span>
                             <Pill
                               label={priorityLabel(request.priority)}
                               tone={request.priority === 'URGENT' ? 'danger' : request.priority === 'HIGH' ? 'warning' : 'neutral'}
                             />
                           </div>
-                          <p className="mt-1.5 line-clamp-2 text-[12px] leading-snug text-slate-200 group-hover:text-ghost">{request.title}</p>
+                          <p className="mt-1.5 line-clamp-2 text-[12px] leading-snug text-ghost group-hover:text-ghost">{request.title}</p>
                           <div className="mt-2 flex items-center justify-between">
                             <Pill label={requestStatusLabel(request.status)} tone={requestStatusTone(request.status)} />
                             {request.slaTargetAt && !finished ? (
-                              <span className={`font-mono text-[9px] ${late ? 'text-red-300' : 'text-slate-500'}`}>
+                              <span className={`font-mono text-[9px] ${late ? 'text-red-300' : 'text-ghost-muted'}`}>
                                 {late ? 'late' : formatDate(request.slaTargetAt)}
                               </span>
                             ) : null}
@@ -543,10 +543,10 @@ function TeamPermissions({
     <GlassCard className="overflow-hidden">
       <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
         <div className="flex items-center gap-2">
-          <Users aria-hidden className="size-4 text-emerald-300" strokeWidth={1.9} />
+          <Users aria-hidden className="size-4 text-[color:var(--color-gold-light)]" strokeWidth={1.9} />
           <h2 className="text-[13px] font-semibold text-ghost">Team & permissions</h2>
         </div>
-        <Link href="/team" className="text-[11px] text-emerald-300 hover:underline">
+        <Link href="/team" className="text-[11px] text-[color:var(--color-gold-light)] hover:underline">
           Manage roster
         </Link>
       </div>
@@ -559,12 +559,12 @@ function TeamPermissions({
         {workspace.membership.map((member) => (
           <li key={member.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
             <div className="flex min-w-0 items-center gap-2.5">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(140deg,#34D399,#0EA5A0)] font-mono text-[10px] font-bold text-[color:var(--bindu-void)]">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(140deg,#f2d582,#c9911a)] font-mono text-[10px] font-bold text-[color:var(--bindu-void)]">
                 {member.user.fullName.split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase()}
               </span>
               <div className="min-w-0">
-                <p className="truncate text-[12.5px] text-slate-200">{member.user.fullName}</p>
-                <p className="truncate font-mono text-[9.5px] text-slate-500">{member.user.email}</p>
+                <p className="truncate text-[12.5px] text-ghost">{member.user.fullName}</p>
+                <p className="truncate font-mono text-[9.5px] text-ghost-muted">{member.user.email}</p>
               </div>
               <Pill
                 label={member.roles.includes('CLIENT_OWNER') ? 'Owner' : member.roles.includes('CLIENT_APPROVER') ? 'Approver' : 'Member'}
@@ -589,17 +589,17 @@ function TeamPermissions({
                     disabled={pending || locked}
                     onClick={() => void toggle(member, permission.role)}
                     className={`group inline-flex items-center gap-2 rounded-full border px-2 py-1 transition-colors disabled:opacity-50 ${
-                      on ? 'border-emerald-400/40 bg-emerald-400/10' : 'border-white/10 bg-white/[0.03] hover:border-white/20'
+                      on ? 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)]' : 'border-white/10 bg-white/[0.03] hover:border-white/20'
                     }`}
                   >
                     <span
-                      className={`relative h-3.5 w-6 rounded-full transition-colors ${on ? 'bg-emerald-400' : 'bg-slate-700'}`}
+                      className={`relative h-3.5 w-6 rounded-full transition-colors ${on ? 'bg-[var(--color-gold-light)]' : 'bg-obsidian-soft'}`}
                     >
                       <span
                         className={`absolute top-0.5 size-2.5 rounded-full bg-white transition-all ${on ? 'left-3' : 'left-0.5'}`}
                       />
                     </span>
-                    <span className={`text-[10.5px] ${on ? 'text-emerald-200' : 'text-slate-400'}`}>{permission.label}</span>
+                    <span className={`text-[10.5px] ${on ? 'text-[color:var(--color-gold-light)]' : 'text-ghost-muted'}`}>{permission.label}</span>
                   </button>
                 );
               })}
@@ -607,7 +607,7 @@ function TeamPermissions({
           </li>
         ))}
         {workspace.membership.length === 0 ? (
-          <li className="px-4 py-8 text-center text-[12px] text-slate-500">No memberships in this workspace.</li>
+          <li className="px-4 py-8 text-center text-[12px] text-ghost-muted">No memberships in this workspace.</li>
         ) : null}
       </ul>
     </GlassCard>
@@ -713,16 +713,16 @@ function MemberDashboard({
           <h2 className="text-[13px] font-semibold text-ghost">
             {needsReview.length > 0 ? `Waiting on your review · ${needsReview.length}` : 'Recently delivered'}
           </h2>
-          <Link href="/deliverables" className="text-[11px] text-emerald-300 hover:underline">
+          <Link href="/deliverables" className="text-[11px] text-[color:var(--color-gold-light)] hover:underline">
             All deliverables
           </Link>
         </div>
 
         {(needsReview.length > 0 ? needsReview : recent).length === 0 ? (
           <GlassCard className="p-8 text-center">
-            <Package aria-hidden className="mx-auto size-5 text-slate-600" strokeWidth={1.6} />
-            <p className="mt-2 text-[12.5px] text-slate-400">Nothing in review right now.</p>
-            <p className="mt-1 text-[11px] text-slate-600">
+            <Package aria-hidden className="mx-auto size-5 text-ghost-muted" strokeWidth={1.6} />
+            <p className="mt-2 text-[12.5px] text-ghost-muted">Nothing in review right now.</p>
+            <p className="mt-1 text-[11px] text-ghost-muted">
               Deliverables appear here as soon as a pod submits them against an open request.
             </p>
           </GlassCard>
@@ -733,21 +733,21 @@ function MemberDashboard({
                 <div className="relative flex h-28 items-center justify-center overflow-hidden border-b border-white/[0.06] bg-[radial-gradient(120%_120%_at_50%_0%,rgba(16,185,129,0.16),rgba(8,13,21,0.9))]">
                   <Package
                     aria-hidden
-                    className="size-8 text-emerald-300/40 transition-transform duration-500 group-hover:scale-125"
+                    className="size-8 text-[color:var(--color-gold-light)] transition-transform duration-500 group-hover:scale-125"
                     strokeWidth={1.4}
                   />
                   <span className="absolute left-2.5 top-2.5">
                     <Pill label={deliverableStatusLabel(item.status)} tone={deliverableStatusTone(item.status)} />
                   </span>
-                  <span className="absolute bottom-2 right-2.5 font-mono text-[9px] text-slate-500">v{item.version}</span>
+                  <span className="absolute bottom-2 right-2.5 font-mono text-[9px] text-ghost-muted">v{item.version}</span>
                 </div>
 
                 <div className="p-3">
-                  <p className="truncate text-[12.5px] text-slate-200">{item.title}</p>
-                  <p className="mt-0.5 truncate text-[10.5px] text-slate-500">{item.requestTitle}</p>
+                  <p className="truncate text-[12.5px] text-ghost">{item.title}</p>
+                  <p className="mt-0.5 truncate text-[10.5px] text-ghost-muted">{item.requestTitle}</p>
 
                   <div className="mt-2 flex items-center justify-between">
-                    <span className="font-mono text-[9px] text-slate-600">{timeAgo(item.updatedAt)}</span>
+                    <span className="font-mono text-[9px] text-ghost-muted">{timeAgo(item.updatedAt)}</span>
                     {item.requestId ? (
                       <button
                         type="button"
@@ -755,7 +755,7 @@ function MemberDashboard({
                           setCommenting(commenting === item.id ? null : item.id);
                           setDraft('');
                         }}
-                        className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-2 py-1 text-[10.5px] text-slate-300 transition-colors hover:border-emerald-400/35 hover:text-emerald-200"
+                        className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-2 py-1 text-[10.5px] text-ghost-muted transition-colors hover:border-[color:var(--color-gold-light)] hover:text-[color:var(--color-gold-light)]"
                       >
                         <MessageSquare aria-hidden className="size-3" strokeWidth={2} />
                         Comment
@@ -772,13 +772,13 @@ function MemberDashboard({
                         maxLength={2000}
                         placeholder="What needs changing?"
                         aria-label={`Comment on ${item.title}`}
-                        className="w-full resize-none rounded-lg border border-white/10 bg-[rgba(8,11,18,0.5)] px-2.5 py-2 text-[11.5px] text-slate-100 placeholder:text-slate-600 focus:border-emerald-400/50 focus:outline-none"
+                        className="w-full resize-none rounded-lg border border-white/10 bg-[rgba(8,11,18,0.5)] px-2.5 py-2 text-[11.5px] text-ghost placeholder:text-ghost-muted focus:border-[color:var(--color-gold-light)] focus:outline-none"
                       />
                       <div className="mt-1.5 flex items-center justify-between">
                         <button
                           type="button"
                           onClick={() => setCommenting(null)}
-                          className="inline-flex items-center gap-1 text-[10.5px] text-slate-500 hover:text-slate-300"
+                          className="inline-flex items-center gap-1 text-[10.5px] text-ghost-muted hover:text-ghost-muted"
                         >
                           <X aria-hidden className="size-3" strokeWidth={2} />
                           Cancel
@@ -787,7 +787,7 @@ function MemberDashboard({
                           type="button"
                           disabled={sending || draft.trim().length === 0}
                           onClick={() => void submitComment(item.requestId as string)}
-                          className="rounded-lg border border-emerald-400/40 bg-emerald-400/15 px-2.5 py-1 text-[10.5px] font-medium text-emerald-100 disabled:opacity-50"
+                          className="rounded-lg border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-2.5 py-1 text-[10.5px] font-medium text-[color:var(--color-gold-light)] disabled:opacity-50"
                         >
                           {sending ? 'Sending…' : 'Post'}
                         </button>
@@ -801,7 +801,7 @@ function MemberDashboard({
         )}
 
         {notice ? (
-          <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-emerald-300">
+          <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-[color:var(--color-gold-light)]">
             <Check aria-hidden className="size-3.5" strokeWidth={2.4} />
             {notice}
           </p>
@@ -824,12 +824,12 @@ function MemberDashboard({
                   <span
                     aria-hidden
                     className={`mt-1.5 size-1.5 shrink-0 rounded-full ${
-                      request.status === 'IN_REVIEW' ? 'bg-amber-400' : request.status === 'IN_PROGRESS' ? 'bg-emerald-400' : 'bg-slate-500'
+                      request.status === 'IN_REVIEW' ? 'bg-[var(--color-gold)]' : request.status === 'IN_PROGRESS' ? 'bg-[var(--color-gold-light)]' : 'bg-obsidian-soft'
                     }`}
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[12.5px] text-slate-200">{request.title}</span>
-                    <span className="mt-0.5 block font-mono text-[9.5px] uppercase tracking-[0.1em] text-slate-600">
+                    <span className="block truncate text-[12.5px] text-ghost">{request.title}</span>
+                    <span className="mt-0.5 block font-mono text-[9.5px] uppercase tracking-[0.1em] text-ghost-muted">
                       {request.reference} · {timeAgo(request.updatedAt)}
                     </span>
                   </span>
@@ -838,7 +838,7 @@ function MemberDashboard({
               </li>
             ))}
             {activity.length === 0 ? (
-              <li className="px-4 py-8 text-center text-[12px] text-slate-500">No activity yet.</li>
+              <li className="px-4 py-8 text-center text-[12px] text-ghost-muted">No activity yet.</li>
             ) : null}
           </ul>
         </GlassCard>
@@ -852,7 +852,7 @@ function MemberDashboard({
             {mine.map((request) => (
               <li key={request.id}>
                 <Link href={`/requests/${request.id}`} className="block px-4 py-3 transition-colors hover:bg-white/[0.03]">
-                  <p className="truncate text-[12.5px] text-slate-200">{request.title}</p>
+                  <p className="truncate text-[12.5px] text-ghost">{request.title}</p>
                   <div className="mt-1.5 flex items-center gap-1.5">
                     <Pill label={requestStatusLabel(request.status)} tone={requestStatusTone(request.status)} />
                     <Pill label={priorityLabel(request.priority)} tone={request.priority === 'URGENT' ? 'danger' : 'neutral'} />
@@ -861,7 +861,7 @@ function MemberDashboard({
               </li>
             ))}
             {mine.length === 0 ? (
-              <li className="px-4 py-8 text-center text-[12px] text-slate-500">
+              <li className="px-4 py-8 text-center text-[12px] text-ghost-muted">
                 Nothing assigned to you directly — work is tracked at pod level.
               </li>
             ) : null}

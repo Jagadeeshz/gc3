@@ -147,7 +147,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
   if (!ready) {
     return (
       <div className="grid min-h-dvh place-items-center bg-obsidian">
-        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-600">Loading workspace…</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ghost-muted">Loading workspace…</p>
       </div>
     );
   }
@@ -155,7 +155,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
   if (!session) {
     return (
       <div className="grid min-h-dvh place-items-center bg-obsidian">
-        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-600">
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ghost-muted">
           Redirecting to sign in…
         </p>
       </div>
@@ -170,33 +170,33 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
           type="button"
           onClick={() => setSwitcherOpen((open) => !open)}
           aria-expanded={switcherOpen}
-          className="flex w-full items-center gap-2.5 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] px-3 py-2.5 text-left transition-colors hover:border-emerald-400/30"
+          className="flex w-full items-center gap-2.5 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[var(--bindu-void-2)] px-3 py-2.5 text-left transition-colors hover:border-[color:var(--color-gold-light)]"
         >
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-emerald-400/12 text-emerald-300">
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[var(--color-gold-light)] text-[#0d0c11]">
             <Building2 aria-hidden className="size-4" strokeWidth={1.9} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[12.5px] font-medium text-slate-100">{workspaceName}</span>
-            <span className="block font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">
+            <span className="block truncate text-[12.5px] font-medium text-ghost">{workspaceName}</span>
+            <span className="block font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">
               {isOwnerView ? 'Owner workspace' : 'Member workspace'}
             </span>
           </span>
           <ChevronDown
             aria-hidden
-            className={`size-3.5 shrink-0 text-slate-500 transition-transform ${switcherOpen ? 'rotate-180' : ''}`}
+            className={`size-3.5 shrink-0 text-ghost-muted transition-transform ${switcherOpen ? 'rotate-180' : ''}`}
             strokeWidth={2}
           />
         </button>
 
         {switcherOpen ? (
-          <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 overflow-hidden rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]">
+          <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 overflow-hidden rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[var(--bindu-void-2)] shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]">
             {(session?.organizations ?? []).map((org) => (
               <button
                 key={org.id}
                 type="button"
                 onClick={() => switchWorkspace(org.id)}
                 className={`flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[12px] transition-colors hover:bg-white/[0.04] ${
-                  org.id === session?.activeOrganizationId ? 'text-emerald-300' : 'text-slate-300'
+                  org.id === session?.activeOrganizationId ? 'text-[color:var(--color-gold-light)]' : 'text-ghost-muted'
                 }`}
               >
                 <span className="truncate">{org.name}</span>
@@ -212,10 +212,10 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
       {/* role view switch — only for a caller who really holds both */}
       {holdsOwner ? (
         <div>
-          <p className="mb-1.5 px-1 font-mono text-[9px] uppercase tracking-[0.14em] text-slate-600">
+          <p className="mb-1.5 px-1 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
             Preview as
           </p>
-          <div role="tablist" aria-label="Preview role" className="grid grid-cols-2 gap-1 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-1)] p-1">
+          <div role="tablist" aria-label="Preview role" className="grid grid-cols-2 gap-1 rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[var(--bindu-void-1)] p-1">
             {(['owner', 'member'] as const).map((option) => {
               const selected = mode === option;
 
@@ -228,8 +228,8 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
                   onClick={() => changeMode(option)}
                   className={`rounded-lg px-2 py-1.5 text-[11px] font-medium transition-all ${
                     selected
-                      ? 'bg-emerald-400/15 text-emerald-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
-                      : 'text-slate-500 hover:text-slate-300'
+                      ? 'bg-[var(--color-gold-light)] text-[#0d0c11] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                      : 'text-ghost-muted hover:text-ghost-muted'
                   }`}
                 >
                   {option === 'owner' ? 'Owner' : 'Member'}
@@ -253,7 +253,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
       <nav aria-label="Client workspace" className="-mx-1 flex-1 overflow-y-auto px-1">
         {sections.map((section) => (
           <div key={section.title} className="mb-4">
-            <p className="mb-1.5 px-2 font-mono text-[9px] uppercase tracking-[0.14em] text-slate-600">
+            <p className="mb-1.5 px-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
               {section.title}
             </p>
             <ul className="grid gap-0.5">
@@ -269,18 +269,18 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
                       className={`group relative flex items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[12.5px] transition-colors ${
                         active
                           ? 'b-active-row'
-                          : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200'
+                          : 'text-ghost-muted hover:bg-white/[0.04] hover:text-ghost'
                       }`}
                     >
                       {active ? (
                         <span
                           aria-hidden
-                          className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-emerald-400"
+                          className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-[var(--color-gold-light)]"
                         />
                       ) : null}
                       <Icon
                         aria-hidden
-                        className={`size-4 shrink-0 ${active ? 'text-emerald-300' : 'text-slate-500 group-hover:text-slate-300'}`}
+                        className={`size-4 shrink-0 ${active ? 'text-[color:var(--color-gold-light)]' : 'text-ghost-muted group-hover:text-ghost-muted'}`}
                         strokeWidth={1.8}
                       />
                       <span className="truncate">{item.label}</span>
@@ -294,7 +294,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
 
         {pinned.length > 0 ? (
           <div className="mb-4">
-            <p className="mb-1.5 flex items-center gap-1.5 px-2 font-mono text-[9px] uppercase tracking-[0.14em] text-slate-600">
+            <p className="mb-1.5 flex items-center gap-1.5 px-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted">
               <Star aria-hidden className="size-2.5" strokeWidth={2.2} />
               Pinned spaces
             </p>
@@ -304,16 +304,16 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
                   <Link
                     href={`/requests/${request.id}`}
                     title={request.title}
-                    className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11.5px] text-slate-400 transition-colors hover:bg-white/[0.04] hover:text-slate-200"
+                    className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11.5px] text-ghost-muted transition-colors hover:bg-white/[0.04] hover:text-ghost"
                   >
                     <span
                       aria-hidden
                       className={`size-1.5 shrink-0 rounded-full ${
                         request.status === 'IN_PROGRESS'
-                          ? 'bg-emerald-400'
+                          ? 'bg-[var(--color-gold-light)]'
                           : request.status === 'IN_REVIEW'
-                            ? 'bg-amber-400'
-                            : 'bg-slate-500'
+                            ? 'bg-[var(--color-gold)]'
+                            : 'bg-obsidian-soft'
                       }`}
                     />
                     <span className="truncate">{request.title}</span>
@@ -326,16 +326,16 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
       </nav>
 
       {/* person */}
-      <div className="rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[color:var(--bindu-void-2)] p-2.5">
+      <div className="rounded-[8px] border border-[color:var(--bindu-surface-border)] bg-[var(--bindu-void-2)] p-2.5">
         <div className="flex items-center gap-2.5">
-          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(140deg,#34D399,#0EA5A0)] font-mono text-[10px] font-bold">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(140deg,#f2d582,#c9911a)] font-mono text-[10px] font-bold">
             {initials}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[12px] text-slate-200">
+            <span className="block truncate text-[12px] text-ghost">
               {session?.actor?.fullName ?? session?.actor?.email ?? 'Signed in'}
             </span>
-            <span className="block font-mono text-[8.5px] uppercase tracking-[0.12em] text-emerald-300/80">
+            <span className="block font-mono text-[8.5px] uppercase tracking-[0.12em] text-[color:var(--color-gold-light)]">
               {VIEW_LABEL[isOwnerView ? 'owner' : 'member']}
             </span>
           </span>
@@ -343,7 +343,7 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
             type="button"
             onClick={handleSignOut}
             aria-label="Sign out"
-            className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-slate-200"
+            className="rounded-lg p-1.5 text-ghost-muted transition-colors hover:bg-white/[0.06] hover:text-ghost"
           >
             <LogOut aria-hidden className="size-3.5" strokeWidth={2} />
           </button>
@@ -360,18 +360,18 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
           type="button"
           onClick={() => setDrawerOpen(true)}
           aria-label="Open navigation"
-          className="grid size-8 place-items-center rounded-lg border border-hairline text-slate-300"
+          className="grid size-8 place-items-center rounded-lg border border-hairline text-ghost-muted"
         >
           <Menu aria-hidden className="size-4" strokeWidth={2} />
         </button>
-        <span className="truncate text-[12.5px] text-slate-200">{workspaceName}</span>
-        <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-emerald-300/80">
+        <span className="truncate text-[12.5px] text-ghost">{workspaceName}</span>
+        <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-[color:var(--color-gold-light)]">
           {isOwnerView ? 'Owner' : 'Member'}
         </span>
       </div>
 
       <div className="lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
-        <aside className="sticky top-0 hidden h-dvh border-r border-hairline bg-[color:var(--bindu-void-1)] lg:block">
+        <aside className="sticky top-0 hidden h-dvh border-r border-hairline bg-[var(--bindu-void-1)] lg:block">
           {rail}
         </aside>
 
@@ -383,13 +383,13 @@ export function ClientShell({ children }: { readonly children: ReactNode }) {
               onClick={() => setDrawerOpen(false)}
               className="absolute inset-0 bg-obsidian/80 backdrop-blur-sm"
             />
-            <div className="palette-in absolute left-0 top-0 h-full w-[280px] border-r border-hairline bg-[color:var(--bindu-void-1)]">
+            <div className="palette-in absolute left-0 top-0 h-full w-[280px] border-r border-hairline bg-[var(--bindu-void-1)]">
               <div className="flex justify-end px-3 pt-3">
                 <button
                   type="button"
                   onClick={() => setDrawerOpen(false)}
                   aria-label="Close navigation"
-                  className="grid size-8 place-items-center rounded-lg text-slate-400"
+                  className="grid size-8 place-items-center rounded-lg text-ghost-muted"
                 >
                   <X aria-hidden className="size-4" strokeWidth={2} />
                 </button>

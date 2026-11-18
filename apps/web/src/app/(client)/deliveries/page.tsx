@@ -47,8 +47,8 @@ export default function DeliveriesPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl tracking-[-0.01em] text-slate-100">Delivery history</h1>
-      <p className="mt-1 text-sm text-slate-400">
+      <h1 className="font-display text-3xl tracking-[-0.01em] text-ghost">Delivery history</h1>
+      <p className="mt-1 text-sm text-ghost-muted">
         Everything released to this workspace, newest first. Only released assets appear here.
       </p>
 
@@ -62,8 +62,8 @@ export default function DeliveriesPage() {
           },
         ].map((metric) => (
           <div key={metric.label} className="rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4">
-            <p className="text-xs text-slate-400">{metric.label}</p>
-            <strong className="mt-2 block font-display text-2xl text-slate-100">{metric.value}</strong>
+            <p className="text-xs text-ghost-muted">{metric.label}</p>
+            <strong className="mt-2 block font-display text-2xl text-ghost">{metric.value}</strong>
           </div>
         ))}
       </div>
@@ -78,11 +78,11 @@ export default function DeliveriesPage() {
       ) : null}
 
       {loading ? (
-        <p className="mt-6 text-sm text-slate-400">Loading delivery history…</p>
+        <p className="mt-6 text-sm text-ghost-muted">Loading delivery history…</p>
       ) : !history || history.entries.length === 0 ? (
         <div className="mt-6 rounded-[14px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-6">
-          <p className="text-sm text-slate-100">Nothing has been released yet.</p>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="text-sm text-ghost">Nothing has been released yet.</p>
+          <p className="mt-1 text-sm text-ghost-muted">
             Deliverables appear here once the GC3 team releases them after sign-off.
           </p>
         </div>
@@ -95,18 +95,18 @@ export default function DeliveriesPage() {
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-100">
+                  <p className="text-sm font-medium text-ghost">
                     {entry.title}
-                    <span className="ml-2 rounded border border-white/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-slate-400">
+                    <span className="ml-2 rounded border border-white/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ghost-muted">
                       v{entry.version}
                     </span>
                   </p>
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ghost-muted">
                     {entry.requestReference ?? 'Unattached'} · released{' '}
                     {formatDate(entry.releasedAt)}
                   </p>
                   {entry.description ? (
-                    <p className="mt-1.5 text-xs text-slate-400">{entry.description}</p>
+                    <p className="mt-1.5 text-xs text-ghost-muted">{entry.description}</p>
                   ) : null}
                 </div>
 
@@ -133,7 +133,7 @@ export default function DeliveriesPage() {
               </div>
 
               {entry.requestTitle ? (
-                <p className="mt-2 truncate text-[11px] text-slate-400">
+                <p className="mt-2 truncate text-[11px] text-ghost-muted">
                   Against: {entry.requestTitle}
                 </p>
               ) : null}

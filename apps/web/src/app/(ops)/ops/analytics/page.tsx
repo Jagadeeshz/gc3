@@ -188,7 +188,7 @@ export default function AnalyticsPage() {
               <span className="inline-block size-2 rounded-sm bg-gold/80" /> created
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="inline-block size-2 rounded-sm bg-emerald-400/70" /> closed
+              <span className="inline-block size-2 rounded-sm bg-[var(--color-gold-light)]" /> closed
             </span>
           </div>
         </div>
@@ -204,7 +204,7 @@ export default function AnalyticsPage() {
                 />
                 <div
                   title={`${bucket.closed} closed`}
-                  className="w-1/2 rounded-t-sm bg-emerald-400/70"
+                  className="w-1/2 rounded-t-sm bg-[var(--color-gold-light)]"
                   style={{ height: `${Math.max((bucket.closed / peakThroughput) * 100, 2)}%` }}
                 />
               </div>
@@ -251,7 +251,7 @@ export default function AnalyticsPage() {
                         pod.onTimeRate === null
                           ? 'text-muted'
                           : pod.onTimeRate >= 80
-                            ? 'text-emerald-300'
+                            ? 'text-[color:var(--color-gold-light)]'
                             : pod.onTimeRate >= 50
                               ? 'text-gold-light'
                               : 'text-red-300'

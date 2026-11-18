@@ -27,11 +27,11 @@ import { EmptyState, ErrorNote, Loading, PageHeader, Panel } from '@/components/
  * (bounded), and released assets can be downloaded straight from here.
  */
 const TONE: Record<string, string> = {
-  RELEASED: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300',
-  APPROVED: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300',
-  IN_REVIEW: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-200',
-  PENDING: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-200',
-  IN_PROGRESS: 'border-sky-400/35 bg-sky-400/10 text-sky-300',
+  RELEASED: 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]',
+  APPROVED: 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]',
+  IN_REVIEW: 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]',
+  PENDING: 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]',
+  IN_PROGRESS: 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]',
   REJECTED: 'border-red-400/35 bg-red-400/10 text-red-300',
 };
 
@@ -137,7 +137,7 @@ export default function DeliverablesPage() {
 
       {error ? <ErrorNote message={error} /> : null}
       {notice ? (
-        <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
+        <p className="rounded-lg border border-[color:var(--color-gold)] bg-[var(--color-gold)] px-3 py-2 text-xs text-[color:var(--color-gold)]">
           {notice}
         </p>
       ) : null}
@@ -149,8 +149,8 @@ export default function DeliverablesPage() {
           { label: 'Approved or released', value: Math.max(totals.approved, released) },
         ].map((stat) => (
           <div key={stat.label} className="rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4">
-            <p className="text-[11px] uppercase tracking-[0.1em] text-slate-400">{stat.label}</p>
-            <p className="mt-2 font-display text-[26px] font-semibold tabular-nums leading-none text-slate-100">
+            <p className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">{stat.label}</p>
+            <p className="mt-2 font-display text-[26px] font-semibold tabular-nums leading-none text-ghost">
               {stat.value}
             </p>
           </div>
@@ -174,7 +174,7 @@ export default function DeliverablesPage() {
               action={
                 <Link
                   href={`/requests/${request.id}`}
-                  className="text-[11px] text-emerald-300 underline-offset-4 hover:underline"
+                  className="text-[11px] text-[color:var(--color-gold-light)] underline-offset-4 hover:underline"
                 >
                   Open request
                 </Link>
@@ -187,14 +187,14 @@ export default function DeliverablesPage() {
                     className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-white/10 px-3.5 py-2.5"
                   >
                     <div className="min-w-0">
-                      <p className="flex items-center gap-2 text-sm text-slate-100">
+                      <p className="flex items-center gap-2 text-sm text-ghost">
                         <FileCheck2 aria-hidden className="size-3.5 text-gold-light" strokeWidth={1.75} />
                         {deliverable.title}
-                        <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-slate-400">
+                        <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-ghost-muted">
                           v{deliverable.version}
                         </span>
                       </p>
-                      <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-slate-400">
+                      <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ghost-muted">
                         {deliverable.fileSize ? formatBytes(deliverable.fileSize) : 'no file'}
                         {deliverable.releasedAt
                           ? ` · released ${formatDate(deliverable.releasedAt)}`
@@ -205,7 +205,7 @@ export default function DeliverablesPage() {
                     <div className="flex items-center gap-2">
                       <span
                         className={`rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] ${
-                          TONE[deliverable.status] ?? 'border-white/15 bg-white/5 text-slate-400'
+                          TONE[deliverable.status] ?? 'border-white/15 bg-white/5 text-ghost-muted'
                         }`}
                       >
                         {deliverableStatusLabel(deliverable.status)}
@@ -215,7 +215,7 @@ export default function DeliverablesPage() {
                           type="button"
                           onClick={() => void download(deliverable)}
                           disabled={busy === deliverable.id}
-                          className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-2 py-1 text-[10px] text-slate-100 transition-colors hover:border-emerald-400/35 hover:text-emerald-200 disabled:opacity-50"
+                          className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-2 py-1 text-[10px] text-ghost transition-colors hover:border-[color:var(--color-gold-light)] hover:text-[color:var(--color-gold-light)] disabled:opacity-50"
                         >
                           <Download aria-hidden className="size-3" strokeWidth={1.9} />
                           {busy === deliverable.id ? 'Fetching…' : 'Download'}

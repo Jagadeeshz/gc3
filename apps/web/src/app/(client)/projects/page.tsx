@@ -101,8 +101,8 @@ export default function ProjectsPage() {
           { label: 'Deliverables released', value: summary.delivered },
         ].map((stat) => (
           <div key={stat.label} className="rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface p-4">
-            <p className="text-[11px] uppercase tracking-[0.1em] text-slate-400">{stat.label}</p>
-            <p className="mt-2 font-display text-[26px] font-semibold tabular-nums leading-none text-slate-100">
+            <p className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">{stat.label}</p>
+            <p className="mt-2 font-display text-[26px] font-semibold tabular-nums leading-none text-ghost">
               {stat.value}
             </p>
           </div>
@@ -119,7 +119,7 @@ export default function ProjectsPage() {
       ) : (
         <div className="overflow-hidden rounded-[12px] border border-white/10">
           <table className="w-full text-left text-xs">
-            <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.12em] text-slate-400">
+            <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.12em] text-ghost-muted">
               <tr>
                 <th className="px-4 py-2.5 font-medium">Project</th>
                 <th className="px-4 py-2.5 font-medium">Status</th>
@@ -136,8 +136,8 @@ export default function ProjectsPage() {
                 return (
                   <tr key={request.id} className="border-t border-white/10 hover:bg-[rgba(12,16,32,0.55)] b-surface">
                     <td className="px-4 py-3">
-                      <p className="text-sm text-slate-100">{request.title}</p>
-                      <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-slate-400">
+                      <p className="text-sm text-ghost">{request.title}</p>
+                      <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ghost-muted">
                         {request.reference}
                       </p>
                     </td>
@@ -146,28 +146,28 @@ export default function ProjectsPage() {
                         className={[
                           'rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em]',
                           requestStatusTone(request.status) === 'positive'
-                            ? 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300'
+                            ? 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]'
                             : requestStatusTone(request.status) === 'critical'
                               ? 'border-red-400/35 bg-red-400/10 text-red-300'
                               : requestStatusTone(request.status) === 'gold'
-                                ? 'border-emerald-400/35 bg-emerald-400/10 text-emerald-200'
-                                : 'border-white/15 bg-white/5 text-slate-400',
+                                ? 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]'
+                                : 'border-white/15 bg-white/5 text-ghost-muted',
                         ].join(' ')}
                       >
                         {requestStatusLabel(request.status)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-mono tabular-nums text-slate-400">
+                    <td className="px-4 py-3 text-right font-mono tabular-nums text-ghost-muted">
                       {released}/{deliverables.length}
                     </td>
-                    <td className="px-4 py-3 text-slate-400">
+                    <td className="px-4 py-3 text-ghost-muted">
                       {request.dueAt ? formatDate(request.dueAt) : '—'}
                     </td>
-                    <td className="px-4 py-3 text-slate-400">{timeAgo(request.updatedAt)}</td>
+                    <td className="px-4 py-3 text-ghost-muted">{timeAgo(request.updatedAt)}</td>
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={`/requests/${request.id}`}
-                        className="inline-flex items-center gap-1 text-[11px] text-emerald-300 underline-offset-4 hover:underline"
+                        className="inline-flex items-center gap-1 text-[11px] text-[color:var(--color-gold-light)] underline-offset-4 hover:underline"
                       >
                         Open
                         <ArrowUpRight aria-hidden className="size-3" strokeWidth={1.75} />

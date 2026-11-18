@@ -68,7 +68,7 @@ export function HowItWorks({ showHeader = true }: { readonly showHeader?: boolea
               <p className="mt-2 flex-1 text-[12.5px] leading-[1.7] text-ghost-muted">{step.body}</p>
 
               <p className="mt-4 flex items-start gap-2 border-t border-hairline pt-4 text-[11.5px] text-ghost">
-                <Check aria-hidden className="mt-0.5 size-3.5 shrink-0 text-emerald-300" strokeWidth={2.2} />
+                <Check aria-hidden className="mt-0.5 size-3.5 shrink-0 text-[color:var(--color-gold-light)]" strokeWidth={2.2} />
                 {step.detail}
               </p>
             </li>

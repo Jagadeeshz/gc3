@@ -114,7 +114,7 @@ export default function SubscriptionPage() {
         actions={
           <Link
             href="/billing"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs text-slate-100 transition-colors hover:border-gold/40"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs text-ghost transition-colors hover:border-gold/40"
           >
             <CreditCard aria-hidden className="size-3.5" strokeWidth={1.75} />
             Billing &amp; invoices
@@ -122,9 +122,9 @@ export default function SubscriptionPage() {
         }
       />
       <div className="flex flex-wrap items-start gap-2 rounded-[12px] border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3.5 py-3">
-        <Info aria-hidden className="mt-0.5 size-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} />
-        <p className="text-[11px] leading-relaxed text-slate-400">
-          <span className="text-slate-200">Two price models, both real.</span> This workspace bills
+        <Info aria-hidden className="mt-0.5 size-3.5 shrink-0 text-[color:var(--color-gold-light)]" strokeWidth={1.75} />
+        <p className="text-[11px] leading-relaxed text-ghost-muted">
+          <span className="text-ghost">Two price models, both real.</span> This workspace bills
           against the metered platform plan below — requests, storage and API calls. Capability pods are
           sold separately on monthly credit pools with a standing team, and moving onto one is a
           commercial change your account team makes. Nothing on this page is an estimate.
@@ -136,19 +136,19 @@ export default function SubscriptionPage() {
         <Panel title="Active package" subtitle="What you are on, and what it includes">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="font-display text-xl font-semibold text-slate-100">{tier.name}</p>
-              <p className="mt-1 max-w-[46ch] text-xs text-slate-400">
+              <p className="font-display text-xl font-semibold text-ghost">{tier.name}</p>
+              <p className="mt-1 max-w-[46ch] text-xs text-ghost-muted">
                 {tier.description ?? 'Monthly subscription, billed per calendar month.'}
               </p>
             </div>
-            <span className="rounded-full border border-emerald-400/35 bg-emerald-400/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-emerald-300">
+            <span className="rounded-full border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-[color:var(--color-gold-light)]">
               {subscription.status}
             </span>
           </div>
 
-          <p className="mt-5 font-display text-2xl font-semibold tabular-nums text-slate-100">
+          <p className="mt-5 font-display text-2xl font-semibold tabular-nums text-ghost">
             {formatMoney(tier.monthlyPriceCents, tier.currency)}
-            <span className="ml-1 text-xs font-normal text-slate-400">/ month</span>
+            <span className="ml-1 text-xs font-normal text-ghost-muted">/ month</span>
           </p>
 
           <dl className="mt-5 grid gap-x-6 gap-y-3 sm:grid-cols-2">
@@ -159,13 +159,13 @@ export default function SubscriptionPage() {
               { label: 'Seats included', value: `${tier.seatsIncluded}` },
             ].map((row) => (
               <div key={row.label} className="flex items-baseline justify-between gap-3 border-b border-white/10 pb-2">
-                <dt className="text-[11px] text-slate-400">{row.label}</dt>
-                <dd className="font-mono text-xs tabular-nums text-slate-100">{row.value}</dd>
+                <dt className="text-[11px] text-ghost-muted">{row.label}</dt>
+                <dd className="font-mono text-xs tabular-nums text-ghost">{row.value}</dd>
               </div>
             ))}
           </dl>
 
-          <p className="mt-4 flex items-center gap-1.5 text-[11px] text-slate-400">
+          <p className="mt-4 flex items-center gap-1.5 text-[11px] text-ghost-muted">
             <CalendarClock aria-hidden className="size-3.5 text-gold-light" strokeWidth={1.75} />
             Renews {formatDate(subscription.currentPeriodEnd)} · started {formatDate(subscription.startedAt)}
           </p>
@@ -191,7 +191,7 @@ export default function SubscriptionPage() {
               />
             ))}
           </div>
-          <p className="mt-4 text-[11px] text-slate-400">
+          <p className="mt-4 text-[11px] text-ghost-muted">
             Counters reset on the first of each month. Anything beyond the allowance is billed as a
             separate line on that month&rsquo;s invoice.
           </p>
@@ -204,18 +204,18 @@ export default function SubscriptionPage() {
       >
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {otherTiers.length === 0 ? (
-            <p className="text-xs text-slate-400">No other plans are published.</p>
+            <p className="text-xs text-ghost-muted">No other plans are published.</p>
           ) : (
             otherTiers.map((candidate) => (
               <article key={candidate.id} className="rounded-[12px] border border-white/10 px-4 py-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-slate-100">{candidate.name}</p>
+                  <p className="text-sm font-semibold text-ghost">{candidate.name}</p>
                   <Layers aria-hidden className="size-3.5 text-gold-light" strokeWidth={1.75} />
                 </div>
-                <p className="mt-1 font-mono text-xs tabular-nums text-slate-400">
+                <p className="mt-1 font-mono text-xs tabular-nums text-ghost-muted">
                   {formatMoney(candidate.monthlyPriceCents, candidate.currency)} / month
                 </p>
-                <p className="mt-2 text-[11px] text-slate-400">
+                <p className="mt-2 text-[11px] text-ghost-muted">
                   {candidate.requestsIncluded} requests · {candidate.storageMbIncluded.toLocaleString('en-IN')} MB ·{' '}
                   {candidate.apiCallsIncluded.toLocaleString('en-IN')} calls
                 </p>
@@ -223,7 +223,7 @@ export default function SubscriptionPage() {
             ))
           )}
         </div>
-        <p className="mt-4 flex items-center gap-1.5 text-[11px] text-slate-400">
+        <p className="mt-4 flex items-center gap-1.5 text-[11px] text-ghost-muted">
           <ShieldCheck aria-hidden className="size-3.5 text-gold-light" strokeWidth={1.75} />
           Plan changes are audited and take effect from the next billing period.
         </p>
@@ -233,7 +233,7 @@ export default function SubscriptionPage() {
         title="Recent invoices"
         subtitle={invoices ? `${invoices.total} on file` : undefined}
         action={
-          <Link href="/billing" className="text-[11px] text-emerald-300 underline-offset-4 hover:underline">
+          <Link href="/billing" className="text-[11px] text-[color:var(--color-gold-light)] underline-offset-4 hover:underline">
             All invoices
           </Link>
         }
@@ -247,7 +247,7 @@ export default function SubscriptionPage() {
           />
         ) : (
           <table className="w-full text-left text-xs">
-            <thead className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
+            <thead className="text-[10px] uppercase tracking-[0.12em] text-ghost-muted">
               <tr>
                 <th className="py-2 font-medium">Invoice</th>
                 <th className="py-2 font-medium">Period</th>
@@ -259,28 +259,28 @@ export default function SubscriptionPage() {
             <tbody>
               {invoices.items.map((invoice) => (
                 <tr key={invoice.id} className="border-t border-white/10">
-                  <td className="py-2.5 font-mono text-slate-100">{invoice.number}</td>
-                  <td className="py-2.5 text-slate-400">{invoice.periodStart.slice(0, 10)}</td>
+                  <td className="py-2.5 font-mono text-ghost">{invoice.number}</td>
+                  <td className="py-2.5 text-ghost-muted">{invoice.periodStart.slice(0, 10)}</td>
                   <td className="py-2.5">
                     <span
                       className={[
                         'rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em]',
                         invoiceStatusTone(invoice.status) === 'positive'
-                          ? 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300'
+                          ? 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]'
                           : invoiceStatusTone(invoice.status) === 'critical'
                             ? 'border-red-400/35 bg-red-400/10 text-red-300'
                             : invoiceStatusTone(invoice.status) === 'gold'
-                              ? 'border-emerald-400/35 bg-emerald-400/10 text-emerald-200'
-                              : 'border-white/15 bg-white/5 text-slate-400',
+                              ? 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]'
+                              : 'border-white/15 bg-white/5 text-ghost-muted',
                       ].join(' ')}
                     >
                       {invoiceStatusLabel(invoice.status)}
                     </span>
                   </td>
-                  <td className="py-2.5 text-right font-mono tabular-nums text-slate-100">
+                  <td className="py-2.5 text-right font-mono tabular-nums text-ghost">
                     {formatMoney(invoice.totalCents, invoice.currency)}
                   </td>
-                  <td className="py-2.5 text-right text-slate-400">
+                  <td className="py-2.5 text-right text-ghost-muted">
                     {invoice.dueAt ? formatDate(invoice.dueAt) : '—'}
                   </td>
                 </tr>
@@ -294,7 +294,7 @@ export default function SubscriptionPage() {
         title="Capability pods"
         subtitle="The commercial catalogue this workspace can move to"
       >
-        <p className="mb-4 text-[11px] leading-relaxed text-slate-400">
+        <p className="mb-4 text-[11px] leading-relaxed text-ghost-muted">
           Your subscription currently bills against the metered platform plan above. Capability pods
           are sold on credit pools with a standing team — moving onto one is a commercial action taken
           by your account team, not a self-serve button, because it changes the contract.

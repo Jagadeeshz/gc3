@@ -123,14 +123,14 @@ export default function SupportPage() {
       {error ? <ErrorNote message={error} /> : null}
 
       {submitted ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-emerald-400/30 bg-emerald-400/5 px-4 py-3">
-          <p className="flex items-center gap-2 text-xs text-emerald-200">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] px-4 py-3">
+          <p className="flex items-center gap-2 text-xs text-[color:var(--color-gold-light)]">
             <CheckCircle2 aria-hidden className="size-4" strokeWidth={1.75} />
             Ticket {submitted.reference} raised — the team has been notified.
           </p>
           <Link
             href={`/requests/${submitted.id}`}
-            className="text-xs text-emerald-300 underline-offset-4 hover:underline"
+            className="text-xs text-[color:var(--color-gold-light)] underline-offset-4 hover:underline"
           >
             Open the ticket
           </Link>
@@ -141,7 +141,7 @@ export default function SupportPage() {
         <Panel title="Raise a ticket" subtitle="Tell us what is broken or blocked">
           <form onSubmit={submit} className="grid gap-4">
             <label className="grid gap-1.5">
-              <span className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Subject</span>
+              <span className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">Subject</span>
               <input
                 required
                 minLength={3}
@@ -149,12 +149,12 @@ export default function SupportPage() {
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
                 placeholder="Short summary — e.g. Deliverable upload failing"
-                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-ghost placeholder:text-ghost-muted/60 focus:border-[color:var(--color-gold-light)] focus:outline-none"
               />
             </label>
 
             <label className="grid gap-1.5">
-              <span className="text-[11px] uppercase tracking-[0.1em] text-slate-400">What is happening?</span>
+              <span className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">What is happening?</span>
               <textarea
                 required
                 minLength={10}
@@ -162,17 +162,17 @@ export default function SupportPage() {
                 value={details}
                 onChange={(event) => setDetails(event.target.value)}
                 placeholder="What you expected, what happened, and anything you have already tried."
-                className="resize-y rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400/60 focus:border-emerald-400/60 focus:outline-none"
+                className="resize-y rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-ghost placeholder:text-ghost-muted/60 focus:border-[color:var(--color-gold-light)] focus:outline-none"
               />
             </label>
 
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="grid gap-1.5">
-                <span className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Priority</span>
+                <span className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">Priority</span>
                 <select
                   value={priority}
                   onChange={(event) => setPriority(event.target.value as ServiceRequestPriority)}
-                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
                 >
                   {PRIORITIES.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -183,11 +183,11 @@ export default function SupportPage() {
               </label>
 
               <label className="grid gap-1.5">
-                <span className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Area</span>
+                <span className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">Area</span>
                 <select
                   value={categoryId}
                   onChange={(event) => setCategoryId(event.target.value)}
-                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-slate-100 focus:border-emerald-400/60 focus:outline-none"
+                  className="rounded-lg border border-white/10 bg-[rgba(12,16,32,0.55)] b-surface px-3 py-2 text-sm text-ghost focus:border-[color:var(--color-gold-light)] focus:outline-none"
                 >
                   <option value="">General support</option>
                   {categories.map((category) => (
@@ -200,7 +200,7 @@ export default function SupportPage() {
             </div>
 
             <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-ghost-muted">
                 {supportCategory?.slaDeliveryHours
                   ? `Support commitment: ${supportCategory.slaDeliveryHours} hours.`
                   : 'Response times follow the SLA for the priority you choose.'}
@@ -208,7 +208,7 @@ export default function SupportPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-gold/45 bg-gold/15 px-4 py-2 text-xs font-semibold text-gold-light transition-colors hover:bg-emerald-400/20 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gold/45 bg-gold/15 px-4 py-2 text-xs font-semibold text-gold-light transition-colors hover:bg-[var(--color-gold-light)] disabled:opacity-60"
               >
                 {submitting ? (
                   <Loader2 aria-hidden className="size-3.5 animate-spin" strokeWidth={2} />
@@ -223,25 +223,25 @@ export default function SupportPage() {
 
         <div className="grid gap-4">
           <Panel title="How support works" subtitle="Same queue, same clock">
-            <ul className="grid gap-2 text-[11px] leading-relaxed text-slate-400">
+            <ul className="grid gap-2 text-[11px] leading-relaxed text-ghost-muted">
               <li className="flex gap-2">
                 <LifeBuoy aria-hidden className="mt-0.5 size-3.5 shrink-0 text-gold-light" strokeWidth={1.75} />
                 A ticket is a service request: it is triaged, routed to a pod and tracked against an SLA.
               </li>
               <li className="flex gap-2">
-                <CheckCircle2 aria-hidden className="mt-0.5 size-3.5 shrink-0 text-emerald-300/80" strokeWidth={1.75} />
+                <CheckCircle2 aria-hidden className="mt-0.5 size-3.5 shrink-0 text-[color:var(--color-gold-light)]" strokeWidth={1.75} />
                 Urgent tickets are picked up first. Use it when delivery is blocked, not to queue-jump.
               </li>
               <li className="flex gap-2">
                 <Send aria-hidden className="mt-0.5 size-3.5 shrink-0 text-gold-light" strokeWidth={1.75} />
-                Replies land in <Link href="/messages" className="text-emerald-300 underline-offset-4 hover:underline">Messages</Link>, on the ticket itself.
+                Replies land in <Link href="/messages" className="text-[color:var(--color-gold-light)] underline-offset-4 hover:underline">Messages</Link>, on the ticket itself.
               </li>
             </ul>
           </Panel>
 
           <Panel title="Recent tickets" subtitle="Last five requests">
             {recent.length === 0 ? (
-              <p className="text-xs text-slate-400">Nothing raised yet.</p>
+              <p className="text-xs text-ghost-muted">Nothing raised yet.</p>
             ) : (
               <ul className="grid gap-2">
                 {recent.map((request) => (
@@ -251,18 +251,18 @@ export default function SupportPage() {
                       className="flex items-center justify-between gap-2 rounded-lg border border-white/10 px-3 py-2 transition-colors hover:border-gold/30"
                     >
                       <span className="min-w-0">
-                        <span className="block truncate text-xs text-slate-100">{request.title}</span>
-                        <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-slate-400">
+                        <span className="block truncate text-xs text-ghost">{request.title}</span>
+                        <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-ghost-muted">
                           {request.reference} · {formatDate(request.createdAt)}
                         </span>
                       </span>
                       <span
                         className={`shrink-0 rounded-full border px-1.5 py-0.5 font-mono text-[9px] uppercase ${
                           requestStatusTone(request.status) === 'positive'
-                            ? 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300'
+                            ? 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]'
                             : requestStatusTone(request.status) === 'critical'
                               ? 'border-red-400/35 bg-red-400/10 text-red-300'
-                              : 'border-white/15 bg-white/5 text-slate-400'
+                              : 'border-white/15 bg-white/5 text-ghost-muted'
                         }`}
                       >
                         {requestStatusLabel(request.status)}

@@ -94,23 +94,23 @@ export default function PricingPage() {
           <PricingFaq />
         </section>
 
-        <section className="reveal-stagger mt-12 grid gap-4 border-t border-[#1E293B] pt-10 sm:grid-cols-3">
+        <section className="reveal-stagger mt-12 grid gap-4 border-t border-[rgba(255,255,255,0.10)] pt-10 sm:grid-cols-3">
           {RULES.map((rule) => {
             const Icon = rule.icon;
 
             return (
-              <div key={rule.title} className="rounded-[12px] border border-[#1E293B] bg-[#0B1220] b-surface p-4">
-                <Icon aria-hidden className="size-4 text-emerald-300" strokeWidth={1.75} />
-                <h2 className="mt-2.5 text-[13px] font-semibold text-slate-100">{rule.title}</h2>
-                <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">{rule.body}</p>
+              <div key={rule.title} className="rounded-[12px] border border-[rgba(255,255,255,0.10)] bg-[#13121a] b-surface p-4">
+                <Icon aria-hidden className="size-4 text-[color:var(--color-gold-light)]" strokeWidth={1.75} />
+                <h2 className="mt-2.5 text-[13px] font-semibold text-ghost">{rule.title}</h2>
+                <p className="mt-1.5 text-[11px] leading-relaxed text-ghost-muted">{rule.body}</p>
               </div>
             );
           })}
         </section>
 
-        <section className="reveal mt-10 rounded-[12px] border border-[#1E293B] bg-[#0B1220] b-surface/60 b-surface px-4 py-3.5">
-          <p className="text-[11px] leading-relaxed text-slate-400">
-            <span className="text-slate-200">Custom pods.</span> Automation and Interactive are scoped
+        <section className="reveal mt-10 rounded-[12px] border border-[rgba(255,255,255,0.10)] bg-[#13121a] b-surface/60 b-surface px-4 py-3.5">
+          <p className="text-[11px] leading-relaxed text-ghost-muted">
+            <span className="text-ghost">Custom pods.</span> Automation and Interactive are scoped
             per engagement at a per-credit rate: process audits, RAG chatbots, voice agents, 3D and VR
             work do not fit a fixed monthly shape. Ask for a scoping call and the team is assembled
             around the outcome rather than a template.

@@ -20,36 +20,44 @@ import type { LucideIcon } from 'lucide-react';
 
 export type KpiTint = 'teal' | 'violet' | 'gold' | 'sky' | 'rose' | 'prism';
 
+/*
+ * One family, six weights. The keys are the historical names the call sites pass
+ * (tint="violet" is still a valid prop) but every value is gold now, so the
+ * dashboards read as one product rather than a colour-coded sample sheet.
+ *
+ * The washes stay translucent: a saturated block on this ground reads as a chart
+ * rather than a number.
+ */
 const TINTS: Record<KpiTint, { wash: string; edge: string; ink: string }> = {
   teal: {
-    wash: 'linear-gradient(145deg, rgba(0,221,170,0.20), rgba(0,221,170,0.03) 62%, transparent)',
-    edge: 'rgba(0,221,170,0.32)',
-    ink: '#00ddaa',
+    wash: 'linear-gradient(145deg, rgba(242,213,130,0.20), rgba(242,213,130,0.03) 62%, transparent)',
+    edge: 'rgba(242,213,130,0.32)',
+    ink: '#f2d582',
   },
   violet: {
-    wash: 'linear-gradient(145deg, rgba(123,0,255,0.26), rgba(123,0,255,0.05) 62%, transparent)',
-    edge: 'rgba(123,0,255,0.34)',
-    ink: '#a15cff',
+    wash: 'linear-gradient(145deg, rgba(139,100,16,0.30), rgba(139,100,16,0.05) 62%, transparent)',
+    edge: 'rgba(139,100,16,0.38)',
+    ink: '#c9911a',
   },
   gold: {
-    wash: 'linear-gradient(145deg, rgba(255,136,0,0.20), rgba(255,136,0,0.03) 62%, transparent)',
-    edge: 'rgba(255,136,0,0.30)',
-    ink: '#ff8800',
+    wash: 'linear-gradient(145deg, rgba(201,145,26,0.22), rgba(201,145,26,0.03) 62%, transparent)',
+    edge: 'rgba(201,145,26,0.34)',
+    ink: '#c9911a',
   },
   sky: {
-    wash: 'linear-gradient(145deg, rgba(0,153,255,0.20), rgba(0,153,255,0.03) 62%, transparent)',
-    edge: 'rgba(0,153,255,0.30)',
-    ink: '#0099ff',
+    wash: 'linear-gradient(145deg, rgba(255,241,207,0.18), rgba(255,241,207,0.03) 62%, transparent)',
+    edge: 'rgba(255,241,207,0.28)',
+    ink: '#fff1cf',
   },
   rose: {
-    wash: 'linear-gradient(145deg, rgba(255,34,0,0.18), rgba(255,34,0,0.03) 62%, transparent)',
-    edge: 'rgba(255,34,0,0.28)',
-    ink: '#ff4422',
+    wash: 'linear-gradient(145deg, rgba(214,96,68,0.20), rgba(214,96,68,0.03) 62%, transparent)',
+    edge: 'rgba(214,96,68,0.30)',
+    ink: '#e0795f',
   },
   prism: {
-    wash: 'linear-gradient(145deg, rgba(0,221,170,0.16), rgba(123,0,255,0.14) 55%, rgba(255,136,0,0.10))',
+    wash: 'linear-gradient(145deg, rgba(242,213,130,0.16), rgba(201,145,26,0.14) 55%, rgba(139,100,16,0.10))',
     edge: 'rgba(255,255,255,0.16)',
-    ink: '#ededed',
+    ink: '#ffffff',
   },
 };
 

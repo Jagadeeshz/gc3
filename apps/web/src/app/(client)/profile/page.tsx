@@ -70,14 +70,14 @@ export default function ProfilePage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Identity" subtitle="From the authenticated session">
           <div className="flex items-center gap-3">
-            <span className="grid size-11 place-items-center rounded-full border border-white/15 bg-white/5 font-display text-lg font-semibold text-slate-100">
+            <span className="grid size-11 place-items-center rounded-full border border-white/15 bg-white/5 font-display text-lg font-semibold text-ghost">
               {(me?.fullName ?? session?.actor.fullName ?? '?').slice(0, 1).toUpperCase()}
             </span>
             <div>
-              <p className="text-sm font-semibold text-slate-100">
+              <p className="text-sm font-semibold text-ghost">
                 {me?.fullName ?? session?.actor.fullName}
               </p>
-              <p className="flex items-center gap-1.5 font-mono text-[11px] text-slate-400">
+              <p className="flex items-center gap-1.5 font-mono text-[11px] text-ghost-muted">
                 <Mail aria-hidden className="size-3" strokeWidth={1.75} />
                 {me?.email ?? session?.actor.email}
               </p>
@@ -86,16 +86,16 @@ export default function ProfilePage() {
 
           <dl className="mt-5 grid gap-3">
             <div className="flex items-baseline justify-between border-b border-white/10 pb-2">
-              <dt className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Account type</dt>
-              <dd className="font-mono text-[11px] text-slate-100">{me?.kind ?? 'CLIENT'}</dd>
+              <dt className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">Account type</dt>
+              <dd className="font-mono text-[11px] text-ghost">{me?.kind ?? 'CLIENT'}</dd>
             </div>
             <div className="flex items-baseline justify-between border-b border-white/10 pb-2">
-              <dt className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Workspace</dt>
-              <dd className="font-mono text-[11px] text-slate-100">{organization?.name ?? '—'}</dd>
+              <dt className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">Workspace</dt>
+              <dd className="font-mono text-[11px] text-ghost">{organization?.name ?? '—'}</dd>
             </div>
             <div className="flex items-baseline justify-between border-b border-white/10 pb-2">
-              <dt className="text-[11px] uppercase tracking-[0.1em] text-slate-400">Roles here</dt>
-              <dd className="font-mono text-[11px] text-slate-100">
+              <dt className="text-[11px] uppercase tracking-[0.1em] text-ghost-muted">Roles here</dt>
+              <dd className="font-mono text-[11px] text-ghost">
                 {roles.length > 0 ? roles.map((role) => ROLE_LABEL[role] ?? role).join(' · ') : '—'}
               </dd>
             </div>
@@ -103,7 +103,7 @@ export default function ProfilePage() {
         </Panel>
 
         <Panel title="Access" subtitle="What your roles allow">
-          <p className="flex items-start gap-2 text-[11px] leading-relaxed text-slate-400">
+          <p className="flex items-start gap-2 text-[11px] leading-relaxed text-ghost-muted">
             <ShieldCheck aria-hidden className="mt-0.5 size-3.5 shrink-0 text-gold-light" strokeWidth={1.75} />
             Members and approvers work with the catalogue, requests, deliverables and messages. Billing,
             the subscription and the team roster belong to the workspace owner.
@@ -116,15 +116,15 @@ export default function ProfilePage() {
               'Message the delivery pod on any request',
               'Download released assets',
             ].map((capability) => (
-              <p key={capability} className="flex items-center gap-2 text-[11px] text-slate-100">
-                <span className="size-1.5 rounded-full bg-emerald-400/70" />
+              <p key={capability} className="flex items-center gap-2 text-[11px] text-ghost">
+                <span className="size-1.5 rounded-full bg-[var(--color-gold-light)]" />
                 {capability}
               </p>
             ))}
           </div>
 
-          <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-slate-400">
-            <UserCircle aria-hidden className="mt-0.5 size-3.5 shrink-0 text-slate-400" strokeWidth={1.75} />
+          <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-ghost-muted">
+            <UserCircle aria-hidden className="mt-0.5 size-3.5 shrink-0 text-ghost-muted" strokeWidth={1.75} />
             Profile edits, invitations and role changes are handled by the account team so every change is
             attributable in the audit trail.
           </p>

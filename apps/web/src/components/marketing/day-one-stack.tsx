@@ -55,7 +55,7 @@ export function DayOneStack() {
             <p className="dayone-card__body">{card.body}</p>
 
             <p className="dayone-card__foot">
-              <Check aria-hidden className="size-3.5 shrink-0 text-emerald-300" strokeWidth={2.2} />
+              <Check aria-hidden className="size-3.5 shrink-0 text-[color:var(--color-gold-light)]" strokeWidth={2.2} />
               In place before the first request
             </p>
           </div>

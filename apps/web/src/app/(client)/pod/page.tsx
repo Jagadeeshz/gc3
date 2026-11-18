@@ -112,12 +112,12 @@ export default function PodPage() {
       </section>
 
       <Panel title="What a pod is" subtitle="The team that actually does the work">
-        <p className="text-[11px] leading-relaxed text-slate-400">
+        <p className="text-[11px] leading-relaxed text-ghost-muted">
           A delivery pod is a standing team of specialists — strategy, creative, build and QA — that owns a
           portfolio of work. When a request is triaged, operations routes it to the pod best placed to
           deliver it, and that pod carries the SLA for it.
         </p>
-        <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
+        <p className="mt-2 text-[11px] leading-relaxed text-ghost-muted">
           Pod composition, individual workloads and internal task breakdowns are staff data and are not
           exposed to clients. What you can see is whether each of your requests has been routed, below.
         </p>
@@ -125,7 +125,7 @@ export default function PodPage() {
 
       <Panel title="Routing by request" subtitle="Open work only">
         {metrics.open.length === 0 ? (
-          <p className="text-xs text-slate-400">No open requests — nothing to route.</p>
+          <p className="text-xs text-ghost-muted">No open requests — nothing to route.</p>
         ) : (
           <ul className="grid gap-2">
             {metrics.open.map((request) => (
@@ -134,8 +134,8 @@ export default function PodPage() {
                 className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-white/10 px-3.5 py-2.5"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm text-slate-100">{request.title}</p>
-                  <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-slate-400">
+                  <p className="truncate text-sm text-ghost">{request.title}</p>
+                  <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ghost-muted">
                     {request.reference} · {requestStatusLabel(request.status)}
                   </p>
                 </div>
@@ -143,15 +143,15 @@ export default function PodPage() {
                   <span
                     className={`rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] ${
                       request.podId
-                        ? 'border-emerald-400/35 bg-emerald-400/10 text-emerald-300'
-                        : 'border-emerald-400/35 bg-emerald-400/10 text-emerald-200'
+                        ? 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]'
+                        : 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]'
                     }`}
                   >
                     {request.podId ? 'Routed' : 'Awaiting routing'}
                   </span>
                   <Link
                     href={`/requests/${request.id}`}
-                    className="inline-flex items-center gap-1 text-[11px] text-emerald-300 underline-offset-4 hover:underline"
+                    className="inline-flex items-center gap-1 text-[11px] text-[color:var(--color-gold-light)] underline-offset-4 hover:underline"
                   >
                     Open
                     <ArrowRight aria-hidden className="size-3" strokeWidth={1.75} />

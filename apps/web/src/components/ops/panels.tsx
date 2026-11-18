@@ -122,7 +122,7 @@ function DataTable<T>({
   }
 
   return (
-    <div className="overflow-x-auto rounded-[10px] border border-[#1E293B]">
+    <div className="overflow-x-auto rounded-[10px] border border-[rgba(255,255,255,0.10)]">
       <table className="w-full border-collapse text-left text-[12px]">
         <thead>
           <tr className="bg-white/[0.03]">
@@ -130,7 +130,7 @@ function DataTable<T>({
               <th
                 key={column.header}
                 style={column.width ? { width: column.width } : undefined}
-                className={`whitespace-nowrap px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-slate-500 ${
+                className={`whitespace-nowrap px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ghost-muted ${
                   column.align === 'right' ? 'text-right' : 'text-left'
                 }`}
               >
@@ -141,11 +141,11 @@ function DataTable<T>({
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={keyOf(row)} className="border-t border-[#1E293B]/70 hover:bg-white/[0.015]">
+            <tr key={keyOf(row)} className="border-t border-[rgba(255,255,255,0.10)]/70 hover:bg-white/[0.015]">
               {columns.map((column) => (
                 <td
                   key={column.header}
-                  className={`px-3 py-2 align-top text-slate-300 ${
+                  className={`px-3 py-2 align-top text-ghost-muted ${
                     column.align === 'right' ? 'text-right tabular-nums' : ''
                   }`}
                 >
@@ -162,10 +162,10 @@ function DataTable<T>({
 
 function Chip({ text, tone }: { readonly text: string; readonly tone: 'ok' | 'warn' | 'bad' | 'muted' }) {
   const cls = {
-    ok: 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300',
-    warn: 'border-amber-400/30 bg-amber-400/10 text-amber-300',
+    ok: 'border-[color:var(--color-gold-light)] bg-[var(--color-gold-light)] text-[#0d0c11]',
+    warn: 'border-[color:var(--color-gold)] bg-[var(--color-gold)] text-[#0d0c11]',
     bad: 'border-red-400/30 bg-red-400/10 text-red-300',
-    muted: 'border-[#1E293B] bg-white/[0.03] text-slate-400',
+    muted: 'border-[rgba(255,255,255,0.10)] bg-white/[0.03] text-ghost-muted',
   }[tone];
 
   return (
@@ -193,10 +193,10 @@ function NotInstrumented({ tab }: { readonly tab: OpsTab }) {
   return (
     <Panel title={tab.label} subtitle="Not instrumented yet">
       <div className="flex items-start gap-3">
-        <CircleSlash aria-hidden className="mt-0.5 size-4 shrink-0 text-amber-300" strokeWidth={1.75} />
+        <CircleSlash aria-hidden className="mt-0.5 size-4 shrink-0 text-[color:var(--color-gold)]" strokeWidth={1.75} />
         <div className="grid gap-2">
-          <p className="text-[12px] leading-relaxed text-slate-300">{tab.note}</p>
-          <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-slate-500">
+          <p className="text-[12px] leading-relaxed text-ghost-muted">{tab.note}</p>
+          <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-ghost-muted">
             <Info aria-hidden className="mt-0.5 size-3 shrink-0" strokeWidth={1.75} />
             This screen will stay empty until that model exists. It is listed here rather than filled with
             sample rows so the console can be trusted about what it does and does not know.
@@ -279,13 +279,13 @@ export function OverviewPanel({ token }: { readonly token: string }) {
         </ChartPanel>
       </section>
 
-      <Panel title="Client accounts" subtitle="Open work per tenant" action={<Link href="/ops?tab=client-accounts" className="text-[11px] text-emerald-300 hover:underline">Directory</Link>}>
+      <Panel title="Client accounts" subtitle="Open work per tenant" action={<Link href="/ops?tab=client-accounts" className="text-[11px] text-[color:var(--color-gold-light)] hover:underline">Directory</Link>}>
         <DataTable
           rows={data.organizations}
           keyOf={(row) => row.organizationId}
           empty={<EmptyState title="No tenants yet" body="A tenant appears here once an organization exists." />}
           columns={[
-            { header: 'Account', cell: (row) => <span className="text-slate-100">{row.name}</span> },
+            { header: 'Account', cell: (row) => <span className="text-ghost">{row.name}</span> },
             { header: 'Open', align: 'right', cell: (row) => num(row.openRequests) },
             { header: 'Pods', align: 'right', cell: (row) => num(row.podCount) },
             { header: 'SLA risk', align: 'right', cell: (row) => num(row.slaAtRisk) },
@@ -299,7 +299,7 @@ export function OverviewPanel({ token }: { readonly token: string }) {
           keyOf={(row) => row.requestId}
           empty={<EmptyState title="Queue is clear" body="Nothing is waiting to be picked up." />}
           columns={[
-            { header: 'Reference', cell: (row) => <span className="font-mono text-[11px] text-slate-400">{row.reference}</span> },
+            { header: 'Reference', cell: (row) => <span className="font-mono text-[11px] text-ghost-muted">{row.reference}</span> },
             { header: 'Request', cell: (row) => row.title },
             { header: 'Tenant', cell: (row) => row.organizationName },
             { header: 'Status', cell: (row) => <Chip text={row.status} tone={requestTone(row.status)} /> },
@@ -335,8 +335,8 @@ export function TasksPanel({ token, mine }: { readonly token: string; readonly m
           keyOf={(row) => row.id}
           empty={<EmptyState title="No tasks" body={mine ? 'Nothing is assigned to you right now.' : 'Nothing is allocated in your scope.'} />}
           columns={[
-            { header: 'Task', cell: (row) => <span className="text-slate-100">{row.title}</span> },
-            { header: 'Request', cell: (row) => <span className="font-mono text-[11px] text-slate-400">{row.requestReference}</span> },
+            { header: 'Task', cell: (row) => <span className="text-ghost">{row.title}</span> },
+            { header: 'Request', cell: (row) => <span className="font-mono text-[11px] text-ghost-muted">{row.requestReference}</span> },
             { header: 'Tenant', cell: (row) => row.organizationName },
             { header: 'Pod', cell: (row) => row.podName ?? '—' },
             { header: 'Assignee', cell: (row) => row.assigneeName ?? 'Unassigned' },
@@ -374,8 +374,8 @@ export function MemberDeskPanel({ token }: { readonly token: string }) {
           keyOf={(row) => row.id}
           empty={<EmptyState title="Nothing assigned" body="You have no open tasks. New work appears here when a pod manager allocates it." />}
           columns={[
-            { header: 'Task', cell: (row) => <span className="text-slate-100">{row.title}</span> },
-            { header: 'Request', cell: (row) => <span className="font-mono text-[11px] text-slate-400">{row.requestReference}</span> },
+            { header: 'Task', cell: (row) => <span className="text-ghost">{row.title}</span> },
+            { header: 'Request', cell: (row) => <span className="font-mono text-[11px] text-ghost-muted">{row.requestReference}</span> },
             { header: 'Tenant', cell: (row) => row.organizationName },
             { header: 'Due', align: 'right', cell: (row) => <span className={row.overdue ? 'text-red-300' : ''}>{row.dueAt ? formatDate(row.dueAt) : '—'}</span> },
           ]}
@@ -388,7 +388,7 @@ export function MemberDeskPanel({ token }: { readonly token: string }) {
           keyOf={(row) => row.id}
           empty={<EmptyState title="No active projects" body="Nothing of yours is in flight." />}
           columns={[
-            { header: 'Reference', cell: (row) => <span className="font-mono text-[11px] text-slate-400">{row.reference}</span> },
+            { header: 'Reference', cell: (row) => <span className="font-mono text-[11px] text-ghost-muted">{row.reference}</span> },
             { header: 'Request', cell: (row) => row.title },
             { header: 'Tenant', cell: (row) => row.organizationName },
             { header: 'Status', cell: (row) => <Chip text={row.status} tone={requestTone(row.status)} /> },
@@ -426,10 +426,10 @@ export function RequestsPanel({ token, mine }: { readonly token: string; readonl
           keyOf={(row) => row.id}
           empty={<EmptyState title="No requests" body="Nothing has been raised in this scope." />}
           columns={[
-            { header: 'Reference', cell: (row) => <span className="font-mono text-[11px] text-slate-400">{row.reference}</span> },
-            { header: 'Request', cell: (row) => <span className="text-slate-100">{row.title}</span> },
+            { header: 'Reference', cell: (row) => <span className="font-mono text-[11px] text-ghost-muted">{row.reference}</span> },
+            { header: 'Request', cell: (row) => <span className="text-ghost">{row.title}</span> },
             { header: 'Tenant', cell: (row) => row.organizationName },
-            { header: 'Pod', cell: (row) => row.podName ?? <span className="text-amber-300">Unrouted</span> },
+            { header: 'Pod', cell: (row) => row.podName ?? <span className="text-[color:var(--color-gold)]">Unrouted</span> },
             { header: 'Status', cell: (row) => <Chip text={row.status} tone={requestTone(row.status)} /> },
             { header: 'Priority', cell: (row) => <Chip text={row.priority} tone={row.priority === 'URGENT' ? 'bad' : row.priority === 'HIGH' ? 'warn' : 'muted'} /> },
             { header: 'SLA', cell: (row) => <Chip text={row.slaState} tone={row.slaState === 'BREACHED' ? 'bad' : row.slaState === 'WARNING' ? 'warn' : row.slaState === 'OK' ? 'ok' : 'muted'} /> },
@@ -466,9 +466,9 @@ export function DeliverablesPanel({ token, mine }: { readonly token: string; rea
           keyOf={(row) => row.id}
           empty={<EmptyState title="Nothing produced yet" body="Deliverables appear here once a pod uploads work against a request." />}
           columns={[
-            { header: 'Title', cell: (row) => <span className="text-slate-100">{row.title}</span> },
+            { header: 'Title', cell: (row) => <span className="text-ghost">{row.title}</span> },
             { header: 'Version', align: 'right', cell: (row) => `v${row.version}` },
-            { header: 'Request', cell: (row) => <span className="font-mono text-[11px] text-slate-400">{row.requestReference ?? '—'}</span> },
+            { header: 'Request', cell: (row) => <span className="font-mono text-[11px] text-ghost-muted">{row.requestReference ?? '—'}</span> },
             { header: 'Tenant', cell: (row) => row.organizationName },
             { header: 'Status', cell: (row) => <Chip text={row.status} tone={row.status === 'RELEASED' || row.status === 'APPROVED' ? 'ok' : row.status === 'REJECTED' ? 'bad' : row.status === 'IN_REVIEW' ? 'warn' : 'muted'} /> },
             { header: 'Updated', align: 'right', cell: (row) => formatDate(row.updatedAt) },
@@ -494,7 +494,7 @@ export function WorkloadPanel({ token, capacity }: { readonly token: string; rea
         title={capacity ? 'Capacity' : 'Team performance'}
         subtitle="Open, overdue and due-today tasks per person"
       >
-        <p className="mb-3 flex items-start gap-1.5 text-[11px] leading-relaxed text-slate-500">
+        <p className="mb-3 flex items-start gap-1.5 text-[11px] leading-relaxed text-ghost-muted">
           <Info aria-hidden className="mt-0.5 size-3 shrink-0" strokeWidth={1.75} />
           There is no timesheet model, so this is load — not utilisation. No percentage is shown against an
           invented capacity; the bar is relative to the busiest person, which is a fact.
@@ -505,21 +505,21 @@ export function WorkloadPanel({ token, capacity }: { readonly token: string; rea
             <EmptyState title="No load recorded" body="Nobody in scope has an open task." />
           ) : (
             rows.map((row) => (
-              <div key={row.userId} className="rounded-[10px] border border-[#1E293B] px-3 py-2.5">
+              <div key={row.userId} className="rounded-[10px] border border-[rgba(255,255,255,0.10)] px-3 py-2.5">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <div>
-                    <p className="text-[12px] text-slate-100">{row.fullName}</p>
-                    <p className="font-mono text-[10px] text-slate-500">
+                    <p className="text-[12px] text-ghost">{row.fullName}</p>
+                    <p className="font-mono text-[10px] text-ghost-muted">
                       {row.platformRole} · {row.pods.length > 0 ? row.pods.join(', ') : 'no pod'}
                     </p>
                   </div>
-                  <p className="font-mono text-[11px] tabular-nums text-slate-300">
+                  <p className="font-mono text-[11px] tabular-nums text-ghost-muted">
                     {num(row.openTasks)} open · {num(row.overdueTasks)} overdue · {num(row.dueToday)} due today
                   </p>
                 </div>
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#1E293B]">
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[rgba(255,255,255,0.10)]">
                   <div
-                    className={`h-full ${row.overdueTasks > 0 ? 'bg-amber-400/80' : 'bg-emerald-400/80'}`}
+                    className={`h-full ${row.overdueTasks > 0 ? 'bg-[var(--color-gold)]' : 'bg-[var(--color-gold-light)]'}`}
                     style={{ width: `${Math.max(4, Math.round((row.openTasks / Math.max(1, heaviest)) * 100))}%` }}
                   />
                 </div>
@@ -559,8 +559,8 @@ export function StaffPanel({ token }: { readonly token: string }) {
           keyOf={(row) => row.id}
           empty={<EmptyState title="No staff accounts" body="Only users with a platform role appear here." />}
           columns={[
-            { header: 'Name', cell: (row) => <span className="text-slate-100">{row.fullName}</span> },
-            { header: 'Email', cell: (row) => <span className="font-mono text-[11px] text-slate-400">{row.email}</span> },
+            { header: 'Name', cell: (row) => <span className="text-ghost">{row.fullName}</span> },
+            { header: 'Email', cell: (row) => <span className="font-mono text-[11px] text-ghost-muted">{row.email}</span> },
             { header: 'Role', cell: (row) => <Chip text={row.platformRole} tone="muted" /> },
             { header: 'Pods', cell: (row) => row.pods.length > 0 ? row.pods.map((pod) => pod.name).join(', ') : '—' },
             { header: 'Open', align: 'right', cell: (row) => num(row.openTasks) },
@@ -595,9 +595,9 @@ export function TenantsPanel({ token }: { readonly token: string }) {
           keyOf={(row) => row.id}
           empty={<EmptyState title="No accounts" body="Create an organization to see it here." />}
           columns={[
-            { header: 'Account', cell: (row) => <span className="text-slate-100">{row.name}</span> },
+            { header: 'Account', cell: (row) => <span className="text-ghost">{row.name}</span> },
             { header: 'Region', cell: (row) => row.region },
-            { header: 'Plan', cell: (row) => row.plan.tierName ?? <span className="text-slate-500">none</span> },
+            { header: 'Plan', cell: (row) => row.plan.tierName ?? <span className="text-ghost-muted">none</span> },
             { header: 'Status', cell: (row) => <Chip text={row.plan.status ?? 'UNPROVISIONED'} tone={row.plan.status === 'ACTIVE' ? 'ok' : row.plan.status ? 'warn' : 'muted'} /> },
             { header: 'Members', align: 'right', cell: (row) => num(row.counts.members) },
             { header: 'Open', align: 'right', cell: (row) => num(row.counts.openRequests) },
@@ -641,10 +641,10 @@ export function PodsPanel({ token }: { readonly token: string }) {
           >
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {pod.people.map((person) => (
-                <div key={person.id} className="rounded-[10px] border border-[#1E293B] px-3 py-2">
-                  <p className="text-[12px] text-slate-100">{person.fullName}</p>
-                  <p className="font-mono text-[10px] text-slate-500">{person.platformRole}</p>
-                  <p className="mt-1 font-mono text-[10px] tabular-nums text-slate-400">
+                <div key={person.id} className="rounded-[10px] border border-[rgba(255,255,255,0.10)] px-3 py-2">
+                  <p className="text-[12px] text-ghost">{person.fullName}</p>
+                  <p className="font-mono text-[10px] text-ghost-muted">{person.platformRole}</p>
+                  <p className="mt-1 font-mono text-[10px] tabular-nums text-ghost-muted">
                     {num(person.openTasks)} open · {num(person.overdueTasks)} overdue
                   </p>
                 </div>
@@ -672,8 +672,8 @@ export function CataloguePanel({ token }: { readonly token: string }) {
         keyOf={(row) => row.id}
         empty={<EmptyState title="Catalogue is empty" body="Services are defined per tenant; none exist yet." />}
         columns={[
-          { header: 'Service', cell: (row) => <span className="text-slate-100">{row.name}</span> },
-          { header: 'Slug', cell: (row) => <span className="font-mono text-[11px] text-slate-400">{row.slug}</span> },
+          { header: 'Service', cell: (row) => <span className="text-ghost">{row.name}</span> },
+          { header: 'Slug', cell: (row) => <span className="font-mono text-[11px] text-ghost-muted">{row.slug}</span> },
           { header: 'Tenant', cell: (row) => row.organizationName },
           { header: 'SLA', align: 'right', cell: (row) => row.slaDeliveryHours === null ? '—' : `${row.slaDeliveryHours}h` },
           { header: 'State', cell: (row) => <Chip text={row.isActive ? 'active' : 'inactive'} tone={row.isActive ? 'ok' : 'muted'} /> },
@@ -706,7 +706,7 @@ export function NotificationsPanel({ token }: { readonly token: string }) {
           keyOf={(row) => row.id}
           empty={<EmptyState title="Nothing sent yet" body="Invitations and event mail appear here with their delivery state." />}
           columns={[
-            { header: 'Recipient', cell: (row) => <span className="font-mono text-[11px] text-slate-300">{row.recipient}</span> },
+            { header: 'Recipient', cell: (row) => <span className="font-mono text-[11px] text-ghost-muted">{row.recipient}</span> },
             { header: 'Kind', cell: (row) => <Chip text={row.kind} tone="muted" /> },
             { header: 'Tenant', cell: (row) => row.organizationName },
             { header: 'Status', cell: (row) => <Chip text={row.status} tone={row.status === 'SENT' ? 'ok' : row.status === 'FAILED' ? 'bad' : 'warn'} /> },
@@ -742,20 +742,20 @@ export function FinancePanel({ token }: { readonly token: string }) {
           keyOf={(row) => row.tierCode}
           empty={<EmptyState title="No subscribed tenants" body="A plan appears once a subscription is provisioned." />}
           columns={[
-            { header: 'Plan', cell: (row) => <span className="text-slate-100">{row.tierName}</span> },
+            { header: 'Plan', cell: (row) => <span className="text-ghost">{row.tierName}</span> },
             { header: 'Accounts', align: 'right', cell: (row) => num(row.organizations) },
             { header: 'MRR', align: 'right', cell: (row) => money(row.mrrCents) },
           ]}
         />
       </Panel>
 
-      <Panel title="Tenant ledger" subtitle="Plan, run rate and this period's usage" action={<Link href="/ops/billing" className="text-[11px] text-emerald-300 hover:underline">Billing console</Link>}>
+      <Panel title="Tenant ledger" subtitle="Plan, run rate and this period's usage" action={<Link href="/ops/billing" className="text-[11px] text-[color:var(--color-gold-light)] hover:underline">Billing console</Link>}>
         <DataTable
           rows={data.tenants}
           keyOf={(row) => row.id}
           empty={<EmptyState title="No tenants" body="Nothing to bill yet." />}
           columns={[
-            { header: 'Tenant', cell: (row) => <span className="text-slate-100">{row.name}</span> },
+            { header: 'Tenant', cell: (row) => <span className="text-ghost">{row.name}</span> },
             { header: 'Plan', cell: (row) => row.tierName ?? '—' },
             { header: 'Status', cell: (row) => <Chip text={row.status ?? 'NONE'} tone={row.status === 'ACTIVE' ? 'ok' : row.status ? 'warn' : 'muted'} /> },
             { header: 'Requests', align: 'right', cell: (row) => num(row.requestsThisPeriod) },
@@ -791,7 +791,7 @@ export function SubscriptionsPanel({ token }: { readonly token: string }) {
           keyOf={(row) => row.tierCode}
           empty={<EmptyState title="No plans" body="Seed the tier catalogue to offer plans." />}
           columns={[
-            { header: 'Plan', cell: (row) => <span className="text-slate-100">{row.tierName}</span> },
+            { header: 'Plan', cell: (row) => <span className="text-ghost">{row.tierName}</span> },
             { header: 'Accounts', align: 'right', cell: (row) => num(row.organizations) },
             { header: 'MRR', align: 'right', cell: (row) => money(row.mrrCents) },
           ]}
@@ -813,7 +813,7 @@ export function RenewalsPanel({ token }: { readonly token: string }) {
 
   return (
     <Panel title="Renewals" subtitle="Sorted by the current subscription period end">
-      <p className="mb-3 text-[11px] leading-relaxed text-slate-500">
+      <p className="mb-3 text-[11px] leading-relaxed text-ghost-muted">
         Read from each subscription's period end. There is no renewal workflow, so nothing on this screen
         records whether anyone has spoken to the client.
       </p>
@@ -822,7 +822,7 @@ export function RenewalsPanel({ token }: { readonly token: string }) {
         keyOf={(row) => row.id}
         empty={<EmptyState title="No dated subscriptions" body="A tenant appears once its plan has a billing period." />}
         columns={[
-          { header: 'Account', cell: (row) => <span className="text-slate-100">{row.name}</span> },
+          { header: 'Account', cell: (row) => <span className="text-ghost">{row.name}</span> },
           { header: 'Plan', cell: (row) => row.plan.tierName ?? '—' },
           { header: 'Value', align: 'right', cell: (row) => money(row.plan.monthlyPricePaise ?? 0) },
           { header: 'Renews', align: 'right', cell: (row) => row.plan.renewsAt ? formatDate(row.plan.renewsAt) : '—' },
@@ -856,8 +856,8 @@ export function SlaPanel({ token }: { readonly token: string }) {
           keyOf={(row) => row.id}
           empty={<EmptyState title="Nothing at risk" body="Every open request with a target is inside its window." />}
           columns={[
-            { header: 'Reference', cell: (row) => <span className="font-mono text-[11px] text-slate-400">{row.reference}</span> },
-            { header: 'Request', cell: (row) => <span className="text-slate-100">{row.title}</span> },
+            { header: 'Reference', cell: (row) => <span className="font-mono text-[11px] text-ghost-muted">{row.reference}</span> },
+            { header: 'Request', cell: (row) => <span className="text-ghost">{row.title}</span> },
             { header: 'Tenant', cell: (row) => row.organizationName },
             { header: 'State', cell: (row) => <Chip text={row.slaState} tone={row.slaState === 'BREACHED' ? 'bad' : 'warn'} /> },
             { header: 'Target', align: 'right', cell: (row) => row.slaTargetAt ? formatDate(row.slaTargetAt) : '—' },
@@ -884,7 +884,7 @@ export function RegionsPanel({ token }: { readonly token: string }) {
   return (
     <div className="grid gap-4">
       <Panel title="Regional performance" subtitle="Accounts grouped by the tenant's region field">
-        <p className="mb-3 text-[11px] leading-relaxed text-slate-500">
+        <p className="mb-3 text-[11px] leading-relaxed text-ghost-muted">
           Regions are a label on the tenant, not an operating unit: nobody is assigned to a region and no
           regional target exists. Currency is not modelled — every amount in the platform is INR paise.
         </p>
@@ -893,7 +893,7 @@ export function RegionsPanel({ token }: { readonly token: string }) {
           keyOf={(row) => row.region}
           empty={<EmptyState title="No regions" body="Set a region on a tenant to see it grouped." />}
           columns={[
-            { header: 'Region', cell: (row) => <span className="text-slate-100">{row.region}</span> },
+            { header: 'Region', cell: (row) => <span className="text-ghost">{row.region}</span> },
             { header: 'Accounts', align: 'right', cell: (row) => num(row.accounts.length) },
             { header: 'Open work', align: 'right', cell: (row) => num(row.accounts.reduce((sum, account) => sum + account.counts.openRequests, 0)) },
             { header: 'Recurring', align: 'right', cell: (row) => money(row.accounts.reduce((sum, account) => sum + (account.plan.monthlyPricePaise ?? 0), 0)) },
@@ -921,7 +921,7 @@ export function RetentionPanel({ token }: { readonly token: string }) {
   return (
     <div className="grid gap-4">
       <Panel title="Retention" subtitle="Current subscription state by account">
-        <p className="mb-3 text-[11px] leading-relaxed text-slate-500">
+        <p className="mb-3 text-[11px] leading-relaxed text-ghost-muted">
           This is a snapshot, not a trend: the schema records the current status and a cancellation date,
           but no history of state changes, so no cohort or churn-rate analysis is possible yet.
         </p>
@@ -964,7 +964,7 @@ export function AnalyticsPanel({ token }: { readonly token: string }) {
           keyOf={(row) => row.podId}
           empty={<EmptyState title="No pod activity" body="Pods appear once they close work in the window." />}
           columns={[
-            { header: 'Pod', cell: (row) => <span className="text-slate-100">{row.podName}</span> },
+            { header: 'Pod', cell: (row) => <span className="text-ghost">{row.podName}</span> },
             { header: 'Open', align: 'right', cell: (row) => num(row.openRequests) },
             { header: 'Closed', align: 'right', cell: (row) => num(row.closedRequests) },
             { header: 'Avg open age', align: 'right', cell: (row) => row.avgOpenAgeHours === null ? '—' : `${row.avgOpenAgeHours.toFixed(1)}h` },
@@ -973,13 +973,13 @@ export function AnalyticsPanel({ token }: { readonly token: string }) {
         />
       </Panel>
 
-      <Panel title="Tenant growth" subtitle="New accounts per month, and the running total" action={<Link href="/ops/analytics" className="text-[11px] text-emerald-300 hover:underline">Full report</Link>}>
+      <Panel title="Tenant growth" subtitle="New accounts per month, and the running total" action={<Link href="/ops/analytics" className="text-[11px] text-[color:var(--color-gold-light)] hover:underline">Full report</Link>}>
         <DataTable
           rows={report.tenantGrowth}
           keyOf={(row) => row.month}
           empty={<EmptyState title="No growth recorded" body="No tenant was created in this window." />}
           columns={[
-            { header: 'Month', cell: (row) => <span className="text-slate-100">{row.label}</span> },
+            { header: 'Month', cell: (row) => <span className="text-ghost">{row.label}</span> },
             { header: 'New', align: 'right', cell: (row) => num(row.newTenants) },
             { header: 'Cumulative', align: 'right', cell: (row) => num(row.cumulative) },
           ]}
@@ -1007,9 +1007,9 @@ export function ProfilePanel({ token }: { readonly token: string }) {
           { label: 'Account type', value: me.kind },
           { label: 'Platform role', value: me.platformRole ?? 'none (client)' },
         ].map((row) => (
-          <div key={row.label} className="flex items-baseline justify-between border-b border-[#1E293B] pb-2">
-            <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-slate-500">{row.label}</dt>
-            <dd className="font-mono text-[11px] text-slate-200">{row.value}</dd>
+          <div key={row.label} className="flex items-baseline justify-between border-b border-[rgba(255,255,255,0.10)] pb-2">
+            <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-ghost-muted">{row.label}</dt>
+            <dd className="font-mono text-[11px] text-ghost">{row.value}</dd>
           </div>
         ))}
       </dl>
@@ -1023,23 +1023,23 @@ export function SettingsPanel({ token, role }: { readonly token: string; readonl
   return (
     <div className="grid gap-4">
       <Panel title="Session" subtitle="What this console is running as">
-        <p className="text-[12px] text-slate-300">
-          Platform role <span className="font-mono text-emerald-300">{role}</span>. Staff roles are global: you
+        <p className="text-[12px] text-ghost-muted">
+          Platform role <span className="font-mono text-[color:var(--color-gold-light)]">{role}</span>. Staff roles are global: you
           act across tenants through assignment, never through membership.
         </p>
       </Panel>
 
       <Panel title="Background dispatch" subtitle="Queue depth and worker heartbeat">
         {queue.loading ? (
-          <p className="text-[11px] text-slate-500">Reading the queue…</p>
+          <p className="text-[11px] text-ghost-muted">Reading the queue…</p>
         ) : queue.error ? (
           <ErrorNote message={queue.error} />
         ) : queue.data ? (
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {Object.entries(queue.data.counts).map(([key, value]) => (
-              <div key={key} className="rounded-[10px] border border-[#1E293B] px-3 py-2">
-                <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">{key}</p>
-                <p className="mt-1 font-mono text-sm tabular-nums text-slate-200">{num(Number(value))}</p>
+              <div key={key} className="rounded-[10px] border border-[rgba(255,255,255,0.10)] px-3 py-2">
+                <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">{key}</p>
+                <p className="mt-1 font-mono text-sm tabular-nums text-ghost">{num(Number(value))}</p>
               </div>
             ))}
           </div>
@@ -1062,13 +1062,13 @@ export function KnowledgePanel() {
           <Link
             key={entry.href}
             href={entry.href}
-            className="group flex items-start justify-between gap-3 rounded-[10px] border border-[#1E293B] px-3 py-2.5 transition-colors hover:border-emerald-400/30"
+            className="group flex items-start justify-between gap-3 rounded-[10px] border border-[rgba(255,255,255,0.10)] px-3 py-2.5 transition-colors hover:border-[color:var(--color-gold-light)]"
           >
             <span>
-              <span className="block text-[12px] text-slate-100">{entry.label}</span>
-              <span className="mt-0.5 block text-[11px] text-slate-500">{entry.body}</span>
+              <span className="block text-[12px] text-ghost">{entry.label}</span>
+              <span className="mt-0.5 block text-[11px] text-ghost-muted">{entry.body}</span>
             </span>
-            <ArrowUpRight aria-hidden className="mt-0.5 size-3.5 shrink-0 text-slate-500 group-hover:text-emerald-300" strokeWidth={1.75} />
+            <ArrowUpRight aria-hidden className="mt-0.5 size-3.5 shrink-0 text-ghost-muted group-hover:text-[color:var(--color-gold-light)]" strokeWidth={1.75} />
           </Link>
         ))}
       </div>

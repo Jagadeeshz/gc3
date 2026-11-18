@@ -143,11 +143,11 @@ export function CommandPalette() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open the command palette"
-        className="fixed bottom-5 right-5 z-40 hidden items-center gap-2 rounded-full sm:inline-flex border border-emerald-400/30 bg-[color:var(--bindu-void-2)]/90 px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-emerald-200 backdrop-blur-md transition-colors hover:border-emerald-400/60 hover:bg-emerald-400/10"
+        className="fixed bottom-5 right-5 z-40 hidden items-center gap-2 rounded-full sm:inline-flex border border-[color:var(--color-gold-light)] bg-[var(--bindu-void-2)]/90 px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--color-gold-light)] backdrop-blur-md transition-colors hover:border-[color:var(--color-gold-light)] hover:bg-[var(--color-gold-light)]"
       >
         <Command aria-hidden className="size-3.5" strokeWidth={1.9} />
         <span className="hidden sm:inline">Search</span>
-        <kbd className="rounded border border-emerald-400/25 px-1 py-0.5 text-[9px] text-emerald-300/80">
+        <kbd className="rounded border border-[color:var(--color-gold-light)] px-1 py-0.5 text-[9px] text-[color:var(--color-gold-light)]">
           ⌘K
         </kbd>
       </button>
@@ -170,7 +170,7 @@ export function CommandPalette() {
         className="palette-in glass glass--dark relative w-full max-w-[560px] overflow-hidden rounded-[12px] shadow-[var(--bindu-shadow-modal)]"
       >
         <div className="flex items-center gap-2.5 border-b border-[color:var(--bindu-surface-border)] px-4 py-3">
-          <Search aria-hidden className="size-4 shrink-0 text-emerald-300/80" strokeWidth={1.9} />
+          <Search aria-hidden className="size-4 shrink-0 text-[color:var(--color-gold-light)]" strokeWidth={1.9} />
           <input
             ref={inputRef}
             value={query}
@@ -195,16 +195,16 @@ export function CommandPalette() {
             aria-activedescendant={matches[cursor] ? `command-${matches[cursor].id}` : undefined}
             role="combobox"
             aria-expanded="true"
-            className="w-full bg-transparent text-[13px] text-slate-100 placeholder:text-slate-500 focus:outline-none"
+            className="w-full bg-transparent text-[13px] text-ghost placeholder:text-ghost-muted focus:outline-none"
           />
-          <kbd className="shrink-0 rounded border border-[color:var(--bindu-surface-border)] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-slate-500">
+          <kbd className="shrink-0 rounded border border-[color:var(--bindu-surface-border)] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-ghost-muted">
             esc
           </kbd>
         </div>
 
         <ul id="command-results" role="listbox" aria-label="Results" className="max-h-[52vh] overflow-y-auto py-1.5">
           {matches.length === 0 ? (
-            <li className="px-4 py-6 text-center text-[12px] text-slate-500">
+            <li className="px-4 py-6 text-center text-[12px] text-ghost-muted">
               Nothing matches “{query}”.
             </li>
           ) : (
@@ -218,23 +218,23 @@ export function CommandPalette() {
                     onMouseEnter={() => setCursor(index)}
                     onClick={() => run(command)}
                     className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors ${
-                      active ? 'bg-emerald-400/[0.08]' : 'hover:bg-white/[0.03]'
+                      active ? 'bg-[var(--color-gold-light)]/[0.08]' : 'hover:bg-white/[0.03]'
                     }`}
                   >
                     <span className="min-w-0">
                       <span className="flex items-center gap-2">
-                        <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-emerald-300/70">
+                        <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-[color:var(--color-gold-light)]">
                           {command.group}
                         </span>
-                        <span className="truncate text-[12.5px] text-slate-100">{command.label}</span>
+                        <span className="truncate text-[12.5px] text-ghost">{command.label}</span>
                       </span>
-                      <span className="mt-0.5 block truncate text-[11px] text-slate-500">
+                      <span className="mt-0.5 block truncate text-[11px] text-ghost-muted">
                         {command.hint}
                       </span>
                     </span>
                     <ArrowRight
                       aria-hidden
-                      className={`size-3.5 shrink-0 ${active ? 'text-emerald-300' : 'text-slate-600'}`}
+                      className={`size-3.5 shrink-0 ${active ? 'text-[color:var(--color-gold-light)]' : 'text-ghost-muted'}`}
                       strokeWidth={1.9}
                     />
                   </button>
@@ -244,7 +244,7 @@ export function CommandPalette() {
           )}
         </ul>
 
-        <div className="flex items-center justify-between border-t border-[color:var(--bindu-surface-border)] px-4 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">
+        <div className="flex items-center justify-between border-t border-[color:var(--bindu-surface-border)] px-4 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-ghost-muted">
           <span>↑↓ move · ↵ open · esc close</span>
           <span>{matches.length} result{matches.length === 1 ? '' : 's'}</span>
         </div>
