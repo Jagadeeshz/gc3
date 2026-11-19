@@ -2893,7 +2893,7 @@ textarea:focus {
 
 .nh__title span {
   display: block;
-  color: rgba(242, 213, 130, 0.92);
+  color: #ffffff;
 }
 
 .nh__lede {
@@ -3351,5 +3351,335 @@ textarea:focus {
   .nh__caret,
   .nh__scroll svg {
     animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ PRISM pass
+ *
+ * BINDU v4 applied to the landing bands.
+ *
+ * Three things change. Glass lands on the surfaces that genuinely overlap something — the
+ * request card over the stage, the fact cells over the ground, the record cells over the
+ * ambient glow — and nowhere else, because blur over flat void costs paint and buys nothing.
+ * Every card edge becomes a 1px spectrum rim, and the buttons take the soma rim: the rainbow
+ * never touches a CTA. And the type stops using gold: labels and figures go to the ink scale,
+ * which leaves soma as the only gold on the page and puts it exactly where rule 2 wants it.
+ *
+ * The glass tiers are restated with explicit -webkit- prefixes because the vendored .glass
+ * classes set backdrop-filter through a custom property that resolves to none in this build.
+ */
+.nova-hero {
+  --p-glass-light: rgba(13, 12, 17, 0.55); /* void @55% — light tier */
+  --p-glass-dark: rgba(13, 12, 17, 0.82); /* void @82% — dark tier */
+  --p-blur-light: 36px;
+  --p-blur-dark: 22px;
+  --p-hairline: rgba(255, 255, 255, 0.1);
+  --p-hairline-strong: rgba(255, 255, 255, 0.16);
+  --p-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --p-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --p-dur-fast: 120ms;
+  --p-dur: 200ms;
+  --p-dur-slow: 420ms;
+}
+
+/* an ambient soma glow behind the hero, and one behind the record band: the
+   restrained substitute for a rim on every element */
+.nh {
+  background-image: radial-gradient(
+    46vw 46vw at 88% 22%,
+    rgba(201, 145, 26, 0.13),
+    rgba(242, 213, 130, 0.04) 45%,
+    transparent 68%
+  );
+}
+
+.nr {
+  background-image: radial-gradient(
+    38vw 38vw at 6% 82%,
+    rgba(201, 145, 26, 0.1),
+    transparent 65%
+  );
+}
+
+/* ---- glass, on the things that overlap */
+.nh__console {
+  background: var(--p-glass-light);
+  -webkit-backdrop-filter: blur(var(--p-blur-light)) saturate(1.6);
+  backdrop-filter: blur(var(--p-blur-light)) saturate(1.6);
+  border: 1px solid var(--p-hairline-strong);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 40px 80px -50px rgba(0, 0, 0, 0.95);
+  transition:
+    transform var(--p-dur) var(--p-ease),
+    border-color var(--p-dur) var(--p-ease);
+}
+
+.nh__console:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+/* the fact cells sit over the stage, so they get the dark tier and a spectrum rim */
+.nh__fact {
+  position: relative;
+  padding: 20px 24px 0 0;
+  border-right: 1px solid var(--p-hairline);
+}
+
+.nh__fact::after {
+  content: "";
+  position: absolute;
+  inset: 0 -1px 0 0;
+  border-radius: 0;
+  padding: 1px;
+  background-image: var(--bindu-spectrum-gradient);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--p-dur) var(--p-ease);
+}
+
+.nh__fact:hover::after {
+  opacity: 0.42;
+}
+
+/* ---- the catalogue rows: glass highlight and a spectrum edge on approach */
+.nc__row {
+  position: relative;
+  transition:
+    background var(--p-dur) var(--p-ease),
+    padding-left var(--p-dur) var(--p-ease);
+}
+
+.nc__row::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  background-image: var(--bindu-spectrum-gradient);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--p-dur) var(--p-ease);
+}
+
+.nc__row:hover {
+  background: rgba(255, 255, 255, 0.03);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.nc__row:hover::after {
+  opacity: 0.5;
+}
+
+/* ---- the record cells: glass cards with the spectrum rim */
+.nr__cell {
+  position: relative;
+  background: var(--p-glass-dark);
+  -webkit-backdrop-filter: blur(var(--p-blur-dark)) saturate(1.5);
+  backdrop-filter: blur(var(--p-blur-dark)) saturate(1.5);
+  transition:
+    background var(--p-dur) var(--p-ease),
+    transform var(--p-dur) var(--p-ease);
+}
+
+.nr__cell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  background-image: var(--bindu-spectrum-gradient);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.32;
+  pointer-events: none;
+  transition: opacity var(--p-dur) var(--p-ease);
+}
+
+/* a rim light along the top edge, the neutral variant */
+.nr__cell::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.22) 35%,
+    rgba(255, 255, 255, 0.32) 50%,
+    rgba(255, 255, 255, 0.22) 65%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.nr__cell:hover {
+  transform: translateY(-2px);
+}
+
+.nr__cell:hover::after {
+  opacity: 0.75;
+}
+
+/* ---- rule 2: soma is the CTA and nothing else. Labels and figures drop to ink. */
+.nh__eyebrow,
+.nc__label,
+.nr__label {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.nc__num {
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.nc__link,
+.nh__btn--ghost,
+.nova-record-link {
+  color: #ffffff;
+}
+
+.nc__link {
+  border-bottom-color: rgba(255, 255, 255, 0.22);
+}
+
+.nc__price,
+.nr__foot p {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.nh__console-dot {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.nh__caret {
+  background: #ffffff;
+}
+
+/* the one gold on the page: the primary action, soma fill with void ink */
+/* position belongs to both variants: it anchors the ::after rim. Only the ink colour is
+   exclusive to the soma fill — scoping `position` here made the ghost button static, and its
+   absolute rim stretched to the nearest positioned ancestor and painted the whole hero. */
+.nh__btn {
+  position: relative;
+}
+
+.nh__btn:not(.nh__btn--ghost) {
+  color: #0d0c11;
+}
+
+.nh__btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background-image: var(--bindu-soma-gradient);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+/* ---- scroll reveals: opacity, a short rise, and a hair of blur, once per band */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .nh__grid > *,
+    .nh__facts,
+    .nc__grid > *,
+    .nr__head,
+    .nr__cell,
+    .nr__foot {
+      animation: prism-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+
+    .nc__grid > *:nth-child(2),
+    .nr__cell:nth-child(2) {
+      animation-range: entry 8% entry 63%;
+    }
+
+    .nr__cell:nth-child(3) {
+      animation-range: entry 16% entry 71%;
+    }
+  }
+}
+
+@keyframes prism-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* the buttons answer the pointer rather than sitting still */
+.nh__btn,
+.nh__btn--ghost {
+  transition:
+    transform var(--p-dur) var(--p-ease),
+    filter var(--p-dur) var(--p-ease),
+    box-shadow var(--p-dur) var(--p-ease),
+    border-color var(--p-dur) var(--p-ease);
+}
+
+.nh__btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nh__grid > *,
+  .nh__facts,
+  .nc__grid > *,
+  .nr__head,
+  .nr__cell,
+  .nr__foot {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .nh__console:hover,
+  .nr__cell:hover,
+  .nh__btn:hover {
+    transform: none;
   }
 }

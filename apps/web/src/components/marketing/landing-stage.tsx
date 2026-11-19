@@ -23,7 +23,7 @@ const STATE = {
   // the headline. At the reference's 11.6 the unit filled the frame and sat on the copy.
   // lookX is where the camera aims, not where it stands: aiming left of the unit is what
   // puts the unit on the right of the frame. Offsetting the camera instead kept it centred.
-  intro: { lookX: -1.5, z: 13.6, y: 0.62, lookY: 0.72, bodyYaw: -0.16, headYaw: -0.1, headPitch: 0.08, headRoll: 0.04 },
+  intro: { lookX: -1.7, z: 15.2, y: 0.62, lookY: 0.3, bodyYaw: -0.16, headYaw: -0.1, headPitch: 0.08, headRoll: 0.04 },
   product: { lookX: -3.1, z: 14.5, y: 0.9, lookY: 0.7, bodyYaw: -0.1, headYaw: 0.0, headPitch: 0.02, headRoll: 0 },
   record: { lookX: -2.9, z: 14.0, y: 0.95, lookY: 0.72, bodyYaw: 0.1, headYaw: 0.08, headPitch: 0.0, headRoll: -0.03 },
 };
