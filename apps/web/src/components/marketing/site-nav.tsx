@@ -58,7 +58,7 @@ export function SiteNav() {
       <div className="hidden border-b border-hairline/70 bg-obsidian sm:block">
         <div className="shell flex h-9 items-center justify-between gap-4">
           <p className="truncate font-mono text-[10px] uppercase tracking-[0.16em] text-ghost-muted">
-            <QuantocosMark size="sm" /> <span className="text-hairline">·</span> Capability pods, governed delivery
+            Capability pods, governed delivery
           </p>
           <p className="hidden shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-ghost-muted sm:flex">
             <span className="size-1.5 rounded-full bg-[var(--color-gold-light)]" aria-hidden="true" />
