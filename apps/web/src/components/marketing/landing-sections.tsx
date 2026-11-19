@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowDown, ArrowUpRight } from 'lucide-react';
-import { PODS } from '@/lib/pods';
+import { ArrowUpRight } from 'lucide-react';
 
 /**
  * The three bands the stage runs behind.
@@ -23,15 +22,6 @@ const PROMPTS = [
   'Show the credit burn on the Growth pod.',
   'What is the commitment clock on my open requests?',
 ];
-
-const PRICES: Record<string, string> = {
-  Creative: '$3,000/mo',
-  Growth: '$6,000/mo',
-  Strategy: '$9,000/mo',
-  Automation: '$25/credit',
-  Interactive: '$25/credit',
-  REMAU: '$8,000/mo',
-};
 
 const FACTS = [
   { label: 'Capability pods', value: '6' },
@@ -147,55 +137,17 @@ export function LandingSections() {
           </div>
         </div>
 
-        <dl className="nova-shell nh__facts">
-          {FACTS.map((f) => (
-            <div key={f.label} className="nh__fact">
-              <dt>{f.label}</dt>
-              <dd>{f.value}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <div className="nh__scroll" aria-hidden="true">
-          <span>Scroll</span>
-          <ArrowDown className="size-4" strokeWidth={1.6} />
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------- catalogue */}
-      <section className="nc" aria-label="The catalogue">
-        <div className="nova-shell nc__grid">
-          <div>
-            <p className="nc__label">The catalogue</p>
-            <h2 className="nc__title">
-              Six pods.
-              <br />
-              One pool.
-            </h2>
-            <p className="nc__lede">
-              Each pod is a standing team with a fixed composition and a published credit pool. The higher
-              pod carries the catalogues below it on the same pool, so you buy the capability you need and
-              never the stack.
-            </p>
-            <Link href="/pods" className="nc__link">
-              See all six pods
-              <ArrowUpRight aria-hidden className="size-3" strokeWidth={2} />
-            </Link>
-          </div>
-
-          <ul className="nc__list">
-            {PODS.map((pod, i) => (
-              <li key={pod.name} className="nc__row">
-                <span className="nc__num">{String(i + 1).padStart(2, '0')}</span>
-                <span>
-                  <span className="nc__name">{pod.name}</span>
-                  <span className="nc__meta">{pod.composition}</span>
-                </span>
-                <span className="nc__price">{PRICES[pod.name] ?? '—'}</span>
-              </li>
+        <div className="nh__ticker" aria-label="Key figures">
+          <div className="nh__ticker-track">
+            {[...FACTS, ...FACTS].map((f, i) => (
+              <span key={`${f.label}-${i}`} className="nh__ticker-item" aria-hidden={i >= FACTS.length}>
+                <span className="nh__ticker-label">{f.label}</span>
+                <span className="nh__ticker-value">{f.value}</span>
+              </span>
             ))}
-          </ul>
+          </div>
         </div>
+
       </section>
 
       {/* ---------------------------------------------------------- record */}
@@ -206,10 +158,18 @@ export function LandingSections() {
               <p className="nc__label">What you are buying</p>
               <h2 className="nr__title">Three commitments.</h2>
             </div>
-            <p className="nr__lede">
-              Not a rate card and not a retainer. These three are what a subscription actually buys, and each
-              one is visible in the portal from the first week.
-            </p>
+          </div>
+
+          <div className="nr__ticker" aria-label="What a subscription buys">
+          <div className="nr__ticker-track">
+              {[0, 1, 2].map((i) => (
+                <span key={i} aria-hidden={i > 0}>
+                  Not a rate card and not a retainer. These three are what a subscription actually buys, and
+                  each one is visible in the portal from the first week.
+                  <em aria-hidden="true"> · </em>
+                </span>
+              ))}
+            </div>
           </div>
 
           <div className="nr__grid">

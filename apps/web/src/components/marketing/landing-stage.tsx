@@ -25,9 +25,9 @@ const STATE = {
   // the headline. At the reference's 11.6 the unit filled the frame and sat on the copy.
   // lookX is where the camera aims, not where it stands: aiming left of the unit is what
   // puts the unit on the right of the frame. Offsetting the camera instead kept it centred.
-  intro: { lookX: -1.7, z: 11.0, y: 0.62, lookY: 0.3, bodyYaw: -0.16, headYaw: -0.1, headPitch: 0.08, headRoll: 0.04 },
-  product: { lookX: -3.1, z: 14.5, y: 0.9, lookY: 0.7, bodyYaw: -0.1, headYaw: 0.0, headPitch: 0.02, headRoll: 0 },
-  record: { lookX: -2.9, z: 14.0, y: 0.95, lookY: 0.72, bodyYaw: 0.1, headYaw: 0.08, headPitch: 0.0, headRoll: -0.03 },
+  intro: { lookX: -0.32, z: 10.4, y: 0.72, lookY: 0.34, bodyYaw: -0.12, headYaw: -0.06, headPitch: 0.08, headRoll: 0.04 },
+  product: { lookX: -0.26, z: 10.0, y: 0.78, lookY: 0.38, bodyYaw: -0.06, headYaw: 0.0, headPitch: 0.04, headRoll: 0 },
+  record: { lookX: -0.85, z: 9.8, y: 0.84, lookY: 0.85, bodyYaw: 0.08, headYaw: 0.06, headPitch: 0.02, headRoll: -0.03 },
 };
 
 export function LandingStage() {
@@ -297,7 +297,7 @@ export function LandingStage() {
         smoothP += (scrollP - smoothP) * 0.08;
 
         // 1 in the hero, fading to a faint presence once the catalogue band arrives
-        const dim = smoothP <= 0.55 ? 1 : Math.max(0.14, 1 - (smoothP - 0.55) * 2.3);
+        const dim = smoothP <= 0.5 ? 1 : Math.max(0.32, 1 - (smoothP - 0.5) * 1.5);
         const sized = window.innerWidth < 900 ? dim * 0.22 : dim;
         if (Math.abs(sized - lastDim) > 0.01) {
           el.style.opacity = String(sized);
@@ -306,10 +306,10 @@ export function LandingStage() {
         sx += (px - sx) * 0.06;
         sy += (py - sy) * 0.06;
 
-        // three states, blended across two viewports of scroll
-        const a = smoothP <= 1 ? STATE.intro : STATE.product;
-        const b = smoothP <= 1 ? STATE.product : STATE.record;
-        const k = ease(Math.min(1, smoothP <= 1 ? smoothP : smoothP - 1));
+        // two bands remain, so the stage blends intro -> record across one viewport
+        const a = STATE.intro;
+        const b = STATE.record;
+        const k = ease(Math.min(1, smoothP));
 
         const z = mix(a.z, b.z, k) * (window.innerWidth < 900 ? 1.25 : 1);
         const y = mix(a.y, b.y, k) + sy * -0.1;
@@ -323,15 +323,20 @@ export function LandingStage() {
         target.set(lookX, lookY, 0);
         camera.lookAt(target);
 
-        body.rotation.y = mix(a.bodyYaw, b.bodyYaw, k) + sx * 0.12;
-        head.rotation.y = mix(a.headYaw, b.headYaw, k) + sx * 0.45;
+        body.rotation.y = mix(a.bodyYaw, b.bodyYaw, k) + sx * 0.18;
+        head.rotation.y = mix(a.headYaw, b.headYaw, k) + sx * 0.6;
         head.rotation.x = mix(a.headPitch, b.headPitch, k) + sy * 0.18;
         head.rotation.z = mix(a.headRoll, b.headRoll, k);
 
-        // idle
-        body.position.y = Math.sin(t * 1.4) * 0.02;
-        head.rotation.x += Math.sin(t * 0.9) * 0.02;
-        head.rotation.z += Math.sin(t * 0.7) * 0.02;
+        // idle, and louder than a resting pose: a slow breathing bob, a look-around sweep,
+        // a head tilt that answers the pointer harder than the body does, and a ring that pulses
+        const sweep = Math.sin(t * 0.42) * 0.17 + Math.sin(t * 0.17) * 0.08;
+        body.position.y = Math.sin(t * 1.15) * 0.045;
+        body.rotation.y += Math.sin(t * 0.3) * 0.045;
+        head.rotation.y += sweep;
+        head.rotation.x += Math.sin(t * 0.55) * 0.05;
+        head.rotation.z += Math.sin(t * 0.7) * 0.035;
+        ringMat.emissiveIntensity = 0.1 + 0.09 * (0.5 + 0.5 * Math.sin(t * 1.7));
 
         // blink, and the face mode change
         blinkAt -= 1 / 60;
