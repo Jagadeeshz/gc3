@@ -18,12 +18,14 @@ import { useEffect, useRef } from 'react';
  * continuous render loop is exactly what that preference is asking us not to run.
  */
 
+const FIGURE_Y = 1.65;
+
 const STATE = {
   // x parks the figure in the empty right-of-centre column, clear of the prompt box and
   // the headline. At the reference's 11.6 the unit filled the frame and sat on the copy.
   // lookX is where the camera aims, not where it stands: aiming left of the unit is what
   // puts the unit on the right of the frame. Offsetting the camera instead kept it centred.
-  intro: { lookX: -1.7, z: 15.2, y: 0.62, lookY: 0.3, bodyYaw: -0.16, headYaw: -0.1, headPitch: 0.08, headRoll: 0.04 },
+  intro: { lookX: -1.7, z: 11.0, y: 0.62, lookY: 0.3, bodyYaw: -0.16, headYaw: -0.1, headPitch: 0.08, headRoll: 0.04 },
   product: { lookX: -3.1, z: 14.5, y: 0.9, lookY: 0.7, bodyYaw: -0.1, headYaw: 0.0, headPitch: 0.02, headRoll: 0 },
   record: { lookX: -2.9, z: 14.0, y: 0.95, lookY: 0.72, bodyYaw: 0.1, headYaw: 0.08, headPitch: 0.0, headRoll: -0.03 },
 };
@@ -157,7 +159,11 @@ export function LandingStage() {
       });
 
       // ---- figure
+      // Seated by a constant rather than by camera aim: the hero band is bounded by the nav
+      // above and the facts strip below, and shifting this one number moves the whole figure
+      // inside that box without re-deriving the camera.
       const figure = new THREE.Group();
+      figure.position.y = FIGURE_Y;
       scene.add(figure);
 
       const ped = new THREE.Mesh(new RoundedBoxGeometry(2.0, 0.42, 2.0, 4, 0.06), pedestal);
@@ -292,7 +298,7 @@ export function LandingStage() {
 
         // 1 in the hero, fading to a faint presence once the catalogue band arrives
         const dim = smoothP <= 0.55 ? 1 : Math.max(0.14, 1 - (smoothP - 0.55) * 2.3);
-        const sized = window.innerWidth < 900 ? dim * 0.42 : dim;
+        const sized = window.innerWidth < 900 ? dim * 0.22 : dim;
         if (Math.abs(sized - lastDim) > 0.01) {
           el.style.opacity = String(sized);
           lastDim = sized;
@@ -308,9 +314,12 @@ export function LandingStage() {
         const z = mix(a.z, b.z, k) * (window.innerWidth < 900 ? 1.25 : 1);
         const y = mix(a.y, b.y, k) + sy * -0.1;
         const lookY = mix(a.lookY, b.lookY, k);
-        const lookX = mix(a.lookX, b.lookX, k) * (window.innerWidth < 900 ? 0.5 : 1);
+        const lookX = mix(a.lookX, b.lookX, k) * (window.innerWidth < 900 ? 1.15 : 1);
 
-        camera.position.set(sx * 0.22, y, z);
+        // A phone is a third as wide, so the same distance puts the figure behind the
+        // headline. Pulling the camera back keeps its height a sensible share of the screen.
+        const depth = window.innerWidth < 900 ? z * 1.62 : z;
+        camera.position.set(sx * 0.22, y, depth);
         target.set(lookX, lookY, 0);
         camera.lookAt(target);
 
