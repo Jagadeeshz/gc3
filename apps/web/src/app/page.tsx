@@ -5,7 +5,8 @@ import { SessionGate } from '@/components/marketing/session-gate';
 import { SiteNav } from '@/components/marketing/site-nav';
 import { SiteFooter } from '@/components/marketing/site-footer';
 import { ScrollProgress } from '@/components/marketing/scroll-progress';
-import { RibbonHero } from '@/components/marketing/ribbon-hero';
+import { LandingStage } from '@/components/marketing/landing-stage';
+import { LandingSections } from '@/components/marketing/landing-sections';
 import { PodRail } from '@/components/marketing/pod-rail';
 import { CommandPalette } from '@/components/marketing/command-palette';
 import { BookDemoDialog, BookDemoTrigger } from '@/components/marketing/book-demo';
@@ -42,21 +43,11 @@ export default function HomePage() {
       <BookDemoDialog />
       <SiteNav />
 
-      {/* Six pods, folded into a ribbon that unrolls on scroll. */}
-      <RibbonHero />
-
-      {/* The catalogue as a moving rail: the one continuous motion on the page. */}
-      <div className="site-sheen overflow-hidden border-b border-hairline bg-obsidian py-4">
-        <PodRail />
+      {/* Three full-height sections over one stage. */}
+      <div className="nova-hero">
+        <LandingStage />
+        <LandingSections />
       </div>
-
-      <StatBand />
-      <CapabilityGrid />
-      <HowItWorks />
-      <Comparison />
-      <GlowCards />
-      <ResourceCards />
-      <CtaBand />
 
       <SiteFooter />
     </div>
