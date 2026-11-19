@@ -21,9 +21,11 @@ import { useEffect, useRef } from 'react';
 const STATE = {
   // x parks the figure in the empty right-of-centre column, clear of the prompt box and
   // the headline. At the reference's 11.6 the unit filled the frame and sat on the copy.
-  intro: { x: 3.4, z: 19.0, y: 1.1, lookY: 0.55, bodyYaw: -0.42, headYaw: -0.6, headPitch: 0.16, headRoll: 0.22 },
-  product: { x: 2.7, z: 11.6, y: 1.95, lookY: 1.72, bodyYaw: -0.2, headYaw: -0.06, headPitch: 0.04, headRoll: 0 },
-  record: { x: 2.6, z: 11.2, y: 2.0, lookY: 1.74, bodyYaw: 0.16, headYaw: 0.12, headPitch: 0.02, headRoll: -0.04 },
+  // lookX is where the camera aims, not where it stands: aiming left of the unit is what
+  // puts the unit on the right of the frame. Offsetting the camera instead kept it centred.
+  intro: { lookX: -1.5, z: 13.6, y: 0.62, lookY: 0.72, bodyYaw: -0.16, headYaw: -0.1, headPitch: 0.08, headRoll: 0.04 },
+  product: { lookX: -3.1, z: 14.5, y: 0.9, lookY: 0.7, bodyYaw: -0.1, headYaw: 0.0, headPitch: 0.02, headRoll: 0 },
+  record: { lookX: -2.9, z: 14.0, y: 0.95, lookY: 0.72, bodyYaw: 0.1, headYaw: 0.08, headPitch: 0.0, headRoll: -0.03 },
 };
 
 export function LandingStage() {
@@ -83,7 +85,7 @@ export function LandingStage() {
       const shell = new THREE.MeshPhysicalMaterial({ color: 0x232228, roughness: 0.38, clearcoat: 0.45, clearcoatRoughness: 0.3 });
       const shellLight = new THREE.MeshPhysicalMaterial({ color: 0x2c2b33, roughness: 0.34, clearcoat: 0.45 });
       const dark = new THREE.MeshStandardMaterial({ color: 0x14131a, roughness: 0.55, metalness: 0.3 });
-      const pedestal = new THREE.MeshStandardMaterial({ color: 0x121116, roughness: 0.9 });
+      const pedestal = new THREE.MeshStandardMaterial({ color: 0x1b1a22, roughness: 0.85 });
 
       // the gold ring: a conic canvas used as both map and emissive
       const ringCanvas = document.createElement('canvas');
@@ -107,7 +109,7 @@ export function LandingStage() {
         map: ringTex,
         emissiveMap: ringTex,
         emissive: 0xffffff,
-        emissiveIntensity: 0.22,
+        emissiveIntensity: 0.12,
         roughness: 0.5,
         clearcoat: 0.35,
       });
@@ -158,21 +160,30 @@ export function LandingStage() {
       const figure = new THREE.Group();
       scene.add(figure);
 
-      const ped = new THREE.Mesh(new RoundedBoxGeometry(1.7, 0.5, 1.7, 4, 0.08), pedestal);
-      ped.position.y = -2.22;
+      const ped = new THREE.Mesh(new RoundedBoxGeometry(2.0, 0.42, 2.0, 4, 0.06), pedestal);
+      ped.position.y = -1.86;
       ped.receiveShadow = true;
       figure.add(ped);
+
+      // a soft contact shadow, so the unit is standing on the plinth rather than near it
+      const shadow = new THREE.Mesh(
+        new THREE.CircleGeometry(1.15, 48),
+        new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45 }),
+      );
+      shadow.rotation.x = -Math.PI / 2;
+      shadow.position.y = -1.645;
+      figure.add(shadow);
 
       const body = new THREE.Group();
       figure.add(body);
 
-      const torso = new THREE.Mesh(new RoundedBoxGeometry(1.22, 1.12, 0.92, 5, 0.24), shell);
-      torso.position.y = -0.95;
+      const torso = new THREE.Mesh(new RoundedBoxGeometry(1.42, 1.24, 1.0, 5, 0.24), shell);
+      torso.position.y = -0.86;
       torso.castShadow = true;
       body.add(torso);
 
-      const chest = new THREE.Mesh(new RoundedBoxGeometry(1.0, 0.26, 0.86, 4, 0.1), shellLight);
-      chest.position.set(0, -0.52, 0.06);
+      const chest = new THREE.Mesh(new RoundedBoxGeometry(1.16, 0.26, 0.94, 4, 0.1), shellLight);
+      chest.position.set(0, -0.44, 0.05);
       body.add(chest);
 
       // three indicators: the pods, in miniature
@@ -181,30 +192,30 @@ export function LandingStage() {
           new THREE.SphereGeometry(0.035, 12, 12),
           new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 1.4 }),
         );
-        led.position.set(-0.16 + i * 0.16, -0.95, 0.47);
+        led.position.set(-0.15 + i * 0.15, -0.86, 0.455);
         body.add(led);
       });
 
       const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.2, 0.22, 16), dark);
-      neck.position.y = -0.32;
+      neck.position.y = -0.22;
       body.add(neck);
 
       const head = new THREE.Group();
-      head.position.y = 0.78;
+      head.position.y = 0.56;
       body.add(head);
 
-      const skull = new THREE.Mesh(new RoundedBoxGeometry(1.5, 1.42, 1.3, 6, 0.2), shell);
+      const skull = new THREE.Mesh(new RoundedBoxGeometry(1.3, 1.2, 1.16, 6, 0.18), shell);
       skull.castShadow = true;
       head.add(skull);
 
-      const back = new THREE.Mesh(new RoundedBoxGeometry(1.28, 1.14, 0.9, 4, 0.16), dark);
+      const back = new THREE.Mesh(new RoundedBoxGeometry(1.1, 0.96, 0.8, 4, 0.14), dark);
       back.position.z = -0.2;
       head.add(back);
 
       // the face ring, drawn as a frame
       const ringShape = new THREE.Shape();
       const rr = 0.12;
-      const w = 0.75, h = 0.72;
+      const w = 0.62, h = 0.58;
       ringShape.moveTo(-w + rr, -h);
       ringShape.lineTo(w - rr, -h);
       ringShape.quadraticCurveTo(w, -h, w, -h + rr);
@@ -215,7 +226,7 @@ export function LandingStage() {
       ringShape.lineTo(-w, -h + rr);
       ringShape.quadraticCurveTo(-w, -h, -w + rr, -h);
       const hole = new THREE.Path();
-      const iw = 0.54, ih = 0.51;
+      const iw = 0.5, ih = 0.47;
       hole.moveTo(-iw, -ih);
       hole.lineTo(iw, -ih);
       hole.lineTo(iw, ih);
@@ -230,7 +241,7 @@ export function LandingStage() {
       faceRing.position.z = 0.6;
       head.add(faceRing);
 
-      const screen = new THREE.Mesh(new RoundedBoxGeometry(0.9, 0.84, 0.06, 4, 0.1), screenMat);
+      const screen = new THREE.Mesh(new RoundedBoxGeometry(0.86, 0.8, 0.06, 4, 0.1), screenMat);
       screen.position.z = 0.66;
       head.add(screen);
 
@@ -274,9 +285,18 @@ export function LandingStage() {
       const target = new THREE.Vector3();
       let quoteOn = false;
 
+      let lastDim = -1;
       const tick = (time: number) => {
         const t = time / 1000;
         smoothP += (scrollP - smoothP) * 0.08;
+
+        // 1 in the hero, fading to a faint presence once the catalogue band arrives
+        const dim = smoothP <= 0.55 ? 1 : Math.max(0.14, 1 - (smoothP - 0.55) * 2.3);
+        const sized = window.innerWidth < 900 ? dim * 0.42 : dim;
+        if (Math.abs(sized - lastDim) > 0.01) {
+          el.style.opacity = String(sized);
+          lastDim = sized;
+        }
         sx += (px - sx) * 0.06;
         sy += (py - sy) * 0.06;
 
@@ -288,10 +308,10 @@ export function LandingStage() {
         const z = mix(a.z, b.z, k) * (window.innerWidth < 900 ? 1.25 : 1);
         const y = mix(a.y, b.y, k) + sy * -0.1;
         const lookY = mix(a.lookY, b.lookY, k);
-        const x = mix(a.x, b.x, k) * (window.innerWidth < 900 ? 0.55 : 1);
+        const lookX = mix(a.lookX, b.lookX, k) * (window.innerWidth < 900 ? 0.5 : 1);
 
-        camera.position.set(x + sx * 0.25, y, z);
-        target.set(0, lookY, 0);
+        camera.position.set(sx * 0.22, y, z);
+        target.set(lookX, lookY, 0);
         camera.lookAt(target);
 
         body.rotation.y = mix(a.bodyYaw, b.bodyYaw, k) + sx * 0.12;

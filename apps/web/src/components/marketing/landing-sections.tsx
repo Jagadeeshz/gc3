@@ -2,46 +2,59 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import { PODS } from '@/lib/pods';
 
 /**
- * The three sections the landing stage runs behind.
+ * The three bands the stage runs behind.
  *
- * Structure follows the reference: an intro with a typing prompt, a feature list and an
- * outlined headline; a product band with a sliding tab strip; and a third band that
- * cycles through three records with arrows and a ghosted preview.
+ * Editorial rather than decorative: one headline, one lede, two actions, and a strip of
+ * four numbers. The reference's guide lines, pinned feature list and outlined headline
+ * boxes were replaced because they carried no information — a front page has to read on
+ * hierarchy and restraint, not ornament.
  *
- * The content is ours. The reference's third band was testimonials from fictional
- * companies; those do not ship, so the same interaction cycles the three things a client
- * is actually buying — one owner, one pool, one record — each stated as a fact.
+ * The catalogue band states every pod with its real pool and composition, and the record
+ * band states the three commitments. No testimonials: the reference cycled quotes from
+ * fictional companies.
  */
 
 const PROMPTS = [
   'Compose a pod for our Q3 brand campaign.',
-  'Show the credit burn on the Growth pod this month.',
+  'Show the credit burn on the Growth pod.',
   'What is the commitment clock on my open requests?',
-  'Draft a creative brief a specialist can start from.',
+];
+
+const PRICES: Record<string, string> = {
+  Creative: '$3,000/mo',
+  Growth: '$6,000/mo',
+  Strategy: '$9,000/mo',
+  Automation: '$25/credit',
+  Interactive: '$25/credit',
+  REMAU: '$8,000/mo',
+};
+
+const FACTS = [
+  { label: 'Capability pods', value: '6' },
+  { label: 'Entry price', value: '$3,000' },
+  { label: 'Clients per pod', value: '3 max' },
+  { label: 'Commitments', value: '8–168h' },
 ];
 
 const RECORDS = [
   {
-    label: 'ONE OWNER',
-    title: 'A named manager, from the first request to the last invoice.',
-    body: 'Escalation is a person rather than a mailbox, and that person scoped the pod, so nothing is explained twice.',
-    meta: 'Every pod, every plan',
+    label: 'One owner',
+    title: 'A named manager, start to invoice.',
+    body: 'Escalation is a person rather than a mailbox, and that person scoped the pod — so nothing has to be explained twice.',
   },
   {
-    label: 'ONE POOL',
-    title: 'A published credit pool, replenished monthly.',
+    label: 'One pool',
+    title: 'A published credit pool, monthly.',
     body: 'Work draws from the pool and the pod absorbs the scheduling. No seats, no timesheets, no per-piece quotes.',
-    meta: 'Published before the first request',
   },
   {
-    label: 'ONE RECORD',
-    title: 'Every request, deliverable and invoice, attributable.',
+    label: 'One record',
+    title: 'Every request and invoice, attributable.',
     body: 'The same rows the delivery team works from, scoped to your organisation and dated to the actor who touched them.',
-    meta: 'Per tenant, in the portal',
   },
 ];
 
@@ -54,39 +67,36 @@ function useTyping(prompts: readonly string[]) {
       setText(prompts[0] ?? '');
       return;
     }
-
     let timer = 0;
     const step = () => {
       const s = state.current;
       const full = prompts[s.i % prompts.length] ?? '';
-
       if (s.wait > 0) {
         s.wait -= 1;
         timer = window.setTimeout(step, 40);
         return;
       }
-
       if (!s.deleting) {
         s.chars += 1;
         setText(full.slice(0, s.chars));
         if (s.chars >= full.length) {
           s.deleting = true;
-          s.wait = 65;
+          s.wait = 70;
         }
-        timer = window.setTimeout(step, 38);
+        timer = window.setTimeout(step, 40);
       } else {
         s.chars -= 2;
         if (s.chars <= 0) {
           s.chars = 0;
           s.deleting = false;
           s.i += 1;
-          s.wait = 6;
+          s.wait = 8;
         }
         setText(full.slice(0, Math.max(0, s.chars)));
-        timer = window.setTimeout(step, 14);
+        timer = window.setTimeout(step, 16);
       }
     };
-    timer = window.setTimeout(step, 600);
+    timer = window.setTimeout(step, 700);
     return () => window.clearTimeout(timer);
   }, [prompts]);
 
@@ -95,128 +105,131 @@ function useTyping(prompts: readonly string[]) {
 
 export function LandingSections() {
   const typed = useTyping(PROMPTS);
-  const [record, setRecord] = useState(0);
-  const [tab, setTab] = useState(0);
-
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const id = window.setInterval(() => setTab((t) => (t + 1) % PODS.length), 2400);
-    return () => window.clearInterval(id);
-  }, []);
-
-  const rec = RECORDS[record] ?? RECORDS[0]!;
-  const next = RECORDS[(record + 1) % RECORDS.length] ?? RECORDS[0]!;
 
   return (
     <div className="nova-sections">
-      {/* ---------------------------------------------------------- 1 · intro */}
-      <section className="nova-section" aria-label="Introduction">
-        <div className="nova-prompt">
-          <span className="nova-prompt__tab">.</span>
-          <div className="nova-prompt__box">
-            <span className="nova-prompt__label">Ask for capability</span>
-            <p className="nova-prompt__text">
-              {typed}
-              <span className="nova-caret" aria-hidden="true" />
+      {/* ------------------------------------------------------------ hero */}
+      <section className="nh" aria-label="Introduction">
+        <div className="nova-shell nh__grid">
+          <div>
+            <p className="nh__eyebrow">Quantocos · capability pods</p>
+            <h1 className="nh__title">
+              Your challenges.
+              <span>Our solutions.</span>
+            </h1>
+            <p className="nh__lede">
+              One standing team composed around one outcome, on a published credit pool — sold as a
+              subscription rather than a scope, with the manager named before the first request.
             </p>
+            <div className="nh__actions">
+              <Link href="/pricing" className="nh__btn">
+                See published pricing
+                <ArrowUpRight aria-hidden className="size-3.5" strokeWidth={2} />
+              </Link>
+              <Link href="/how-it-works" className="nh__btn nh__btn--ghost">
+                How a pod starts
+              </Link>
+            </div>
           </div>
-          <p className="nova-prompt__next">Then: assign it, watch the clock, read the record.</p>
-        </div>
 
-        <ul className="nova-features" aria-label="What the pods cover">
-          {['Creative', 'Growth', 'Strategy', 'Automation'].map((f) => (
-            <li key={f}>{f}</li>
-          ))}
-          <li className="is-dim">And two more</li>
-        </ul>
-
-        <div className="nova-headline">
-          <p className="nova-eyebrow">Capability, composed</p>
-          <h1>
-            <span className="nova-headline__line nova-headline__line--a">Your challenges</span>
-            <span className="nova-headline__line nova-headline__line--b">Our solutions</span>
-          </h1>
-          <p className="nova-sub">
-            One standing team around one outcome, on a published credit pool — sold as a subscription, not a scope.
-          </p>
-          <div className="nova-actions">
-            <Link href="/pricing" className="nova-btn">
-              See published pricing
-              <ArrowUpRight aria-hidden className="size-3.5" strokeWidth={2} />
-            </Link>
-            <Link href="/how-it-works" className="nova-btn nova-btn--ghost">
-              How a pod starts
-            </Link>
+          <div className="nh__console-wrap">
+          <aside className="nh__console" aria-label="Example request">
+            <div className="nh__console-head">
+              <span>Request</span>
+              <span className="nh__console-dot">Routing</span>
+            </div>
+            <p className="nh__console-text">
+              {typed}
+              <span className="nh__caret" aria-hidden="true" />
+            </p>
+            <p className="nh__console-meta">Routed to the Growth pod · owner named on day one</p>
+          </aside>
           </div>
         </div>
 
-        <div className="nova-scroll" aria-hidden="true">
-          <span>Scroll</span>
-          <ArrowDown className="nova-scroll__arrow size-4" strokeWidth={1.8} />
-        </div>
-        <div className="nova-rule" aria-hidden="true" />
-      </section>
-
-      {/* -------------------------------------------------------- 2 · product */}
-      <section className="nova-section nova-section--product" aria-label="The six pods">
-        <div className="nova-tabs" role="list">
-          {PODS.map((pod, i) => (
-            <div
-              key={pod.name}
-              role="listitem"
-              className={`nova-tab ${i === tab ? 'is-active' : ''} ${i < tab ? 'is-past' : ''}`}
-            >
-              <span className="nova-tab__num">{String(i + 1).padStart(2, '0')}</span>
-              <span className="nova-tab__label">{pod.name}</span>
+        <dl className="nova-shell nh__facts">
+          {FACTS.map((f) => (
+            <div key={f.label} className="nh__fact">
+              <dt>{f.label}</dt>
+              <dd>{f.value}</dd>
             </div>
           ))}
-        </div>
+        </dl>
 
-        <div className="nova-product-copy">
-          <p className="nova-dots" aria-hidden="true">··</p>
-          <h2>
-            <span className="nova-outline">Six pods</span>
-            <span className="nova-outline nova-outline--b">One pool</span>
-          </h2>
-          <p className="nova-sub">
-            Each pod is a standing team on a published credit pool. The higher pod carries the catalogues below it, so
-            you buy the capability you need and never the stack.
-          </p>
-          <Link href="/pods" className="nova-btnnova">
-            See all six pods
-          </Link>
+        <div className="nh__scroll" aria-hidden="true">
+          <span>Scroll</span>
+          <ArrowDown className="size-4" strokeWidth={1.6} />
         </div>
       </section>
 
-      {/* --------------------------------------------------------- 3 · record */}
-      <section className="nova-section nova-section--record" aria-label="What you are buying">
-        <div className="nova-record-head">
-          <span className="nova-record-tag">What you are buying</span>
-          <span className="nova-record-count">
-            <span>{String(record + 1).padStart(2, '0')}</span>
-            <span aria-hidden="true">/</span>
-            <span>{String(RECORDS.length).padStart(2, '0')}</span>
-          </span>
+      {/* ------------------------------------------------------- catalogue */}
+      <section className="nc" aria-label="The catalogue">
+        <div className="nova-shell nc__grid">
+          <div>
+            <p className="nc__label">The catalogue</p>
+            <h2 className="nc__title">
+              Six pods.
+              <br />
+              One pool.
+            </h2>
+            <p className="nc__lede">
+              Each pod is a standing team with a fixed composition and a published credit pool. The higher
+              pod carries the catalogues below it on the same pool, so you buy the capability you need and
+              never the stack.
+            </p>
+            <Link href="/pods" className="nc__link">
+              See all six pods
+              <ArrowUpRight aria-hidden className="size-3" strokeWidth={2} />
+            </Link>
+          </div>
+
+          <ul className="nc__list">
+            {PODS.map((pod, i) => (
+              <li key={pod.name} className="nc__row">
+                <span className="nc__num">{String(i + 1).padStart(2, '0')}</span>
+                <span>
+                  <span className="nc__name">{pod.name}</span>
+                  <span className="nc__meta">{pod.composition}</span>
+                </span>
+                <span className="nc__price">{PRICES[pod.name] ?? '—'}</span>
+              </li>
+            ))}
+          </ul>
         </div>
+      </section>
 
-        <div className="nova-record">
-          <p className="nova-record-label">{rec.label}</p>
-          <h2 className="nova-record-title">{rec.title}</h2>
-          <p className="nova-record-body">{rec.body}</p>
-          <p className="nova-record-meta">{rec.meta}</p>
+      {/* ---------------------------------------------------------- record */}
+      <section className="nr" aria-label="What you are buying">
+        <div className="nova-shell">
+          <div className="nr__head">
+            <div>
+              <p className="nc__label">What you are buying</p>
+              <h2 className="nr__title">Three commitments.</h2>
+            </div>
+            <p className="nr__lede">
+              Not a rate card and not a retainer. These three are what a subscription actually buys, and each
+              one is visible in the portal from the first week.
+            </p>
+          </div>
 
-          <div className="nova-record-nav">
-            <button type="button" aria-label="Previous" onClick={() => setRecord((r) => (r - 1 + RECORDS.length) % RECORDS.length)}>
-              <ArrowLeft aria-hidden className="size-4" strokeWidth={1.8} />
-            </button>
-            <button type="button" aria-label="Next" onClick={() => setRecord((r) => (r + 1) % RECORDS.length)}>
-              <ArrowRight aria-hidden className="size-4" strokeWidth={1.8} />
-            </button>
-            <Link href="/why-a-pod" className="nova-record-link">Compare the three ways</Link>
+          <div className="nr__grid">
+            {RECORDS.map((r) => (
+              <div key={r.label} className="nr__cell">
+                <p className="nr__label">{r.label}</p>
+                <h3>{r.title}</h3>
+                <p>{r.body}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="nr__foot">
+            <p>Up to three clients per pod · never more</p>
+            <Link href="/why-a-pod" className="nc__link">
+              Compare the three ways
+              <ArrowUpRight aria-hidden className="size-3" strokeWidth={2} />
+            </Link>
           </div>
         </div>
-
-        <p className="nova-ghost" aria-hidden="true">{next.title}</p>
       </section>
     </div>
   );

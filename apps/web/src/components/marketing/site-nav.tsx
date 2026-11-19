@@ -76,8 +76,12 @@ export function SiteNav() {
         <div className="shell flex h-[72px] items-center justify-between gap-3 sm:gap-6">
           <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="Quantocos GC³ home">
             
-            <QuantocosMark size="md" className="sm:hidden" />
-            <QuantocosMark size="lg" className="hidden sm:inline-flex" />
+            <span className="sm:hidden">
+              <QuantocosMark size="md" />
+            </span>
+            <span className="hidden sm:block">
+              <QuantocosMark size="lg" />
+            </span>
           </Link>
 
           <nav aria-label="Primary" className="hidden items-center gap-7 lg:flex">

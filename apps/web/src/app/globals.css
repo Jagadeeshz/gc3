@@ -2796,19 +2796,23 @@ textarea:focus {
   pointer-events: none;
 }
 
-/* ------------------------------------------------------------------ landing stage
+/* ------------------------------------------------------------------ landing
  *
- * Three full-height sections over a sticky three.js canvas. The layout is taken from the
- * reference build — 17 / 50 / 83% guides, a prompt box on the left, a feature list right,
- * an outlined headline bottom-left — and skinned to the site: dark ground, gold accents,
- * no paper, no orange-to-pink.
+ * An editorial hero: copy on a real grid, the stage on the right, and a facts strip
+ * along the bottom that grounds the page in numbers rather than adjectives.
+ *
+ * The reference layout was decorative — guide lines, a feature list pinned to a
+ * percentage, outlined headline boxes. This keeps the stage and the console card, and
+ * replaces the rest with hierarchy: one headline, one lede, two actions, four facts.
  */
 .nova-hero {
-  --nova-guide: rgba(255, 255, 255, 0.09);
-  --nova-dim: rgba(255, 255, 255, 0.5);
-  --nova-gold: #f2d582;
+  --nh-line: rgba(255, 255, 255, 0.1);
+  --nh-dim: rgba(255, 255, 255, 0.56);
+  --nh-gold: #f2d582;
   position: relative;
   background: #0d0c11;
+  /* the nav sits above the canvas, so the band starts under it */
+  padding-top: 0;
 }
 
 .nova-canvas {
@@ -2821,541 +2825,531 @@ textarea:focus {
   pointer-events: none;
 }
 
-/* The canvas is sticky and occupies the first viewport, so the sections pull up over it
-   exactly once — at the container, not per section. Pulling each section up stacked all
-   three on the same screen. */
+/* the content lifts over the sticky canvas exactly once, at the container */
 .nova-sections {
   position: relative;
   z-index: 1;
   margin-top: -100vh;
 }
 
-.nova-section {
+.nova-shell {
+  width: min(1240px, 100% - 80px);
+  margin-inline: auto;
+}
+
+/* ---- 1 · hero */
+.nh {
   position: relative;
-  height: 100vh;
-  min-height: 640px;
-}
-
-/* the three guides */
-.nova-section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(90deg, var(--nova-guide) 0 1px, transparent 1px),
-    linear-gradient(90deg, var(--nova-guide) 0 1px, transparent 1px),
-    linear-gradient(90deg, var(--nova-guide) 0 1px, transparent 1px);
-  background-size: 1px 100%, 1px 100%, 1px 100%;
-  background-position: 17% 0, 50% 0, 83% 0;
-  background-repeat: no-repeat;
-}
-
-/* ---- intro */
-.nova-prompt {
-  position: absolute;
-  left: 17%;
-  top: 26%;
-  width: 24.4%;
-  min-width: 280px;
-}
-
-.nova-prompt__tab {
+  min-height: 100vh;
   display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid var(--nova-guide);
-  border-bottom: 0;
+  align-content: center;
+  padding: 120px 0 96px;
+}
+
+.nh__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.72fr);
+  align-items: end;
+  gap: 48px;
+}
+
+/* the card is pinned low-right so it overlaps the plinth rather than the face */
+.nh__console-wrap {
+  position: absolute;
+  right: 0;
+  bottom: 64px;
+  width: min(330px, 32%);
+}
+
+.nh__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nh-gold);
+}
+
+.nh__eyebrow::before {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.nh__title {
+  margin: 26px 0 0;
   font-family: var(--font-display);
-  font-size: 30px;
-  line-height: 1;
-  color: var(--nova-gold);
-}
-
-.nova-prompt__box {
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  padding: 14px 16px;
-  background: rgba(13, 12, 17, 0.72);
-  backdrop-filter: blur(6px);
-}
-
-.nova-prompt__label {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--nova-dim);
-}
-
-.nova-prompt__text {
-  margin-top: 8px;
-  min-height: 3em;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  line-height: 1.5;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  font-weight: 700;
+  font-size: clamp(42px, 5.6vw, 92px);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
   color: #ffffff;
 }
 
-.nova-caret {
-  display: inline-block;
-  width: 6px;
-  height: 11px;
-  margin-left: 2px;
-  background: var(--nova-gold);
-  vertical-align: -1px;
-  animation: nova-blink 1.1s steps(2) infinite;
+.nh__title span {
+  display: block;
+  color: rgba(242, 213, 130, 0.92);
 }
 
-@keyframes nova-blink {
+.nh__lede {
+  margin: 26px 0 0;
+  max-width: 46ch;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--nh-dim);
+}
+
+.nh__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 34px;
+}
+
+.nh__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 22px;
+  border-radius: 99px;
+  background: linear-gradient(120deg, #f2d582, #c9911a);
+  color: #0d0c11;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.nh__btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px -20px rgba(242, 213, 130, 0.85);
+}
+
+.nh__btn--ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.nh__btn--ghost:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: none;
+}
+
+/* the console card: the one piece of product UI in the hero, so it has to look like
+   the product rather than like a mockup */
+.nh__console {
+  width: 100%;
+  border: 1px solid var(--nh-line);
+  border-radius: 14px;
+  background: rgba(19, 18, 26, 0.82);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 30px 60px -40px rgba(0, 0, 0, 0.9);
+  padding: 16px 18px 14px;
+}
+
+.nh__console-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.nh__console-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--nh-gold);
+}
+
+.nh__console-dot::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.nh__console-text {
+  margin-top: 14px;
+  min-height: 3.4em;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: #ffffff;
+}
+
+.nh__caret {
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  margin-left: 3px;
+  background: var(--nh-gold);
+  vertical-align: -2px;
+  animation: nh-blink 1.1s steps(2) infinite;
+}
+
+@keyframes nh-blink {
   50% { opacity: 0; }
 }
 
-.nova-prompt__next {
-  margin-top: 10px;
+.nh__console-meta {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-family: var(--font-mono);
   font-size: 9.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.38);
 }
 
-.nova-features {
-  position: absolute;
-  right: 17%;
-  top: 26%;
-  width: 23%;
-  min-width: 240px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border-top: 1px solid var(--nova-guide);
-}
-
-.nova-features li {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: 21px;
-  border-bottom: 1px solid var(--nova-guide);
-  padding-left: 18%;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #ffffff;
-}
-
-.nova-features li::before {
-  content: "";
-  position: absolute;
-  left: 10%;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--nova-gold);
-}
-
-.nova-features li.is-dim {
-  color: rgba(255, 255, 255, 0.34);
-}
-
-.nova-features li.is-dim::before {
-  background: rgba(255, 255, 255, 0.34);
-}
-
-.nova-headline {
-  position: absolute;
-  left: 17%;
-  bottom: 12%;
-  max-width: 34%;
-}
-
-.nova-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--nova-gold);
-}
-
-.nova-headline h1 {
-  margin-top: 14px;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(34px, 5vw, 84px);
-  line-height: 1.02;
-  letter-spacing: -0.03em;
-}
-
-/* the outlined lines: a gradient frame with the text inside it, drawn with a
-   padding-box / border-box pair so the box itself stays unfilled */
-.nova-headline__line {
-  display: block;
-  width: fit-content;
-  padding: 6px 18px;
-  border: 2px solid transparent;
-  color: #ffffff;
-  background:
-    linear-gradient(#0d0c11, #0d0c11) padding-box,
-    linear-gradient(120deg, #f2d582, #c9911a 55%, #8b6410) border-box;
-}
-
-.nova-headline__line--a {
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
-}
-
-.nova-headline__line--b {
-  margin-top: 10px;
-  margin-left: 10%;
-}
-
-.nova-sub {
-  margin-top: 22px;
-  max-width: 46ch;
-  font-size: 14.5px;
-  line-height: 1.7;
-  color: var(--nova-dim);
-}
-
-.nova-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 26px;
-}
-
-.nova-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 38px;
-  padding: 0 18px;
-  border-radius: 99px;
-  background: linear-gradient(120deg, #f2d582, #c9911a);
-  color: #0d0c11;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: transform 200ms ease, box-shadow 200ms ease;
-}
-
-.nova-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 30px -18px rgba(242, 213, 130, 0.8);
-}
-
-.nova-btn--ghost {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  color: #ffffff;
-}
-
-.nova-scroll {
-  position: absolute;
-  right: 17%;
-  bottom: 12%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--nova-dim);
-}
-
-.nova-scroll__arrow {
-  animation: nova-bob 2s ease-in-out infinite;
-}
-
-@keyframes nova-bob {
-  50% { transform: translateY(4px); }
-}
-
-.nova-rule {
-  position: absolute;
-  left: 50%;
-  right: 0;
-  bottom: 6%;
-  height: 1px;
-  background: var(--nova-guide);
-}
-
-/* ---- product */
-.nova-section--product {
+/* the facts strip, the way an agency site puts numbers under a claim */
+.nh__facts {
   display: grid;
-  align-content: end;
-  padding-bottom: 12vh;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 72px;
+  border-top: 1px solid var(--nh-line);
 }
 
-.nova-tabs {
-  position: absolute;
-  left: 17%;
-  right: 17%;
-  top: 16%;
-  display: flex;
-  overflow: hidden;
-  border-top: 1px solid var(--nova-guide);
-  border-bottom: 1px solid var(--nova-guide);
+.nh__fact {
+  padding: 20px 24px 0 0;
+  border-right: 1px solid var(--nh-line);
 }
 
-.nova-tab {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 33%;
-  height: 68px;
-  padding: 0 18px;
-  border-right: 1px solid var(--nova-guide);
+.nh__fact:last-child {
+  border-right: 0;
+}
+
+.nh__fact dt {
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.14);
-  transition: color 400ms ease, background 400ms ease;
-}
-
-.nova-tab__num {
-  font-size: 11px;
-  color: var(--nova-gold);
-  opacity: 0.5;
-}
-
-.nova-tab.is-active {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.03);
-  box-shadow: inset 0 0 0 1px rgba(242, 213, 130, 0.4);
-}
-
-.nova-tab.is-active .nova-tab__num {
-  opacity: 1;
-}
-
-.nova-tab.is-past {
-  opacity: 0.4;
-}
-
-.nova-product-copy {
-  position: relative;
-  margin-left: 17%;
-  max-width: 30%;
-}
-
-.nova-dots {
-  font-family: var(--font-mono);
-  font-size: 16px;
-  color: var(--nova-gold);
-}
-
-.nova-product-copy h2 {
-  margin-top: 10px;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(28px, 3.1vw, 52px);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-}
-
-.nova-outline {
-  display: block;
-  width: fit-content;
-  padding: 4px 16px;
-  border: 1px solid rgba(242, 213, 130, 0.55);
-  border-radius: 4px;
-  color: #ffffff;
-}
-
-.nova-outline--b {
-  margin-top: 8px;
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.nova-btnnova {
-  display: inline-block;
-  margin-top: 20px;
-  padding-bottom: 3px;
-  border-bottom: 1px solid rgba(242, 213, 130, 0.4);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--nova-gold);
-  text-decoration: none;
-}
-
-/* ---- record */
-.nova-section--record {
-  display: grid;
-  align-content: center;
-  padding-inline: 17%;
-}
-
-.nova-record-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--nova-guide);
-  padding-bottom: 10px;
-}
-
-.nova-record-tag,
-.nova-record-count {
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--nova-dim);
+  color: rgba(255, 255, 255, 0.4);
 }
 
-.nova-record-count {
-  display: inline-flex;
-  gap: 6px;
+.nh__fact dd {
+  margin: 8px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.1vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
   font-variant-numeric: tabular-nums;
 }
 
-.nova-record-count span:first-child {
-  color: var(--nova-gold);
-}
-
-.nova-record {
-  margin-top: 34px;
-  max-width: 40ch;
-}
-
-.nova-record-label {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
-  color: var(--nova-gold);
-}
-
-.nova-record-title {
-  margin-top: 14px;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(22px, 2.4vw, 38px);
-  line-height: 1.14;
-  letter-spacing: -0.02em;
-  color: #ffffff;
-}
-
-.nova-record-body {
-  margin-top: 14px;
-  font-size: 14px;
-  line-height: 1.75;
-  color: var(--nova-dim);
-}
-
-.nova-record-meta {
-  margin-top: 10px;
+.nh__scroll {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-mono);
   font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.nh__scroll svg {
+  animation: nh-bob 2.2s ease-in-out infinite;
+}
+
+@keyframes nh-bob {
+  50% { transform: translateY(4px); }
+}
+
+/* ---- 2 · catalogue */
+.nc {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  padding: 120px 0;
+}
+
+.nc__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  gap: 72px;
+  align-items: start;
+}
+
+.nc__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nh-gold);
+}
+
+.nc__title {
+  margin: 18px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(30px, 3.4vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+
+.nc__lede {
+  margin: 20px 0 0;
+  max-width: 40ch;
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: var(--nh-dim);
+}
+
+.nc__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--nh-gold);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(242, 213, 130, 0.4);
+  padding-bottom: 4px;
 }
 
-.nova-record-nav {
+.nc__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--nh-line);
+}
+
+.nc__row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: baseline;
+  gap: 18px;
+  padding: 18px 4px;
+  border-bottom: 1px solid var(--nh-line);
+  transition: background 200ms ease, padding-left 200ms ease;
+}
+
+.nc__row:hover {
+  background: rgba(255, 255, 255, 0.025);
+  padding-left: 12px;
+}
+
+.nc__num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: rgba(242, 213, 130, 0.7);
+}
+
+.nc__name {
+  font-family: var(--font-display);
+  font-size: clamp(19px, 1.7vw, 24px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.nc__meta {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.nc__price {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- 3 · record */
+.nr {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  padding: 120px 0 140px;
+}
+
+.nr__head {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  gap: 72px;
+  align-items: end;
+  border-bottom: 1px solid var(--nh-line);
+  padding-bottom: 28px;
+}
+
+.nr__title {
+  margin: 18px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(30px, 3.4vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+
+.nr__lede {
+  margin: 0;
+  max-width: 44ch;
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: var(--nh-dim);
+}
+
+.nr__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 1px;
+  background: var(--nh-line);
+}
+
+.nr__cell {
+  background: #0d0c11;
+  padding: 34px 30px 38px;
+}
+
+.nr__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--nh-gold);
+}
+
+.nr__cell h3 {
+  margin: 16px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(19px, 1.6vw, 23px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.nr__cell p {
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--nh-dim);
+}
+
+.nr__foot {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 26px;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 34px;
 }
 
-.nova-record-nav button {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: transparent;
-  color: #ffffff;
-  cursor: pointer;
-  transition: border-color 200ms ease, color 200ms ease;
-}
-
-.nova-record-nav button:hover {
-  border-color: var(--nova-gold);
-  color: var(--nova-gold);
-}
-
-.nova-record-link {
-  margin-left: 6px;
-  padding-left: 14px;
-  border-left: 1px solid var(--nova-guide);
+.nr__foot p {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--nova-dim);
-  text-decoration: none;
+  color: rgba(255, 255, 255, 0.32);
 }
 
-.nova-ghost {
-  position: absolute;
-  right: 17%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18ch;
-  font-family: var(--font-display);
-  font-size: 17px;
-  line-height: 1.3;
-  color: rgba(255, 255, 255, 0.1);
+@media (max-width: 1024px) {
+  .nova-shell {
+    width: min(1240px, 100% - 48px);
+  }
+
+  /* the card is pinned on desktop; on narrow screens it stacks under the actions
+     instead of squeezing into a column over the headline */
+  .nh__console-wrap {
+    position: static;
+    width: 100%;
+    max-width: 420px;
+    margin-top: 32px;
+  }
+
+  .nh__grid,
+  .nc__grid,
+  .nr__head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .nh__console {
+    justify-self: start;
+    order: -1;
+  }
+
+  .nh__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 56px;
+  }
+
+  .nh__fact:nth-child(2) {
+    border-right: 0;
+  }
+
+  .nr__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
-@media (max-width: 900px) {
-  .nova-section::before,
-  .nova-features,
-  .nova-ghost,
-  .nova-rule {
+@media (max-width: 640px) {
+  .nh,
+  .nc,
+  .nr {
+    padding: 96px 0;
+  }
+
+  .nh__facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nh__fact {
+    border-right: 0;
+    border-bottom: 1px solid var(--nh-line);
+    padding: 16px 0;
+  }
+
+  .nh__fact:last-child {
+    border-bottom: 0;
+  }
+
+  .nc__row {
+    grid-template-columns: 34px 1fr auto;
+    gap: 12px;
+  }
+
+  .nh__scroll {
     display: none;
-  }
-
-  .nova-prompt {
-    left: 16px;
-    right: 16px;
-    width: auto;
-    top: 16%;
-  }
-
-  .nova-headline {
-    left: 16px;
-    right: 16px;
-    bottom: 8%;
-    max-width: none;
-  }
-
-  .nova-sub {
-    background: rgba(13, 12, 17, 0.86);
-    padding: 8px 10px;
-  }
-
-  .nova-scroll {
-    display: none;
-  }
-
-  .nova-product-copy,
-  .nova-record {
-    margin-left: 16px;
-    margin-right: 16px;
-    max-width: none;
-  }
-
-  .nova-section--record {
-    padding-inline: 16px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nova-caret,
-  .nova-scroll__arrow {
+  .nh__caret,
+  .nh__scroll svg {
     animation: none;
   }
 }
