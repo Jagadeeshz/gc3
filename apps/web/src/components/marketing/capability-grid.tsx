@@ -101,7 +101,7 @@ export function CapabilityGrid({
           <div
             aria-hidden="true"
             className="podbg pointer-events-none absolute inset-0 -z-10"
-            style={{ backgroundImage: "url('/brand/pods-hall.jpg')" }}
+            style={{ backgroundImage: "url('/brand/pods-hall-clean.jpg')" }}
           />
           <div
             aria-hidden="true"

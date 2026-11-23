@@ -2077,6 +2077,9 @@ textarea:focus {
    to the right, and faded into the page at its left edge so the copy meets no
    hard boundary — the drawing is transparent, so there is nothing to mask. */
 .hero-art {
+  /* the supplied drawings were authored as faint watermarks; the opacity lift lives in the file,
+     this keeps the band from dimming them a second time on the way out */
+  opacity: 0.95;
   /* height-based rather than `contain`: with the box wider than the drawing's
      aspect, contain pins the art to the container edge and clips the last figure.
      A height rule plus a right inset keeps the whole composition inside the band. */
