@@ -14,6 +14,8 @@ export type Pod = {
   composition: string;
   pool: string;
   icon: LucideIcon;
+  /** Rendered plate for the catalogue card. REMAU is a shared unit and carries none. */
+  image?: string;
 };
 
 export const PODS: readonly Pod[] = [
@@ -23,6 +25,7 @@ export const PODS: readonly Pod[] = [
     composition: '1 manager · 2 specialists · 2 agents',
     pool: '120 credits a month',
     icon: Palette,
+    image: '/brand/pods/creative.jpg',
   },
   {
     name: 'Growth',
@@ -30,6 +33,7 @@ export const PODS: readonly Pod[] = [
     composition: '1 manager · 4 specialists · 4 agents',
     pool: '240 credits a month',
     icon: TrendingUp,
+    image: '/brand/pods/growth.jpg',
   },
   {
     name: 'Strategy',
@@ -37,6 +41,7 @@ export const PODS: readonly Pod[] = [
     composition: '1 manager · 6 specialists · 6 agents',
     pool: '360 credits a month',
     icon: Compass,
+    image: '/brand/pods/strategy.jpg',
   },
   {
     name: 'Automation',
@@ -44,6 +49,7 @@ export const PODS: readonly Pod[] = [
     composition: 'Custom team, scoped per engagement',
     pool: 'Priced per credit',
     icon: Bot,
+    image: '/brand/pods/automation.jpg',
   },
   {
     name: 'Interactive',
@@ -51,6 +57,7 @@ export const PODS: readonly Pod[] = [
     composition: 'Custom team, scoped per engagement',
     pool: 'Priced per credit',
     icon: MousePointerClick,
+    image: '/brand/pods/interactive.jpg',
   },
   {
     name: 'REMAU',

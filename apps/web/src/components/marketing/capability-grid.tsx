@@ -141,10 +141,28 @@ export function CapabilityGrid({
 
             return (
               <div key={pod.name}>
-                <article className="pod-card group flex h-full flex-col justify-between gap-6 rounded-[14px] border border-hairline bg-obsidian-soft p-6 b-surface">
+                <article className="pod-card group flex h-full flex-col overflow-hidden rounded-[14px] border border-hairline bg-obsidian-soft b-surface">
                   {/* a light that travels the card's edge; decoration only */}
                   <span aria-hidden="true" className="pod-card__beam" />
                   <span aria-hidden="true" className="pod-card__sheen" />
+
+                  {/* the plate sits as a cover band rather than behind the copy: the renders are
+                      bright in the middle, so a full-bleed layer would fight the text */}
+                  {pod.image ? (
+                    <div
+                      aria-hidden="true"
+                      className="pod-card__cover"
+                      style={{ backgroundImage: `url(${pod.image})` }}
+                    />
+                  ) : (
+                    /* REMAU is a shared unit with no plate of its own; the band keeps the grid
+                       even instead of letting one card begin at a different height */
+                    <div aria-hidden="true" className="pod-card__cover pod-card__cover--empty">
+                      <span />
+                    </div>
+                  )}
+
+                  <div className="relative z-[1] flex flex-1 flex-col justify-between gap-6 p-6">
                 <div>
                   <span className="pod-card__chip inline-grid size-10 place-items-center rounded-[10px] border border-hairline bg-obsidian text-ghost">
                     <Icon aria-hidden className="size-[18px]" strokeWidth={1.7} />
@@ -180,6 +198,7 @@ export function CapabilityGrid({
                     <ArrowUpRight aria-hidden className="size-3.5" strokeWidth={1.9} />
                   </Link>
                 </div>
+                  </div>
                 </article>
               </div>
             );
