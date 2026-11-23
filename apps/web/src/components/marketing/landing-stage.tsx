@@ -67,7 +67,7 @@ export function LandingStage() {
 
       scene.add(new THREE.HemisphereLight(0xffffff, 0x1a1a1f, 0.7));
 
-      const key = new THREE.DirectionalLight(0xe9f0ff, 1.6);
+      const key = new THREE.DirectionalLight(0xfff3e0, 1.7);
       key.position.set(-3, 5, 4);
       key.castShadow = true;
       key.shadow.mapSize.set(1024, 1024);
@@ -75,7 +75,7 @@ export function LandingStage() {
       key.shadow.bias = -0.0005;
       scene.add(key);
 
-      const rim = new THREE.DirectionalLight(0x22d3ee, 1.1);
+      const rim = new THREE.DirectionalLight(0xf2d582, 1.2);
       rim.position.set(4, 2, -4);
       scene.add(rim);
 
@@ -89,19 +89,19 @@ export function LandingStage() {
       const dark = new THREE.MeshStandardMaterial({ color: 0x14131a, roughness: 0.55, metalness: 0.3 });
       const pedestal = new THREE.MeshStandardMaterial({ color: 0x1b1a22, roughness: 0.85 });
 
-      // the face ring: a conic canvas used as both map and emissive, on the prism stops
+      // the gold ring: a conic canvas used as both map and emissive
       const ringCanvas = document.createElement('canvas');
       ringCanvas.width = ringCanvas.height = 512;
       const rc = ringCanvas.getContext('2d');
       if (rc) {
         const g = rc.createConicGradient(3.49, 256, 256);
-        g.addColorStop(0.0, '#8f6bff');
-        g.addColorStop(0.18, '#4b2bff');
-        g.addColorStop(0.34, '#0a7bff');
-        g.addColorStop(0.5, '#22d3ee');
-        g.addColorStop(0.66, '#00e1b4');
-        g.addColorStop(0.82, '#4b2bff');
-        g.addColorStop(1.0, '#8f6bff');
+        g.addColorStop(0.0, '#f2d582');
+        g.addColorStop(0.18, '#c9911a');
+        g.addColorStop(0.34, '#8b6410');
+        g.addColorStop(0.5, '#f2d582');
+        g.addColorStop(0.66, '#8b6410');
+        g.addColorStop(0.82, '#c9911a');
+        g.addColorStop(1.0, '#f2d582');
         rc.fillStyle = g;
         rc.fillRect(0, 0, 512, 512);
       }
@@ -193,7 +193,7 @@ export function LandingStage() {
       body.add(chest);
 
       // three indicators: the pods, in miniature
-      [0x8f6bff, 0x22d3ee, 0x00e1b4].forEach((c, i) => {
+      [0xff8a3d, 0xf2d582, 0xc9911a].forEach((c, i) => {
         const led = new THREE.Mesh(
           new THREE.SphereGeometry(0.035, 12, 12),
           new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 1.4 }),

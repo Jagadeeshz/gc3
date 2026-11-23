@@ -3839,22 +3839,21 @@ textarea:focus {
   }
 }
 
-/* the pod without a plate still gets its band, filled with the prism itself */
+/* REMAU has no render of its own. Its band is neutral ground with the gold rule, so it sits beside
+   the warm plates instead of reading as a stray blue block — the prism belongs to edges and rules,
+   not to a card face. */
 .pod-card__cover--empty {
   display: grid;
   place-items: center;
   background:
-    radial-gradient(120% 160% at 20% 0%, rgba(51, 0, 255, 0.22), transparent 60%),
-    radial-gradient(120% 160% at 85% 30%, rgba(0, 153, 255, 0.16), transparent 62%),
-    linear-gradient(160deg, #12111a, #0d0c11);
+    radial-gradient(120% 150% at 22% 0%, rgba(242, 213, 130, 0.07), transparent 62%),
+    linear-gradient(160deg, #141319, #0d0c11);
 }
 
 .pod-card__cover--empty span {
-  width: 74px;
-  height: 2px;
-  border-radius: 9999px;
-  background-image: var(--bindu-spectrum-gradient);
-  opacity: 0.55;
+  width: 64px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(242, 213, 130, 0.75), transparent);
 }
 
 /* ------------------------------------------------------------------ journey ribbon
