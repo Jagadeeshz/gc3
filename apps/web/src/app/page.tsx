@@ -9,7 +9,7 @@ import { CommandPalette } from '@/components/marketing/command-palette';
 import { BookDemoDialog } from '@/components/marketing/book-demo';
 import { StatBand } from '@/components/marketing/stat-band';
 import { CapabilityGrid } from '@/components/marketing/capability-grid';
-import { HowItWorks } from '@/components/marketing/how-it-works';
+import { JourneyRibbon } from '@/components/marketing/journey-ribbon';
 import { GlowCards } from '@/components/marketing/glow-cards';
 import { ResourceCards } from '@/components/marketing/resource-cards';
 import { CtaBand } from '@/components/marketing/cta-band';
@@ -46,7 +46,7 @@ export default function HomePage() {
 
       <StatBand />
       <CapabilityGrid />
-      <HowItWorks />
+      <JourneyRibbon />
 
       <GlowCards />
       <ResourceCards />

@@ -3853,3 +3853,176 @@ textarea:focus {
   background-image: var(--bindu-spectrum-gradient);
   opacity: 0.55;
 }
+
+/* ------------------------------------------------------------------ journey ribbon
+ *
+ * Four stages on a serpentine. The markers live inside the SVG, on the path, so they cannot drift
+ * from the curve; the cards are a plain four-column grid beneath the band, which is why the text
+ * never collides with the ribbon.
+ *
+ * Below 900px the serpentine is dropped and the stages become a vertical list with a spine — a
+ * winding path at phone width is noise, not information.
+ */
+.jr {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-border-hairline);
+  padding: 96px 0 84px;
+}
+
+.jr__head {
+  max-width: 62ch;
+}
+
+.jr__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ghost-muted);
+}
+
+.jr__title {
+  margin: 12px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3.4vw, 2.9rem);
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+}
+
+.jr__lede {
+  margin: 16px 0 0;
+  max-width: 56ch;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--color-ghost-muted);
+}
+
+.jr__track {
+  position: relative;
+  margin-top: 56px;
+}
+
+.jr__ribbon {
+  display: block;
+  width: 100%;
+  height: 240px;
+  overflow: visible;
+}
+
+.jr__steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.jr__step {
+  max-width: 30ch;
+}
+
+.jr__step-n {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.jr__step-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.jr__step-body {
+  margin: 9px 0 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-ghost-muted);
+}
+
+.jr__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 56px;
+  border-top: 1px solid var(--color-border-hairline);
+  padding-top: 20px;
+}
+
+.jr__foot p {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.36);
+}
+
+.jr__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffffff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  padding-bottom: 4px;
+  transition: border-color 200ms ease, gap 200ms ease;
+}
+
+.jr__link:hover {
+  border-bottom-color: rgba(255, 255, 255, 0.5);
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .jr {
+    padding: 72px 0 60px;
+  }
+
+  .jr__ribbon {
+    display: none;
+  }
+
+  .jr__steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    margin: 8px 0 0;
+    padding-left: 28px;
+    border-left: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  .jr__step {
+    max-width: none;
+    padding: 22px 0;
+  }
+
+  .jr__step-n {
+    display: block;
+    margin-bottom: 7px;
+  }
+
+  .jr__foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jr__ribbon circle:last-of-type {
+    display: none;
+  }
+}
